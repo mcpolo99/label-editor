@@ -253,6 +253,18 @@
       <MenuItem Header="_File">
         <MenuItem Header="_New" Command="{Binding NewDocumentCommand}" InputGesture="Ctrl+N" />
         <MenuItem Header="_Open…" Command="{Binding OpenCommand}" InputGesture="Ctrl+O" />
+        <MenuItem Header="Open _recent" Classes="recent" ItemsSource="{Binding RecentFiles}" IsEnabled="{Binding HasRecentFiles}">
+          <MenuItem.Styles>
+            <Style Selector="MenuItem.recent > MenuItem" x:DataType="vm:RecentFileItem">
+              <Setter Property="Header" Value="{Binding Header}" />
+              <Setter Property="ToolTip.Tip" Value="{Binding Path}" />
+              <Setter Property="Command" Value="{Binding $parent[Window].((vm:MainViewModel)DataContext).OpenRecentCommand}" />
+              <Setter Property="CommandParameter" Value="{Binding Path}" />
+            </Style>
+          </MenuItem.Styles>
+        </MenuItem>
+        <MenuItem Header="Clear recent files" Command="{Binding ClearRecentFilesCommand}" />
+        <Separator />
         <MenuItem Header="_Save" Command="{Binding SaveCommand}" InputGesture="Ctrl+S" />
         <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
         <MenuItem Header="_Close" Command="{Binding CloseDocumentCommand}" InputGesture="Ctrl+W" />
