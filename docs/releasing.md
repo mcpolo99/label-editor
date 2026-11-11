@@ -2,22 +2,27 @@
 
 ## Publish a release
 
+Releases are made **by hand only**: nothing on GitHub builds, tests or publishes automatically (there are no
+GitHub Actions workflows).
+
 ```powershell
 ./build/release.ps1 -Version 0.3.0        # on develop: version, CHANGELOG.md, commit "chore: release 0.3.0", tag v0.3.0
-git push origin develop --follow-tags     # the tag starts the GitHub "Release" workflow
+git push origin develop --follow-tags
+./build/publish-release.ps1               # tests, installer + portable zip, GitHub release (add -Draft to review first)
 ```
 
-The **Release** workflow (`.github/workflows/release.yml`) builds the installer and the portable zip on GitHub and
-publishes them as a GitHub release. Its notes are that version's section of the changelog.
+`publish-release.ps1` refuses to run unless the working tree is clean, `HEAD` is at the version's tag and the tag is
+on GitHub, so the published files always match the tagged source. It needs the GitHub CLI (`gh`). The release notes
+are that version's section of the changelog.
 
 **The changelog is generated** from the commit messages by [git-cliff](https://git-cliff.org) (`cliff.toml`):
 `feature:` commits are listed under *Features*, `fix:` under *Fixes*, `refactor:` under *Changes*, and so on, so
 writing good commit messages is all it takes. Preview the next release's notes with
 `npx git-cliff@2.10.0 --unreleased`.
 
-The **CI** workflow runs all tests on every push to `develop`/`main` and on pull requests. Tests that need Biesse's
-own LEdit files are skipped there (those files are not in the repository); locally they run when LEdit is installed,
-or point `LABELEDITOR_LEDIT_DATA` at an LEdit folder.
+Tests run locally (`dotnet test`, and as part of `package.ps1`). Tests that need Biesse's own LEdit files run when
+LEdit is installed, or point `LABELEDITOR_LEDIT_DATA` at an LEdit folder; set it to `none` to run as on a PC without
+LEdit (those tests are then skipped, since Biesse's files are not in the repository).
 
 ## Build locally
 
