@@ -1,0 +1,654 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<LabelLayout>
+	<Header description="General information">
+		<Version majorVersion="1" minorVersion="34"/>
+		<Miscellaneous default="0" unit="0" grid="1000"/>
+		<RectLabel type="1">
+			<Width><![CDATA[100000]]></Width>
+			<Height><![CDATA[-60000]]></Height>
+		</RectLabel>
+	</Header>
+	<Entries description="Label elements">
+		<DataRecord type="9">
+			<Field left="00000000" top="00000000" width="00000000" height="00000000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[0]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+		</DataRecord>
+		<EllipseEntry type="6">
+			<Field left="00050000" top="-0053000" width="00007000" height="-0007000"/>
+			<PenWidth><![CDATA[1]]></PenWidth>
+			<PenStyle><![CDATA[0]]></PenStyle>
+			<PenColor><![CDATA[0,0,0]]></PenColor>
+			<BrushColor><![CDATA[255,255,255]]></BrushColor>
+		</EllipseEntry>
+		<EllipseEntry type="6">
+			<Field left="00050000" top="-0001000" width="00007000" height="-0011000"/>
+			<PenWidth><![CDATA[1]]></PenWidth>
+			<PenStyle><![CDATA[0]]></PenStyle>
+			<PenColor><![CDATA[0,0,0]]></PenColor>
+			<BrushColor><![CDATA[255,255,255]]></BrushColor>
+		</EllipseEntry>
+		<EllipseEntry type="6">
+			<Field left="00092000" top="-0023000" width="00007000" height="-0007000"/>
+			<PenWidth><![CDATA[1]]></PenWidth>
+			<PenStyle><![CDATA[0]]></PenStyle>
+			<PenColor><![CDATA[0,0,0]]></PenColor>
+			<BrushColor><![CDATA[255,255,255]]></BrushColor>
+		</EllipseEntry>
+		<EllipseEntry type="6">
+			<Field left="00001000" top="-0030000" width="00007000" height="-0006000"/>
+			<PenWidth><![CDATA[1]]></PenWidth>
+			<PenStyle><![CDATA[0]]></PenStyle>
+			<PenColor><![CDATA[0,0,0]]></PenColor>
+			<BrushColor><![CDATA[255,255,255]]></BrushColor>
+		</EllipseEntry>
+		<TextEntry type="2">
+			<Field left="00083000" top="-0016000" width="00009000" height="-0043000"/>
+			<Font>
+				<Height><![CDATA[-37]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[2700]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[2]]></PitchAndFamily>
+				<FaceName><![CDATA[C28N]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="280" UpperCase="0" BarcodeSettings="65539" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="123">
+				<ElementID><![CDATA[45836]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00002000" top="-0034000" width="00006000" height="-0025000"/>
+			<Font>
+				<Height><![CDATA[-24]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[2700]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="LPX">
+				<ElementID><![CDATA[45805]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00008000" top="-0053000" width="00036000" height="-0006000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="LPY">
+				<ElementID><![CDATA[45804]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00017000" top="-0007000" width="00031000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_3">
+				<ElementID><![CDATA[45831]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00009000" top="-0029000" width="00070000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_6">
+				<ElementID><![CDATA[45830]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00009000" top="-0034000" width="00070000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_5">
+				<ElementID><![CDATA[45864]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00002000" top="-0018000" width="00096000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-12]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_1">
+				<ElementID><![CDATA[45849]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00056000" top="-0012000" width="00040000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_12">
+				<ElementID><![CDATA[48512]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00009000" top="-0044000" width="00070000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_11">
+				<ElementID><![CDATA[48511]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00009000" top="-0039000" width="00070000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_10">
+				<ElementID><![CDATA[45862]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00009000" top="-0024000" width="00070000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-16]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_9">
+				<ElementID><![CDATA[45859]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00054000" top="-0055000" width="00030000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-16]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_8">
+				<ElementID><![CDATA[45856]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00044000" top="-0049000" width="00025000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_7">
+				<ElementID><![CDATA[45853]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00056000" top="-0007000" width="00040000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_14">
+				<ElementID><![CDATA[48514]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00056000" top="-0002000" width="00040000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_2">
+				<ElementID><![CDATA[45851]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00017000" top="-0012000" width="00031000" height="-0004000"/>
+			<Font>
+				<Height><![CDATA[-19]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[0]]></CharSet>
+				<OutPrecision><![CDATA[3]]></OutPrecision>
+				<ClipPrecision><![CDATA[2]]></ClipPrecision>
+				<Quality><![CDATA[1]]></Quality>
+				<PitchAndFamily><![CDATA[34]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_13">
+				<ElementID><![CDATA[48513]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00092000" top="-0033000" width="00005000" height="-0025000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[2700]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_4">
+				<ElementID><![CDATA[45836]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00002000" top="-0027000" width="00006000" height="-0006000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[2700]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_17_LEFT">
+				<ElementID><![CDATA[48517]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00092000" top="-0027000" width="00006000" height="-0006000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[900]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_18_RIGTH">
+				<ElementID><![CDATA[48518]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00047000" top="-0053000" width="00006000" height="-0006000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_20_BACK">
+				<ElementID><![CDATA[48520]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00049000" top="-0002000" width="00006000" height="-0006000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="0" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_19_FRONT">
+				<ElementID><![CDATA[48519]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+		<TextEntry type="2">
+			<Field left="00002000" top="-0002000" width="00014000" height="-0014000"/>
+			<Font>
+				<Height><![CDATA[-13]]></Height>
+				<Width><![CDATA[0]]></Width>
+				<Escapement><![CDATA[0]]></Escapement>
+				<Orientation><![CDATA[0]]></Orientation>
+				<Weight><![CDATA[400]]></Weight>
+				<Italic><![CDATA[0]]></Italic>
+				<Underline><![CDATA[0]]></Underline>
+				<StrikeOut><![CDATA[0]]></StrikeOut>
+				<CharSet><![CDATA[1]]></CharSet>
+				<OutPrecision><![CDATA[0]]></OutPrecision>
+				<ClipPrecision><![CDATA[0]]></ClipPrecision>
+				<Quality><![CDATA[0]]></Quality>
+				<PitchAndFamily><![CDATA[0]]></PitchAndFamily>
+				<FaceName><![CDATA[Arial]]></FaceName>
+			</Font>
+			<FontOptions FontSizeFixed="1" FontSize="100" UpperCase="0" BarcodeSettings="65548" TextColor="0" CodePage="0" Multiline="0"/>
+			<Element index="0" PrvTxt="Desc_31">
+				<ElementID><![CDATA[48531]]></ElementID>
+				<DelFirst><![CDATA[0]]></DelFirst>
+				<DelLast><![CDATA[0]]></DelLast>
+				<Count><![CDATA[-1]]></Count>
+				<FillChar><![CDATA[0]]></FillChar>
+			</Element>
+		</TextEntry>
+	</Entries>
+</LabelLayout>
