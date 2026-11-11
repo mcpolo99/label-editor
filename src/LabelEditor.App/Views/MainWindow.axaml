@@ -277,6 +277,8 @@
         <MenuItem Header="_Close" Command="{Binding CloseDocumentCommand}" InputGesture="Ctrl+W" />
         <Separator />
         <MenuItem Header="_History…" Command="{Binding ShowHistoryCommand}" />
+        <MenuItem Header="_Warn when text does not fit" ToggleType="CheckBox" IsChecked="{Binding WarnTextOverflowOnSave}"
+                  ToolTip.Tip="Before saving, check every fixed-size text (with the sample values and the loaded preview data) against its field" />
         <Separator />
         <MenuItem Header="Load _preview data…" Command="{Binding LoadPreviewDataCommand}" />
         <MenuItem Header="Clear preview data" Command="{Binding ClearPreviewDataCommand}" />

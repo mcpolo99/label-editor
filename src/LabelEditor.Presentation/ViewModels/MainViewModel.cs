@@ -59,6 +59,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IReadOnlyList<IPreviewDataSource> _previewSources;
     private readonly ILabelVersionHistory _history;
     private readonly ApplicationInfo _app;
+    private readonly ITextOverflowCheck _overflowCheck;
     private EditorSettings _settings = new();
 
     public MainViewModel(
@@ -72,6 +73,7 @@ public sealed partial class MainViewModel : ObservableObject
         IEnumerable<IPreviewDataSource> previewSources,
         ILabelVersionHistory history,
         ApplicationInfo app,
+        ITextOverflowCheck overflowCheck,
         ILogger<MainViewModel> logger)
     {
         _documents = documents;
@@ -83,6 +85,7 @@ public sealed partial class MainViewModel : ObservableObject
         _previewSources = previewSources.ToList();
         _history = history;
         _app = app;
+        _overflowCheck = overflowCheck;
         Context = context;
         Library = new LabelLibraryViewModel(library, locations);
         Tools =
@@ -164,6 +167,7 @@ public sealed partial class MainViewModel : ObservableObject
         Context.SnapToGrid = settings.SnapToGrid;
         Context.ShowGrid = settings.ShowGrid;
         Context.DimLabelInDarkTheme = settings.DimLabelInDarkTheme;
+        WarnTextOverflowOnSave = settings.WarnTextOverflowOnSave;
         _loadingTheme = true;
         Theme = settings.Theme;
         _loadingTheme = false;
@@ -352,7 +356,7 @@ public sealed partial class MainViewModel : ObservableObject
     [RelayCommand(CanExecute = nameof(HasDocument))]
     private async Task SaveAsAsync()
     {
-        if (ActiveDocument is { } document)
+        if (ActiveDocument is { } document && await ConfirmTextsFitAsync(document))
         {
             await SaveDocumentAsAsync(document);
         }
@@ -365,6 +369,11 @@ public sealed partial class MainViewModel : ObservableObject
     /// <returns>False when the user cancelled or the save failed.</returns>
     public async Task<bool> SaveDocumentAsync(DocumentViewModel document)
     {
+        if (!await ConfirmTextsFitAsync(document))
+        {
+            return false;
+        }
+
         var session = document.Session;
         if (session.Location is not { } location)
         {
@@ -396,6 +405,52 @@ public sealed partial class MainViewModel : ObservableObject
             await _documents.SaveAsync(session);
             Status = $"Saved {document.FilePath}";
         });
+    }
+
+    /// <summary>File ▸ Warn about text overflow: check texts against their fields before saving.</summary>
+    [ObservableProperty]
+    private bool _warnTextOverflowOnSave;
+
+    partial void OnWarnTextOverflowOnSaveChanged(bool value)
+    {
+        if (value != _settings.WarnTextOverflowOnSave)
+        {
+            _ = SaveSettingsAsync(_settings with { WarnTextOverflowOnSave = value });
+        }
+    }
+
+    /// <summary>
+    /// Warns when texts are too wide for their field at their font size (with the sample values and every loaded
+    /// preview record). Cancelling selects those texts so they can be fixed.
+    /// </summary>
+    private async Task<bool> ConfirmTextsFitAsync(DocumentViewModel document)
+    {
+        if (!WarnTextOverflowOnSave)
+        {
+            return true;
+        }
+
+        var overflows = _overflowCheck.Find(document.Layout, Context.Resolver, PreviewRecords);
+        if (overflows.Count == 0)
+        {
+            return true;
+        }
+
+        const int shown = 8;
+        var lines = overflows.Take(shown).Select(o => $"•  \"{o.Text}\"" + (o.RecordKey is null ? string.Empty : $"  (record {o.RecordKey})"));
+        var more = overflows.Count > shown ? $"{Environment.NewLine}…and {overflows.Count - shown} more" : string.Empty;
+        var subject = overflows.Count == 1 ? "1 text is too wide for its field at its font size" : $"{overflows.Count} texts are too wide for their fields at their font size";
+        var message = $"{subject} and will not fit inside it on the label:{Environment.NewLine}{Environment.NewLine}"
+            + string.Join(Environment.NewLine, lines) + more + Environment.NewLine + Environment.NewLine
+            + "Save anyway? (Cancel selects them. The check can be turned off in the File menu; the canvas outlines these texts in orange.)";
+        if (await _interaction.ConfirmAsync("Text does not fit", message, "Save anyway"))
+        {
+            return true;
+        }
+
+        document.Session.Selection.Select(overflows.Select(o => o.EntryId).ToList());
+        Status = "Not saved: the selected texts do not fit their fields";
+        return false;
     }
 
     private string ProtectedReason(string path) =>

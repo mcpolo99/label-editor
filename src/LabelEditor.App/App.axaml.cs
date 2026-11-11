@@ -106,6 +106,7 @@ public sealed class App : Avalonia.Application
         services.AddLabelEditorInfrastructure(paths, storage);
         services.AddSingleton<IUserInteraction>(new AvaloniaUserInteraction(window));
         services.AddSingleton<IFontCatalog, AvaloniaFontCatalog>();
+        services.AddSingleton<ITextOverflowCheck, Rendering.AvaloniaTextOverflowCheck>();
         services.AddSingleton(sp => DescribeApplication(paths, storage, sp.GetRequiredService<Application.Abstractions.IStorageLocations>()));
         services.AddSingleton<EditorContext>();
         services.AddSingleton<MainViewModel>();

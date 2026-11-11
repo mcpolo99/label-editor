@@ -53,6 +53,8 @@ public class TextPropertiesViewModelTests
 
         public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
 
+        public Task<bool> ConfirmAsync(string title, string message, string confirmButton) => Task.FromResult(false);
+
         public Queue<IReadOnlyList<int>> MultiAnswers { get; } = new();
 
         public Task<IReadOnlyList<int>> PickFieldsAsync(FieldTextResolver resolver) => Task.FromResult(MultiAnswers.Dequeue());

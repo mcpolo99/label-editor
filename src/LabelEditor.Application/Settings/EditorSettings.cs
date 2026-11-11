@@ -26,6 +26,12 @@ public sealed record EditorSettings
 
     public double Zoom { get; init; } = 2.0;
 
+    /// <summary>
+    /// Before saving, warn about texts that are too wide for their field at their font size. Off by default:
+    /// the canvas always outlines such texts, and many existing labels have some.
+    /// </summary>
+    public bool WarnTextOverflowOnSave { get; init; }
+
     /// <summary>Override for the installed LEdit folder; null = auto-detect.</summary>
     public string? LeditInstallationPath { get; init; }
 
