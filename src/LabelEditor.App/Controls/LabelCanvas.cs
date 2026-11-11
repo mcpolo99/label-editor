@@ -58,6 +58,9 @@ public sealed class LabelCanvas : Control
     /// <summary>Entries stacked under the pointer at the last plain click; two or more open the pick list on release.</summary>
     private IReadOnlyList<EntryListItem> _pressStack = [];
 
+    /// <summary>How an entry picked from the list joins the selection (plain click replaces, Shift adds, Ctrl toggles).</summary>
+    private SelectionMode _pickMode = SelectionMode.Replace;
+
     static LabelCanvas()
     {
         AffectsMeasure<LabelCanvas>(DocumentProperty);
@@ -81,6 +84,9 @@ public sealed class LabelCanvas : Control
         Resizing,
         Marquee,
         Creating,
+
+        /// <summary>Shift/Ctrl+click on overlapping entries: the pick list opens on release; nothing moves.</summary>
+        PendingPick,
     }
 
     public DocumentViewModel? Document
@@ -387,6 +393,17 @@ public sealed class LabelCanvas : Control
         {
             var stack = HitTesting.EntriesAt(session.Layout, _pressLayout, tolerance);
 
+            // Shift/Ctrl on overlapping entries: let the user choose which one to add/toggle before touching the selection.
+            if ((toggle || add) && stack.Count > 1)
+            {
+                _pickMode = toggle ? SelectionMode.Toggle : SelectionMode.Add;
+                _pressStack = Document!.EntriesAt(_pressLayout, tolerance);
+                _mode = Mode.PendingPick;
+                return;
+            }
+
+            _pickMode = SelectionMode.Replace;
+
             // A plain click on an already selected entry keeps it, even when it lies behind others: that is how an
             // entry picked from the overlap list can then be dragged.
             entry = (!toggle && !add ? stack.FirstOrDefault(x => session.Selection.Contains(x.Id)) : null) ?? (stack.Count > 0 ? stack[0] : null);
@@ -431,7 +448,7 @@ public sealed class LabelCanvas : Control
         var layoutPoint = View.ToLayout(position);
         var stacked = _mode == Mode.None ? HitTesting.EntriesAt(document.Layout, layoutPoint, (int)(4 / View.Scale)).Count : 0;
         document.CursorPosition = string.Create(CultureInfo.CurrentCulture, $"{layoutPoint.X / 1000.0:0.0}, {layoutPoint.Y / 1000.0:0.0}")
-            + (stacked > 1 ? $"   ·   {stacked} entries overlap here: click to choose" : string.Empty);
+            + (stacked > 1 ? $"   ·   {stacked} entries overlap here: click to choose (Shift adds, Ctrl toggles)" : string.Empty);
 
         switch (_mode)
         {
@@ -477,9 +494,9 @@ public sealed class LabelCanvas : Control
 
         switch (_mode)
         {
-            case Mode.PendingMove when _pressStack.Count > 1:
+            case Mode.PendingMove or Mode.PendingPick when _pressStack.Count > 1:
                 // A click (no drag) where several entries overlap: let the user choose which one.
-                ShowPickFlyout(_pressStack);
+                ShowPickFlyout(_pressStack, _pickMode);
                 break;
             case Mode.Moving:
                 _drag?.Commit();
@@ -667,7 +684,7 @@ public sealed class LabelCanvas : Control
         }
 
         pick.Items.Clear();
-        foreach (var option in CreatePickItems(document, stack))
+        foreach (var option in CreatePickItems(document, stack, SelectionMode.Replace))
         {
             pick.Items.Add(option);
         }
@@ -680,17 +697,23 @@ public sealed class LabelCanvas : Control
     internal bool IsPickListOpen { get; private set; }
 
     /// <summary>Small list at the cursor with the entries stacked at the clicked point; hovering one outlines it.</summary>
-    private void ShowPickFlyout(IReadOnlyList<EntryListItem> stack)
+    private void ShowPickFlyout(IReadOnlyList<EntryListItem> stack, SelectionMode mode)
     {
         if (Document is not { } document)
         {
             return;
         }
 
+        var title = mode switch
+        {
+            SelectionMode.Add => $"{stack.Count} entries here: add to selection",
+            SelectionMode.Toggle => $"{stack.Count} entries here: add or remove",
+            _ => $"{stack.Count} entries here",
+        };
         var flyout = new MenuFlyout { Placement = PlacementMode.Pointer };
-        flyout.Items.Add(new MenuItem { Header = $"{stack.Count} entries here", IsEnabled = false, FontWeight = FontWeight.SemiBold });
+        flyout.Items.Add(new MenuItem { Header = title, IsEnabled = false, FontWeight = FontWeight.SemiBold });
         flyout.Items.Add(new Separator());
-        foreach (var option in CreatePickItems(document, stack))
+        foreach (var option in CreatePickItems(document, stack, mode))
         {
             flyout.Items.Add(option);
         }
@@ -705,7 +728,7 @@ public sealed class LabelCanvas : Control
     }
 
     /// <summary>One menu item per stacked entry, topmost first: click selects, hover outlines, the selected one is ticked.</summary>
-    private static IEnumerable<MenuItem> CreatePickItems(DocumentViewModel document, IReadOnlyList<EntryListItem> stack)
+    private static IEnumerable<MenuItem> CreatePickItems(DocumentViewModel document, IReadOnlyList<EntryListItem> stack, SelectionMode mode)
     {
         foreach (var item in stack)
         {
@@ -717,7 +740,7 @@ public sealed class LabelCanvas : Control
                 ToggleType = MenuItemToggleType.CheckBox,
                 IsChecked = document.Session.Selection.Contains(id),
             };
-            option.Click += (_, _) => document.SelectEntry(id);
+            option.Click += (_, _) => document.SelectEntry(id, mode);
             option.PointerEntered += (_, _) => document.HighlightedEntry = id;
             option.PointerExited += (_, _) => document.HighlightedEntry = null;
             yield return option;

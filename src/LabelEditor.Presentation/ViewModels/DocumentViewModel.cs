@@ -203,13 +203,16 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
         return ids.Select(id => Entries.FirstOrDefault(i => i.Id == id)).OfType<EntryListItem>().ToList();
     }
 
-    /// <summary>Selects exactly this entry (from the "Select overlapping" list).</summary>
-    public void SelectEntry(EntryId id)
+    /// <summary>
+    /// Selects an entry picked from the overlap list: replaces the selection (plain click), adds to it (Shift)
+    /// or toggles it (Ctrl).
+    /// </summary>
+    public void SelectEntry(EntryId id, SelectionMode mode = SelectionMode.Replace)
     {
         HighlightedEntry = null;
         if (Layout.Find(id) is not null && !Session.IsInteracting)
         {
-            Session.Selection.Select(id);
+            Session.Selection.Select(id, mode);
         }
     }
 

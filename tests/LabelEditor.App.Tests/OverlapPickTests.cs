@@ -114,4 +114,62 @@ public class OverlapPickTests
         window.Close();
         await services.DisposeAsync();
     }
+
+    [AvaloniaFact]
+    public async Task Shift_clicking_overlapping_entries_offers_the_list_without_changing_the_selection_yet()
+    {
+        var (window, services, document, canvas, back, front) = await SetupAsync();
+        var other = new EllipseEntry { Id = EntryId.New(), Bounds = new LabelRect(60_000, 10_000, 5_000, 5_000) };
+        document.Session.AddEntry(other); // selected: an entry somewhere else
+        var p = OnScreen(window, canvas, document, 25_000, 25_000);
+
+        window.MouseDown(p, MouseButton.Left, RawInputModifiers.Shift);
+        window.MouseUp(p, MouseButton.Left, RawInputModifiers.Shift);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(canvas.IsPickListOpen);
+        Assert.Equal([other.Id], document.Session.Selection.Ids); // nothing added until the user picks
+
+        document.SelectEntry(back.Id, Application.Documents.SelectionMode.Add); // what picking "back" in the list does
+        Assert.Equal([other.Id, back.Id], document.Session.Selection.Ids);
+        Assert.DoesNotContain(front.Id, document.Session.Selection.Ids);
+        window.Close();
+        await services.DisposeAsync();
+    }
+
+    [AvaloniaFact]
+    public async Task Ctrl_clicking_overlapping_entries_offers_the_list_too()
+    {
+        var (window, services, document, canvas, back, _) = await SetupAsync();
+        document.Session.Selection.Select(back.Id);
+        var p = OnScreen(window, canvas, document, 25_000, 25_000);
+
+        window.MouseDown(p, MouseButton.Left, RawInputModifiers.Control);
+        window.MouseUp(p, MouseButton.Left, RawInputModifiers.Control);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.True(canvas.IsPickListOpen);
+        Assert.Equal([back.Id], document.Session.Selection.Ids);
+        document.SelectEntry(back.Id, Application.Documents.SelectionMode.Toggle);
+        Assert.Empty(document.Session.Selection.Ids);
+        window.Close();
+        await services.DisposeAsync();
+    }
+
+    [AvaloniaFact]
+    public async Task Shift_clicking_a_single_entry_still_adds_it_directly()
+    {
+        var (window, services, document, canvas, back, front) = await SetupAsync();
+        document.Session.Selection.Select(front.Id);
+        var p = OnScreen(window, canvas, document, 12_000, 12_000); // only the back ellipse
+
+        window.MouseDown(p, MouseButton.Left, RawInputModifiers.Shift);
+        window.MouseUp(p, MouseButton.Left, RawInputModifiers.Shift);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.False(canvas.IsPickListOpen);
+        Assert.Equal([front.Id, back.Id], document.Session.Selection.Ids);
+        window.Close();
+        await services.DisposeAsync();
+    }
 }
