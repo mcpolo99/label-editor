@@ -4,8 +4,8 @@
 .DESCRIPTION
   Run on develop with a clean working tree. Afterwards push the branch and the tag:
     git push origin develop --follow-tags
-  The tag starts the GitHub "Release" workflow, which builds the installer and the portable zip and publishes
-  them as a GitHub release with that version's changelog as notes.
+  Then publish it by hand with build/publish-release.ps1 (installer, portable zip and the GitHub release with that
+  version's changelog as notes). Nothing is built or published automatically.
 .EXAMPLE
   ./build/release.ps1 -Version 0.3.0
 #>
@@ -38,4 +38,4 @@ finally {
     Pop-Location
 }
 
-Write-Host "Tagged v$Version. Push with: git push origin develop --follow-tags" -ForegroundColor Green
+Write-Host "Tagged v$Version. Push with: git push origin develop --follow-tags, then run ./build/publish-release.ps1" -ForegroundColor Green
