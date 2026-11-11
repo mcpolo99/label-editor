@@ -11,6 +11,7 @@
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <!-- Hosting / composition -->
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.23" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.23" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.23" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.23" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="9.0.23" />
