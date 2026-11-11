@@ -55,6 +55,9 @@ public sealed class LabelCanvas : Control
     private LabelPoint _resizeAnchor;
     private LabelRect _dragOrigin;
 
+    /// <summary>Entries stacked under the pointer at the last plain click; two or more open the pick list on release.</summary>
+    private IReadOnlyList<EntryListItem> _pressStack = [];
+
     static LabelCanvas()
     {
         AffectsMeasure<LabelCanvas>(DocumentProperty);
@@ -365,18 +368,30 @@ public sealed class LabelCanvas : Control
             return;
         }
 
-        // Alt+click: select the next entry behind the current one at this point ("select behind"), wrapping around.
-        var alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt) && !e.KeyModifiers.HasFlag(KeyModifiers.Control) && !e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-        var entry = alt
-            ? HitTesting.NextEntryAt(session.Layout, _pressLayout, (int)(4 / view.Scale), session.Selection.Count == 1 ? session.Selection.Dominant : null)
-            : HitTesting.EntryAt(session.Layout, _pressLayout, (int)(4 / view.Scale));
-        if (alt && entry is not null)
-        {
-            session.Selection.Select(entry.Id);
-        }
-
         var toggle = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var add = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        var tolerance = (int)(4 / view.Scale);
+
+        // Alt+click: select the next entry behind the current one at this point ("select behind"), wrapping around.
+        var alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt) && !toggle && !add;
+        LabelEntry? entry;
+        if (alt)
+        {
+            entry = HitTesting.NextEntryAt(session.Layout, _pressLayout, tolerance, session.Selection.Count == 1 ? session.Selection.Dominant : null);
+            if (entry is not null)
+            {
+                session.Selection.Select(entry.Id);
+            }
+        }
+        else
+        {
+            var stack = HitTesting.EntriesAt(session.Layout, _pressLayout, tolerance);
+
+            // A plain click on an already selected entry keeps it, even when it lies behind others: that is how an
+            // entry picked from the overlap list can then be dragged.
+            entry = (!toggle && !add ? stack.FirstOrDefault(x => session.Selection.Contains(x.Id)) : null) ?? (stack.Count > 0 ? stack[0] : null);
+            _pressStack = !toggle && !add && stack.Count > 1 ? Document!.EntriesAt(_pressLayout, tolerance) : [];
+        }
         if (entry is null)
         {
             if (!toggle && !add)
@@ -416,7 +431,7 @@ public sealed class LabelCanvas : Control
         var layoutPoint = View.ToLayout(position);
         var stacked = _mode == Mode.None ? HitTesting.EntriesAt(document.Layout, layoutPoint, (int)(4 / View.Scale)).Count : 0;
         document.CursorPosition = string.Create(CultureInfo.CurrentCulture, $"{layoutPoint.X / 1000.0:0.0}, {layoutPoint.Y / 1000.0:0.0}")
-            + (stacked > 1 ? $"   ·   {stacked} entries here: Alt+click or right-click to pick" : string.Empty);
+            + (stacked > 1 ? $"   ·   {stacked} entries overlap here: click to choose" : string.Empty);
 
         switch (_mode)
         {
@@ -462,6 +477,10 @@ public sealed class LabelCanvas : Control
 
         switch (_mode)
         {
+            case Mode.PendingMove when _pressStack.Count > 1:
+                // A click (no drag) where several entries overlap: let the user choose which one.
+                ShowPickFlyout(_pressStack);
+                break;
             case Mode.Moving:
                 _drag?.Commit();
                 break;
@@ -648,23 +667,61 @@ public sealed class LabelCanvas : Control
         }
 
         pick.Items.Clear();
+        foreach (var option in CreatePickItems(document, stack))
+        {
+            pick.Items.Add(option);
+        }
+
+        menu.Closed -= OnContextMenuClosed;
+        menu.Closed += OnContextMenuClosed;
+    }
+
+    /// <summary>True while the overlap pick list is shown (lets UI tests observe it).</summary>
+    internal bool IsPickListOpen { get; private set; }
+
+    /// <summary>Small list at the cursor with the entries stacked at the clicked point; hovering one outlines it.</summary>
+    private void ShowPickFlyout(IReadOnlyList<EntryListItem> stack)
+    {
+        if (Document is not { } document)
+        {
+            return;
+        }
+
+        var flyout = new MenuFlyout { Placement = PlacementMode.Pointer };
+        flyout.Items.Add(new MenuItem { Header = $"{stack.Count} entries here", IsEnabled = false, FontWeight = FontWeight.SemiBold });
+        flyout.Items.Add(new Separator());
+        foreach (var option in CreatePickItems(document, stack))
+        {
+            flyout.Items.Add(option);
+        }
+
+        flyout.Closed += (_, _) =>
+        {
+            document.HighlightedEntry = null;
+            IsPickListOpen = false;
+        };
+        IsPickListOpen = true;
+        flyout.ShowAt(this, showAtPointer: true);
+    }
+
+    /// <summary>One menu item per stacked entry, topmost first: click selects, hover outlines, the selected one is ticked.</summary>
+    private static IEnumerable<MenuItem> CreatePickItems(DocumentViewModel document, IReadOnlyList<EntryListItem> stack)
+    {
         foreach (var item in stack)
         {
             var id = item.Id;
             var option = new MenuItem
             {
-                Header = string.IsNullOrEmpty(item.Description) ? item.Kind : $"{item.Kind}   {item.Description}",
+                // Position (and size) tell identical kinds apart, e.g. two ellipses.
+                Header = (string.IsNullOrEmpty(item.Description) ? item.Kind : $"{item.Kind}   {item.Description}") + $"   ·  at {item.Position}" + (document.Layout.Find(id) is { IsSegment: false } box ? string.Create(System.Globalization.CultureInfo.CurrentCulture, $"  ·  {box.Bounds.Width / 1000.0:0.#}×{box.Bounds.Height / 1000.0:0.#} mm") : string.Empty),
                 ToggleType = MenuItemToggleType.CheckBox,
                 IsChecked = document.Session.Selection.Contains(id),
             };
             option.Click += (_, _) => document.SelectEntry(id);
             option.PointerEntered += (_, _) => document.HighlightedEntry = id;
             option.PointerExited += (_, _) => document.HighlightedEntry = null;
-            pick.Items.Add(option);
+            yield return option;
         }
-
-        menu.Closed -= OnContextMenuClosed;
-        menu.Closed += OnContextMenuClosed;
     }
 
     private void OnContextMenuClosed(object? sender, RoutedEventArgs e)
@@ -758,6 +815,7 @@ public sealed class LabelCanvas : Control
 
     private void ResetInteraction()
     {
+        _pressStack = [];
         _drag = null;
         _resize = null;
         _mode = Mode.None;
