@@ -1,3 +1,4 @@
+using Avalonia.VisualTree;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using LabelEditor.App.Views;
@@ -46,6 +47,17 @@ public class MainWindowTests
         var file = Path.Combine(AppContext.BaseDirectory, "rendered", "main-window.png");
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
         frame.Save(file);
+
+        // The canvas context menu exists and its commands are bound to the document.
+        var canvas = window.GetVisualDescendants().OfType<Controls.LabelCanvas>().Single();
+        var menu = Assert.IsType<Avalonia.Controls.ContextMenu>(canvas.ContextMenu);
+        menu.Open(canvas);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        var items = menu.Items.OfType<Avalonia.Controls.MenuItem>().ToList();
+        Assert.Contains(items, i => (i.Header as string) == "_Align");
+        Assert.True(items.Single(i => (i.Header as string) == "_Duplicate").IsEffectivelyEnabled);
+        window.CaptureRenderedFrame()?.Save(Path.Combine(AppContext.BaseDirectory, "rendered", "context-menu.png"));
+        menu.Close();
         window.Close();
     }
 }

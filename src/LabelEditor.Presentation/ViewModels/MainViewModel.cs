@@ -237,9 +237,12 @@ public sealed partial class MainViewModel : ObservableObject
         DuplicateCommand.NotifyCanExecuteChanged();
         PasteCommand.NotifyCanExecuteChanged();
         ArrangeCommand.NotifyCanExecuteChanged();
+        OnPropertyChanged(nameof(IsSelectionSizeLocked));
         OnPropertyChanged(nameof(UndoHeader));
         OnPropertyChanged(nameof(RedoHeader));
     }
+
+    public bool IsSelectionSizeLocked => ActiveDocument?.IsSelectionSizeLocked ?? false;
 
     public string UndoHeader => ActiveDocument?.Session.History.UndoDescription is { } d ? $"_Undo {d}" : "_Undo";
 
@@ -467,76 +470,46 @@ public sealed partial class MainViewModel : ObservableObject
         });
     }
 
-    // ---------------------------------------------------------------- Edit
+    // ---------------------------------------------------------------- Edit / Arrange
+    // These act on the active document; the logic lives in DocumentViewModel (shared with the canvas context menu).
 
     [RelayCommand(CanExecute = nameof(CanUndo))]
-    private void Undo() => Session?.Undo();
+    private void Undo() => ActiveDocument?.UndoCommand.Execute(null);
 
-    private bool CanUndo() => Session is { History.CanUndo: true, IsInteracting: false };
+    private bool CanUndo() => ActiveDocument?.UndoCommand.CanExecute(null) ?? false;
 
     [RelayCommand(CanExecute = nameof(CanRedo))]
-    private void Redo() => Session?.Redo();
+    private void Redo() => ActiveDocument?.RedoCommand.Execute(null);
 
-    private bool CanRedo() => Session is { History.CanRedo: true, IsInteracting: false };
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void Cut() => Session?.CutSelection(Context.Clipboard);
+    private bool CanRedo() => ActiveDocument?.RedoCommand.CanExecute(null) ?? false;
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void Copy() => Session?.CopySelection(Context.Clipboard);
+    private void Cut() => ActiveDocument?.CutCommand.Execute(null);
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void Copy() => ActiveDocument?.CopyCommand.Execute(null);
 
     [RelayCommand(CanExecute = nameof(CanPaste))]
-    private void Paste() => Session?.Paste(Context.Clipboard, PasteStep);
+    private void Paste() => ActiveDocument?.PasteCommand.Execute(null);
 
-    private bool CanPaste() => Session is not null && Context.Clipboard.HasContent;
-
-    [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void Delete() => Session?.DeleteSelection();
+    private bool CanPaste() => ActiveDocument?.PasteCommand.CanExecute(null) ?? false;
 
     [RelayCommand(CanExecute = nameof(HasSelection))]
-    private void Duplicate() => Session?.DuplicateSelection(PasteStep);
+    private void Delete() => ActiveDocument?.DeleteCommand.Execute(null);
+
+    [RelayCommand(CanExecute = nameof(HasSelection))]
+    private void Duplicate() => ActiveDocument?.DuplicateCommand.Execute(null);
 
     [RelayCommand]
-    private void SelectAll() => Session?.SelectAll();
+    private void SelectAll() => ActiveDocument?.SelectAllCommand.Execute(null);
 
-    private bool HasSelection() => Session is { Selection.IsEmpty: false, IsInteracting: false };
+    private bool HasSelection() => ActiveDocument?.CutCommand.CanExecute(null) ?? false;
 
-    private int PasteStep => Session?.Layout.Header.GridSize is > 0 and var g ? g : 1000;
-
-    // ---------------------------------------------------------------- Arrange
-
-    /// <summary>Arrange commands by name: LockSize, UnlockSize, AlignLeft, AlignRight, AlignTop, AlignBottom, CenterH, CenterV, SameWidth, SameHeight, SameSize, SpaceAcross, SpaceDown, SnapToGrid, Front, Back.</summary>
+    /// <inheritdoc cref="DocumentViewModel.ArrangeCommand"/>
     [RelayCommand(CanExecute = nameof(CanArrange))]
-    private void Arrange(string? operation)
-    {
-        if (Session is not { } s)
-        {
-            return;
-        }
+    private void Arrange(string? operation) => ActiveDocument?.ArrangeCommand.Execute(operation);
 
-        _ = operation switch
-        {
-            "AlignLeft" => s.Align(Alignment.Left),
-            "AlignRight" => s.Align(Alignment.Right),
-            "AlignTop" => s.Align(Alignment.Top),
-            "AlignBottom" => s.Align(Alignment.Bottom),
-            "CenterH" => s.Align(Alignment.CenterHorizontallyInLabel),
-            "CenterV" => s.Align(Alignment.CenterVerticallyInLabel),
-            "SameWidth" => s.MatchSize(SizeMatch.Width),
-            "SameHeight" => s.MatchSize(SizeMatch.Height),
-            "SameSize" => s.MatchSize(SizeMatch.Both),
-            "SpaceAcross" => s.Distribute(Distribution.Horizontal),
-            "SpaceDown" => s.Distribute(Distribution.Vertical),
-            "SnapToGrid" => s.SnapSelectionToGrid(),
-            "Front" => s.BringToFront(),
-            "Back" => s.SendToBack(),
-            "LockSize" => s.SetSizeLocked(true),
-            "UnlockSize" => s.SetSizeLocked(false),
-            _ => false,
-        };
-    }
-
-    private bool CanArrange(string? operation) => HasSelection();
+    private bool CanArrange(string? operation) => ActiveDocument?.CanArrange(operation) ?? false;
 
     // ---------------------------------------------------------------- View
 

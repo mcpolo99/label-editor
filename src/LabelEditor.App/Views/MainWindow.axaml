@@ -348,6 +348,40 @@
       </DockPanel>
     </Border>
 
+    <!-- Edit / arrange toolbar. Buttons are enabled only when the selection allows the command. -->
+    <Border DockPanel.Dock="Top" BorderBrush="#ddd" BorderThickness="0,0,0,1" Padding="6,2" Background="#fbfbfc">
+      <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+        <StackPanel Orientation="Horizontal" Spacing="1">
+          <Button Classes="icon" Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"><PathIcon Data="{StaticResource IconUndo}" /></Button>
+          <Button Classes="icon" Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Y)"><PathIcon Data="{StaticResource IconRedo}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding DuplicateCommand}" ToolTip.Tip="Duplicate (Ctrl+D)"><PathIcon Data="{StaticResource IconDuplicate}" /></Button>
+          <Button Classes="icon" Command="{Binding DeleteCommand}" ToolTip.Tip="Delete (Del)"><PathIcon Data="{StaticResource IconDelete}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignLeft" ToolTip.Tip="Align left edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignLeft}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignRight" ToolTip.Tip="Align right edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignRight}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignTop" ToolTip.Tip="Align top edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignTop}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignBottom" ToolTip.Tip="Align bottom edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignBottom}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterH" ToolTip.Tip="Center horizontally in the label"><PathIcon Data="{StaticResource IconCenterH}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterV" ToolTip.Tip="Center vertically in the label"><PathIcon Data="{StaticResource IconCenterV}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth" ToolTip.Tip="Make same width as the first selected entry"><PathIcon Data="{StaticResource IconSameWidth}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight" ToolTip.Tip="Make same height as the first selected entry"><PathIcon Data="{StaticResource IconSameHeight}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameSize" ToolTip.Tip="Make same size as the first selected entry"><PathIcon Data="{StaticResource IconSameSize}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SpaceAcross" ToolTip.Tip="Space evenly across (3 or more entries)"><PathIcon Data="{StaticResource IconSpaceAcross}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SpaceDown" ToolTip.Tip="Space evenly down (3 or more entries)"><PathIcon Data="{StaticResource IconSpaceDown}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SnapToGrid" ToolTip.Tip="Snap position to grid"><PathIcon Data="{StaticResource IconSnapGrid}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="Front" ToolTip.Tip="Bring to front"><PathIcon Data="{StaticResource IconFront}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="Back" ToolTip.Tip="Send to back"><PathIcon Data="{StaticResource IconBack}" /></Button>
+          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <ToggleButton Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="ToggleLock" IsChecked="{Binding IsSelectionSizeLocked, Mode=OneWay}" ToolTip.Tip="Lock size: move freely without changing width and height"><PathIcon Data="{StaticResource IconLock}" /></ToggleButton>
+        </StackPanel>
+      </ScrollViewer>
+    </Border>
+
     <!-- Status bar -->
     <Border DockPanel.Dock="Bottom" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="8,3" Background="#f6f7f9">
       <DockPanel>
@@ -443,7 +477,46 @@
         <TabControl.ContentTemplate>
           <DataTemplate DataType="vm:DocumentViewModel">
             <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#e1e4e8">
-              <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+              <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top">
+                <controls:LabelCanvas.ContextMenu>
+                  <ContextMenu>
+                  <MenuItem Header="Cu_t" Command="{Binding CutCommand}" InputGesture="Ctrl+X" />
+                  <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGesture="Ctrl+C" />
+                  <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+                  <MenuItem Header="_Duplicate" Command="{Binding DuplicateCommand}" InputGesture="Ctrl+D"><MenuItem.Icon><PathIcon Data="{StaticResource IconDuplicate}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <MenuItem Header="De_lete" Command="{Binding DeleteCommand}" InputGesture="Delete"><MenuItem.Icon><PathIcon Data="{StaticResource IconDelete}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <Separator />
+                  <MenuItem Header="_Align">
+                    <MenuItem Header="_Left" Command="{Binding ArrangeCommand}" CommandParameter="AlignLeft"><MenuItem.Icon><PathIcon Data="{StaticResource IconAlignLeft}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Right" Command="{Binding ArrangeCommand}" CommandParameter="AlignRight"><MenuItem.Icon><PathIcon Data="{StaticResource IconAlignRight}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Top" Command="{Binding ArrangeCommand}" CommandParameter="AlignTop"><MenuItem.Icon><PathIcon Data="{StaticResource IconAlignTop}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Bottom" Command="{Binding ArrangeCommand}" CommandParameter="AlignBottom"><MenuItem.Icon><PathIcon Data="{StaticResource IconAlignBottom}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  </MenuItem>
+                  <MenuItem Header="Center in _label">
+                    <MenuItem Header="_Horizontally" Command="{Binding ArrangeCommand}" CommandParameter="CenterH"><MenuItem.Icon><PathIcon Data="{StaticResource IconCenterH}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Vertically" Command="{Binding ArrangeCommand}" CommandParameter="CenterV"><MenuItem.Icon><PathIcon Data="{StaticResource IconCenterV}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  </MenuItem>
+                  <MenuItem Header="Make same _size">
+                    <MenuItem Header="_Width" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth"><MenuItem.Icon><PathIcon Data="{StaticResource IconSameWidth}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Height" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight"><MenuItem.Icon><PathIcon Data="{StaticResource IconSameHeight}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Both" Command="{Binding ArrangeCommand}" CommandParameter="SameSize"><MenuItem.Icon><PathIcon Data="{StaticResource IconSameSize}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  </MenuItem>
+                  <MenuItem Header="Space _evenly">
+                    <MenuItem Header="_Across" Command="{Binding ArrangeCommand}" CommandParameter="SpaceAcross"><MenuItem.Icon><PathIcon Data="{StaticResource IconSpaceAcross}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="_Down" Command="{Binding ArrangeCommand}" CommandParameter="SpaceDown"><MenuItem.Icon><PathIcon Data="{StaticResource IconSpaceDown}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  </MenuItem>
+                  <MenuItem Header="Snap to _grid" Command="{Binding ArrangeCommand}" CommandParameter="SnapToGrid"><MenuItem.Icon><PathIcon Data="{StaticResource IconSnapGrid}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <Separator />
+                  <MenuItem Header="Bring to _front" Command="{Binding ArrangeCommand}" CommandParameter="Front"><MenuItem.Icon><PathIcon Data="{StaticResource IconFront}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <MenuItem Header="Send to bac_k" Command="{Binding ArrangeCommand}" CommandParameter="Back"><MenuItem.Icon><PathIcon Data="{StaticResource IconBack}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <Separator />
+                  <MenuItem Header="L_ock size" Command="{Binding ArrangeCommand}" CommandParameter="LockSize"><MenuItem.Icon><PathIcon Data="{StaticResource IconLock}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <MenuItem Header="_Unlock size" Command="{Binding ArrangeCommand}" CommandParameter="UnlockSize" />
+                  <Separator />
+                  <MenuItem Header="Select _all" Command="{Binding SelectAllCommand}" InputGesture="Ctrl+A" />
+                  </ContextMenu>
+                </controls:LabelCanvas.ContextMenu>
+              </controls:LabelCanvas>
             </ScrollViewer>
           </DataTemplate>
         </TabControl.ContentTemplate>

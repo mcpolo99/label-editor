@@ -309,7 +309,21 @@ public sealed class LabelCanvas : Control
     {
         base.OnPointerPressed(e);
         Focus();
-        if (Session is not { } session || Context is not { } context || session.IsInteracting || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        if (Session is not { } session || Context is not { } context || session.IsInteracting)
+        {
+            return;
+        }
+
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (properties.IsRightButtonPressed)
+        {
+            // The context menu acts on the selection: right-clicking an entry outside it selects that entry first.
+            var probe = View.ToLayout(e.GetPosition(this));
+            Document?.SelectForContextMenu(HitTesting.EntryAt(session.Layout, probe, (int)(4 / View.Scale))?.Id);
+            return;
+        }
+
+        if (!properties.IsLeftButtonPressed)
         {
             return;
         }
