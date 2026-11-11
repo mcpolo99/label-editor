@@ -23,35 +23,37 @@ public sealed class FieldTextResolver(FieldCatalog catalog, TextCatalog texts)
     public string? FieldCaption(int fieldId) => Catalog.Find(fieldId) is { } f ? Texts.Resolve(f.Caption) : null;
 
     /// <summary>
-    /// Value of a field element: from <paramref name="record"/> when given (by element name, then unique
-    /// name, then the caption's fallback text — which is what tells the shared <c>CustomTexts</c> ids apart,
-    /// e.g. MatCode), else the element's own preview text, else the "[FieldName]" placeholder.
+    /// Value of a field element.
+    /// <list type="bullet">
+    /// <item>With a data <paramref name="record"/> (data preview): the record's value, found by element name,
+    /// then unique name, then the caption's fallback text (which tells the shared <c>CustomTexts</c> ids apart,
+    /// e.g. MatCode). A field the record does not provide prints <b>nothing</b>, exactly as on a real label.</item>
+    /// <item>Without a record (design view): the element's sample text, else the "[FieldName]" placeholder.</item>
+    /// </list>
     /// </summary>
     public string FieldValue(int fieldId, TextElement element, PreviewRecord? record) =>
-        TryFieldValue(fieldId, element, record) ?? $"[{FieldName(fieldId)}]";
+        record is null
+            ? (string.IsNullOrEmpty(element.PreviewText) ? $"[{FieldName(fieldId)}]" : element.PreviewText)
+            : RecordValue(fieldId, record) ?? string.Empty;
 
-    /// <summary>The field's value from the record or preview text; null when only a placeholder is available.</summary>
-    public string? TryFieldValue(int fieldId, TextElement element, PreviewRecord? record)
-    {
-        if (record is not null && Catalog.Find(fieldId) is { } field &&
-            (record.Find(field.Key) ?? record.Find(field.Name) ?? record.Find(field.Caption.Fallback)) is { } value)
-        {
-            return value;
-        }
+    /// <summary>The record's value for a field, or null when the record does not provide it.</summary>
+    public string? RecordValue(int fieldId, PreviewRecord record) =>
+        Catalog.Find(fieldId) is { } field
+            ? record.Find(field.Key) ?? record.Find(field.Name) ?? record.Find(field.Caption.Fallback)
+            : null;
 
-        return string.IsNullOrEmpty(element.PreviewText) ? null : element.PreviewText;
-    }
-
-    /// <summary>Printed text of an entry, using <paramref name="record"/> values when given.</summary>
+    /// <summary>Printed text of an entry: data values with a record, sample texts/placeholders without.</summary>
     public string PreviewText(TextEntry entry, PreviewRecord? record = null) =>
         TextComposer.Compose(entry, (field, element) => FieldValue(field.FieldId, element, record));
 
     /// <summary>
-    /// Data to encode in a bar code. Fields without a value get <paramref name="sample"/> instead of the
-    /// "[Name]" placeholder, so the symbol still renders realistically while designing.
+    /// Data to encode in a bar code. With a record, missing fields are empty (an empty bar code is not drawn).
+    /// In design view, fields without a sample text use <paramref name="sample"/> so the symbol still looks real.
     /// </summary>
     public string BarcodeData(TextEntry entry, PreviewRecord? record, string sample = "123456789") =>
-        TextComposer.Compose(entry, (field, element) => TryFieldValue(field.FieldId, element, record) ?? sample);
+        TextComposer.Compose(entry, (field, element) => record is null
+            ? (string.IsNullOrEmpty(element.PreviewText) ? sample : element.PreviewText)
+            : RecordValue(field.FieldId, record) ?? string.Empty);
 
     /// <summary>Structural description, e.g. <c>"L: " + [FinalLength]</c>.</summary>
     public string Describe(TextEntry entry) =>

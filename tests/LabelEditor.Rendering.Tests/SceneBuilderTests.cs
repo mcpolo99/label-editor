@@ -74,6 +74,26 @@ public class SceneBuilderTests
     }
 
     [Fact]
+    public void Fields_missing_from_the_record_print_nothing_but_fixed_text_stays()
+    {
+        var record = new PreviewRecord("P1", [new("SomethingElse", "x")]);
+
+        var scene = Builder.Build(LabelLayout.CreateNew().AddEntry(Text(45831, preview: "sample")), record);
+
+        Assert.Equal("Kund: ", Assert.IsType<TextItem>(Assert.Single(scene.Items)).Text);
+    }
+
+    [Fact]
+    public void Barcodes_without_data_in_the_record_are_not_drawn()
+    {
+        var entry = Text(45836, face: "C28N", barcode: 65539, preview: "123") with { Elements = [TextElement.ForField(45836, "123")] };
+
+        var scene = Builder.Build(LabelLayout.CreateNew().AddEntry(entry), new PreviewRecord("P1", []));
+
+        Assert.Empty(scene.Items);
+    }
+
+    [Fact]
     public void Data_records_are_not_drawn()
     {
         Assert.Empty(Builder.Build(LabelLayout.CreateNew()).Items);

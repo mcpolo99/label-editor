@@ -45,9 +45,14 @@ public sealed class LabelSceneBuilder(FieldTextResolver resolver)
         _ => null,
     };
 
-    private SceneItem BuildBarcode(TextEntry entry, PreviewRecord? record)
+    private SceneItem? BuildBarcode(TextEntry entry, PreviewRecord? record)
     {
         var data = resolver.BarcodeData(entry, record);
+        if (data.Length == 0)
+        {
+            return null; // nothing to print: the data record has no value for this bar code
+        }
+
         var bounds = entry.Bounds.Normalize();
         if (BarcodeFonts.SymbologyFor(entry.Options.Barcode, entry.Font.FaceName) is not { } symbology)
         {
