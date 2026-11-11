@@ -157,6 +157,24 @@ public class OverlapPickTests
     }
 
     [AvaloniaFact]
+    public async Task An_entry_does_not_stick_to_the_cursor_when_the_button_release_was_missed()
+    {
+        // E.g. a dialog opened during the click and took the release: moving afterwards must not drag the entry.
+        var (window, services, document, canvas, back, _) = await SetupAsync();
+        var start = OnScreen(window, canvas, document, 12_000, 12_000);
+
+        window.MouseDown(start, MouseButton.Left);
+        window.MouseMove(start + new Vector(40, 0), RawInputModifiers.None); // button no longer held
+        window.MouseMove(start + new Vector(80, 0), RawInputModifiers.None);
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(10_000, document.Layout.Find(back.Id)!.Bounds.X);
+        Assert.False(document.Session.IsInteracting);
+        window.Close();
+        await services.DisposeAsync();
+    }
+
+    [AvaloniaFact]
     public async Task Shift_clicking_a_single_entry_still_adds_it_directly()
     {
         var (window, services, document, canvas, back, front) = await SetupAsync();

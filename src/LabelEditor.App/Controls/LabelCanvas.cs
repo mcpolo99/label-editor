@@ -140,12 +140,36 @@ public sealed class LabelCanvas : Control
             document.RenderInvalidated -= OnRenderInvalidated;
         }
 
+        if (_window is not null)
+        {
+            _window.Deactivated -= OnWindowDeactivated;
+            _window = null;
+        }
+
         base.OnDetachedFromVisualTree(e);
+    }
+
+    private Window? _window;
+
+    /// <summary>A dialog or another window took over mid-drag: never leave the entry attached to the cursor.</summary>
+    private void OnWindowDeactivated(object? sender, EventArgs e)
+    {
+        if (_mode != Mode.None)
+        {
+            CancelInteraction();
+        }
     }
 
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
+        if (TopLevel.GetTopLevel(this) is Window window)
+        {
+            _window = window;
+            window.Deactivated -= OnWindowDeactivated;
+            window.Deactivated += OnWindowDeactivated;
+        }
+
         if (Document is { } document)
         {
             document.RenderInvalidated -= OnRenderInvalidated;
@@ -442,6 +466,14 @@ public sealed class LabelCanvas : Control
         if (Document is not { } document)
         {
             return;
+        }
+
+        // The button was released somewhere we never heard about (a dialog or another window took the release):
+        // drop the interaction instead of leaving the entry stuck to the cursor.
+        if (_mode != Mode.None && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
+        {
+            CancelInteraction();
+            e.Pointer.Capture(null);
         }
 
         var position = e.GetPosition(this);

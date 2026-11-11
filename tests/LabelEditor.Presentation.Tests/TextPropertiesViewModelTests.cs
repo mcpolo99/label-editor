@@ -123,29 +123,45 @@ public class TextPropertiesViewModelTests
     }
 
     [Fact]
-    public void Switching_fixed_text_back_to_a_field_asks_which_field()
+    public async Task Switching_fixed_text_back_to_a_field_asks_which_field()
     {
         var (session, entry, panel, dialog) = Setup();
 
-        panel.Elements[0].IsLiteral = true;
+        panel.Elements[0].UseFixedTextCommand.Execute(null);
         Assert.Equal(new LiteralText("FinalLength"), ElementIn(session, entry.Id).Source);
+        RefreshFromSession(panel, session, entry.Id);
 
         dialog.Answers.Enqueue(45808);
-        panel.Elements[0].IsField = true;
+        await panel.Elements[0].UseDataFieldCommand.ExecuteAsync(null);
         Assert.Equal(new DataFieldReference(45808), ElementIn(session, entry.Id).Source);
     }
 
     [Fact]
-    public void Cancelling_the_switch_to_a_field_keeps_fixed_text()
+    public async Task Cancelling_the_switch_to_a_field_keeps_fixed_text()
     {
         var (session, entry, panel, dialog) = Setup();
-        panel.Elements[0].IsLiteral = true;
+        panel.Elements[0].UseFixedTextCommand.Execute(null);
+        RefreshFromSession(panel, session, entry.Id);
 
         dialog.Answers.Enqueue(null);
-        panel.Elements[0].IsField = true;
+        await panel.Elements[0].UseDataFieldCommand.ExecuteAsync(null);
 
         Assert.IsType<LiteralText>(ElementIn(session, entry.Id).Source);
         Assert.True(panel.Elements[0].IsLiteral);
+    }
+
+    [Fact]
+    public void Refreshing_a_piece_to_another_kind_never_opens_the_field_dialog()
+    {
+        // Selecting another entry re-binds the panel; that must not be taken as the user switching the kind.
+        var (session, entry, panel, dialog) = Setup();
+        panel.Elements[0].UseFixedTextCommand.Execute(null);
+        RefreshFromSession(panel, session, entry.Id);
+        session.Undo();
+        RefreshFromSession(panel, session, entry.Id);
+
+        Assert.Empty(dialog.OpenedWith);
+        Assert.True(panel.Elements[0].IsField);
     }
 
     [Fact]

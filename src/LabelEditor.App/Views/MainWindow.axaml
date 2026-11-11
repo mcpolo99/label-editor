@@ -31,7 +31,7 @@
 
   <!-- Property panels, chosen by the type of the active document's Properties view model. -->
   <Window.DataTemplates>
-    <DataTemplate DataType="props:LabelSettingsViewModel">
+    <controls:FreshDataTemplate DataType="props:LabelSettingsViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="Label" />
         <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
@@ -47,16 +47,16 @@
         </Grid>
         <TextBlock Classes="hint" Text="{Binding EntryCount, StringFormat='{}{0} entries. Select an entry to edit it; drag fields from the Fields tab onto the label.'}" />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:MultiSelectionViewModel">
+    <controls:FreshDataTemplate DataType="props:MultiSelectionViewModel">
       <StackPanel Spacing="6">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <TextBlock Classes="hint" Text="{Binding Hint}" />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:TextPropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:TextPropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
@@ -72,7 +72,7 @@
             </ItemsPanelTemplate>
           </ItemsControl.ItemsPanel>
           <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="props:TextElementViewModel">
+            <controls:FreshDataTemplate DataType="props:TextElementViewModel">
               <Border Classes="chip" Classes.literal="{Binding IsLiteral}" Classes.selected="{Binding IsSelected}">
                 <StackPanel Orientation="Horizontal">
                   <Button Classes="chipbody" Command="{Binding SelectCommand}" ToolTip.Tip="{Binding FieldCaption}">
@@ -81,7 +81,7 @@
                   <Button Classes="chipremove" Content="✕" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove this piece" />
                 </StackPanel>
               </Border>
-            </DataTemplate>
+            </controls:FreshDataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
         <TextBlock Classes="hint" Text="Empty: use + Field… to add data fields or Raw text." IsVisible="{Binding !Elements.Count}" />
@@ -92,12 +92,13 @@
         </StackPanel>
         <ContentControl Content="{Binding SelectedElement}">
           <ContentControl.ContentTemplate>
-            <DataTemplate DataType="props:TextElementViewModel">
+            <controls:FreshDataTemplate DataType="props:TextElementViewModel">
               <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4" Margin="0,4,0,0">
                 <TextBlock Classes="label" Text="Prints" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
-                  <RadioButton GroupName="elementKind" Content="Data field" IsChecked="{Binding IsField}" />
-                  <RadioButton GroupName="elementKind" Content="Fixed text" IsChecked="{Binding IsLiteral}" />
+                  <!-- One-way + commands: re-binding on selection changes must never switch the kind or open a dialog. -->
+                  <RadioButton Content="Data field" IsChecked="{Binding IsField, Mode=OneWay}" Command="{Binding UseDataFieldCommand}" />
+                  <RadioButton Content="Fixed text" IsChecked="{Binding IsLiteral, Mode=OneWay}" Command="{Binding UseFixedTextCommand}" />
                 </StackPanel>
                 <TextBlock Grid.Row="1" Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
@@ -123,7 +124,7 @@
                 <TextBlock Grid.Row="6" Classes="label" Text="Fill" />
                 <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch" />
               </Grid>
-            </DataTemplate>
+            </controls:FreshDataTemplate>
           </ContentControl.ContentTemplate>
         </ContentControl>
 
@@ -138,9 +139,9 @@
           <TextBlock Grid.Row="1" Classes="label" Text="Direction" />
           <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Rotations}" SelectedItem="{Binding Rotation}" HorizontalAlignment="Stretch">
             <ComboBox.ItemTemplate>
-              <DataTemplate DataType="props:RotationOption">
+              <controls:FreshDataTemplate DataType="props:RotationOption">
                 <TextBlock Text="{Binding Name}" />
-              </DataTemplate>
+              </controls:FreshDataTemplate>
             </ComboBox.ItemTemplate>
           </ComboBox>
         </Grid>
@@ -157,15 +158,15 @@
         <CheckBox Content="Print as bar code" IsChecked="{Binding IsBarcode}" />
         <ComboBox ItemsSource="{Binding BarcodeTypes}" SelectedItem="{Binding BarcodeType}" IsVisible="{Binding IsBarcode}" HorizontalAlignment="Stretch">
           <ComboBox.ItemTemplate>
-            <DataTemplate DataType="props:BarcodeTypeOption">
+            <controls:FreshDataTemplate DataType="props:BarcodeTypeOption">
               <TextBlock Text="{Binding Name}" />
-            </DataTemplate>
+            </controls:FreshDataTemplate>
           </ComboBox.ItemTemplate>
         </ComboBox>
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:EllipsePropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:EllipsePropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
@@ -178,17 +179,17 @@
           <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding BrushColor}" Watermark="r,g,b" />
         </Grid>
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:LinePropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:LinePropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
         <TextBlock Classes="hint" Text="Drag either end point to change the line. Hold Shift while drawing for horizontal/vertical lines." />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:BitmapPropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:BitmapPropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
@@ -199,9 +200,9 @@
         </DockPanel>
         <TextBlock Classes="hint" Text="File not found on this computer. LEdit stores absolute paths; the printing machine must have the file at this path." IsVisible="{Binding !FileExists}" Foreground="DarkOrange" />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:LabelGraphicPropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:LabelGraphicPropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
@@ -209,9 +210,9 @@
         <ComboBox ItemsSource="{Binding Slots}" SelectedIndex="{Binding GraphicIndex}" HorizontalAlignment="Stretch" />
         <TextBlock Classes="hint" Text="Filled at print time with the part's drawing from the optimised parts list." />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:CornerLogoPropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:CornerLogoPropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
@@ -232,15 +233,15 @@
           <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextRight}" />
         </Grid>
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
 
-    <DataTemplate DataType="props:UnknownEntryPropertiesViewModel">
+    <controls:FreshDataTemplate DataType="props:UnknownEntryPropertiesViewModel">
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
         <TextBlock Classes="hint" Text="{Binding Hint}" />
       </StackPanel>
-    </DataTemplate>
+    </controls:FreshDataTemplate>
   </Window.DataTemplates>
 
   <DockPanel>

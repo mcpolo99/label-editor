@@ -328,12 +328,8 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
     [RelayCommand]
     private void Remove() => owner.RemoveElementAt(Index);
 
-    /// <summary>Two-way counterpart of <see cref="IsLiteral"/> for the "Data field" option.</summary>
-    public bool IsField
-    {
-        get => !IsLiteral;
-        set => IsLiteral = !value;
-    }
+    /// <summary>Counterpart of <see cref="IsLiteral"/> for the "Data field" option (display only).</summary>
+    public bool IsField => !IsLiteral;
 
     /// <summary>Short display: "Text" in quotes, or [FieldName].</summary>
     [ObservableProperty]
@@ -405,23 +401,22 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
     [RelayCommand]
     private Task ChooseFieldAsync() => PickAndApplyAsync(revertToTextOnCancel: false);
 
-    /// <summary>Switching to fixed text keeps the field name as text; switching to a field asks which one.</summary>
-    partial void OnIsLiteralChanged(bool value)
+    /// <summary>
+    /// "Fixed text" option: keeps the field name as text. An explicit command (not a two-way binding) so that
+    /// controls re-binding while the selection changes can never switch the kind or open the field dialog.
+    /// </summary>
+    [RelayCommand]
+    private void UseFixedText()
     {
-        if (_refreshing || owner.Refreshing)
-        {
-            return;
-        }
-
-        if (value)
+        if (!IsLiteral)
         {
             Update("element kind", e => e with { Source = new LiteralText(FieldName.Length > 0 ? FieldName : "Text"), PreviewText = null });
         }
-        else
-        {
-            _ = PickAndApplyAsync(revertToTextOnCancel: true);
-        }
     }
+
+    /// <summary>"Data field" option: asks which field; cancelling keeps fixed text.</summary>
+    [RelayCommand]
+    private Task UseDataFieldAsync() => IsLiteral ? PickAndApplyAsync(revertToTextOnCancel: true) : Task.CompletedTask;
 
     private async Task PickAndApplyAsync(bool revertToTextOnCancel)
     {
@@ -430,9 +425,9 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
         {
             if (revertToTextOnCancel)
             {
-                _refreshing = true;
-                IsLiteral = true;
-                _refreshing = false;
+                // The radio button already shows "Data field"; push the unchanged kind back to the view.
+                OnPropertyChanged(nameof(IsLiteral));
+                OnPropertyChanged(nameof(IsField));
             }
 
             return;
