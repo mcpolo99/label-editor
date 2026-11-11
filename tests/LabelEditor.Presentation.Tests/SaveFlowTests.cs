@@ -75,10 +75,18 @@ public class SaveFlowTests
         public Task ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
 
         public Task<int?> PickFieldAsync(FieldTextResolver resolver, int? currentFieldId) => Task.FromResult<int?>(null);
+
+        public HistoryChoice? HistoryChoice { get; set; }
+
+        public Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<LabelVersionInfo> versions) => Task.FromResult(HistoryChoice);
     }
 
-    private sealed class Nothing : IFieldCatalogSource, ILanguageSource, ISettingsStore, ILabelLibrary, IFontCatalog
+    private sealed class Nothing : IFieldCatalogSource, ILanguageSource, ISettingsStore, ILabelLibrary, IFontCatalog, ILabelVersionHistory
     {
+        public Task<IReadOnlyList<LabelVersionInfo>> GetVersionsAsync(string path, CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<LabelVersionInfo>>([]);
+
+        public Task<LabelLayout> LoadVersionAsync(string path, int number, CancellationToken cancellationToken = default) => throw new NotSupportedException();
+
         public IReadOnlyList<string> FontFamilies => [];
 
         public Task<FieldCatalog> LoadAsync(CancellationToken cancellationToken = default) => Task.FromResult(FieldCatalog.Empty);
@@ -94,7 +102,17 @@ public class SaveFlowTests
         public Task<IReadOnlyList<LabelLibraryItem>> GetItemsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<LabelLibraryItem>>([]);
     }
 
-    private static (MainViewModel Vm, Store Store, Dialogs Dialogs) Setup()
+    private sealed class History : ILabelVersionHistory
+    {
+        public LabelLayout Version1 { get; } = LabelLayout.CreateNew(50_000, 30_000);
+
+        public Task<IReadOnlyList<LabelVersionInfo>> GetVersionsAsync(string path, CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LabelVersionInfo>>([new LabelVersionInfo(1, DateTimeOffset.UnixEpoch, "someone", null, 100)]);
+
+        public Task<LabelLayout> LoadVersionAsync(string path, int number, CancellationToken cancellationToken = default) => Task.FromResult(Version1);
+    }
+
+    private static (MainViewModel Vm, Store Store, Dialogs Dialogs) Setup(ILabelVersionHistory? history = null)
     {
         var store = new Store();
         var dialogs = new Dialogs();
@@ -109,6 +127,7 @@ public class SaveFlowTests
             new EditorContext(new EntryClipboard(), nothing),
             dialogs,
             Array.Empty<IPreviewDataSource>(),
+            history ?? nothing,
             NullLogger<MainViewModel>.Instance);
         return (vm, store, dialogs);
     }
@@ -167,5 +186,37 @@ public class SaveFlowTests
         Assert.NotNull(dialogs.ReplaceQuestions[0]); // the dialog explained why replacing is not offered
         Assert.Same(original, store.Files[template]);
         Assert.Equal(dialogs.SaveAsPath, document.FilePath);
+    }
+
+    [Fact]
+    public async Task Restoring_a_version_is_an_undoable_edit_of_the_open_label()
+    {
+        var history = new History();
+        var (vm, store, dialogs) = Setup(history);
+        var document = await OpenEditedAsync(vm, store, Path.Combine(Work, "Mine.xml"));
+        var before = document.Session.Layout;
+        dialogs.HistoryChoice = new HistoryChoice(1, HistoryAction.Restore);
+
+        await vm.ShowHistoryCommand.ExecuteAsync(null);
+
+        Assert.Same(history.Version1, document.Session.Layout);
+        Assert.True(document.Session.IsDirty);
+        document.Session.Undo();
+        Assert.Same(before, document.Session.Layout);
+    }
+
+    [Fact]
+    public async Task Opening_a_version_as_copy_adds_an_untitled_tab()
+    {
+        var history = new History();
+        var (vm, store, dialogs) = Setup(history);
+        await OpenEditedAsync(vm, store, Path.Combine(Work, "Mine.xml"));
+        dialogs.HistoryChoice = new HistoryChoice(1, HistoryAction.OpenAsCopy);
+
+        await vm.ShowHistoryCommand.ExecuteAsync(null);
+
+        Assert.Equal(2, vm.Documents.Count);
+        Assert.Null(vm.ActiveDocument!.FilePath);
+        Assert.Same(history.Version1, vm.ActiveDocument.Session.Layout);
     }
 }

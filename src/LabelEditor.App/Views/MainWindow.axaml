@@ -239,6 +239,8 @@
         <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
         <MenuItem Header="_Close" Command="{Binding CloseDocumentCommand}" InputGesture="Ctrl+W" />
         <Separator />
+        <MenuItem Header="_History…" Command="{Binding ShowHistoryCommand}" />
+        <Separator />
         <MenuItem Header="Load _preview data…" Command="{Binding LoadPreviewDataCommand}" />
         <MenuItem Header="Clear preview data" Command="{Binding ClearPreviewDataCommand}" />
         <Separator />

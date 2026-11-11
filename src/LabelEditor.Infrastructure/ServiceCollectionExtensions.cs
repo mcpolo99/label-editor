@@ -15,7 +15,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(storage);
         services.AddSingleton<IStorageLocations, StorageLocations>();
         services.AddSingleton<ILabelLayoutFormat>(new LeditLabelFormat(xmlStyle));
-        services.AddSingleton<ILabelDocumentStore, FileLabelDocumentStore>();
+        services.AddSingleton(sp => new FileLabelDocumentStore(sp.GetRequiredService<ILabelLayoutFormat>()));
+        services.AddSingleton<ILabelDocumentStore>(sp => sp.GetRequiredService<FileLabelDocumentStore>());
+        services.AddSingleton<ILabelVersionHistory>(sp => sp.GetRequiredService<FileLabelDocumentStore>());
         services.AddSingleton<ILabelLibrary, FileSystemLabelLibrary>();
         services.AddSingleton<IFieldCatalogSource, LeditFieldCatalogSource>();
         services.AddSingleton<ILanguageSource, LeditLanguageSource>();

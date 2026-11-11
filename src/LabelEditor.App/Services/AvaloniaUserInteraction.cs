@@ -63,6 +63,73 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
 
     public async Task ShowErrorAsync(string title, string message) => await ShowDialogAsync(title, message, ["OK"]);
 
+    public async Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions)
+    {
+        HistoryChoice? result = null;
+        var dialog = new Window
+        {
+            Title = $"History – {labelTitle}",
+            Width = 560,
+            Height = 420,
+            MinWidth = 400,
+            MinHeight = 260,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            ShowInTaskbar = false,
+            Icon = owner.Icon,
+        };
+
+        var list = new ListBox
+        {
+            ItemsSource = versions,
+            SelectedIndex = versions.Count > 0 ? 0 : -1,
+            ItemTemplate = new Avalonia.Controls.Templates.FuncDataTemplate<Application.Abstractions.LabelVersionInfo>((v, _) => new TextBlock
+            {
+                Text = v is null
+                    ? string.Empty
+                    : $"Version {v.Number}    {v.SavedAt.ToLocalTime():yyyy-MM-dd HH:mm}    {v.SavedBy}    {v.SizeBytes / 1024.0:0.#} KB{(v.Note is null ? string.Empty : "    " + v.Note)}",
+            }),
+        };
+
+        void Choose(HistoryAction action)
+        {
+            if (list.SelectedItem is Application.Abstractions.LabelVersionInfo version)
+            {
+                result = new HistoryChoice(version.Number, action);
+                dialog.Close();
+            }
+        }
+
+        var restore = new Button { Content = "Restore", IsDefault = true, MinWidth = 90 };
+        restore.Click += (_, _) => Choose(HistoryAction.Restore);
+        var copy = new Button { Content = "Open as copy", MinWidth = 110 };
+        copy.Click += (_, _) => Choose(HistoryAction.OpenAsCopy);
+        var close = new Button { Content = "Close", IsCancel = true, MinWidth = 80 };
+        close.Click += (_, _) => dialog.Close();
+        list.DoubleTapped += (_, _) => Choose(HistoryAction.OpenAsCopy);
+
+        var hint = new TextBlock
+        {
+            Text = versions.Count == 0
+                ? "No versions yet. A version is recorded every time the label is saved."
+                : "Restore brings the version back into the editor (save to make it current). Open as copy opens it in a new tab.",
+            TextWrapping = TextWrapping.Wrap,
+            Foreground = Brushes.DimGray,
+        };
+        var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Children = { restore, copy, close } };
+        var panel = new DockPanel { Margin = new Avalonia.Thickness(10) };
+        DockPanel.SetDock(hint, Dock.Top);
+        DockPanel.SetDock(buttons, Dock.Bottom);
+        hint.Margin = new Avalonia.Thickness(0, 0, 0, 8);
+        buttons.Margin = new Avalonia.Thickness(0, 8, 0, 0);
+        panel.Children.Add(hint);
+        panel.Children.Add(buttons);
+        panel.Children.Add(list);
+        dialog.Content = panel;
+
+        await dialog.ShowDialog(owner);
+        return result;
+    }
+
     public async Task<int?> PickFieldAsync(Application.Preview.FieldTextResolver resolver, int? currentFieldId)
     {
         var picker = new Presentation.ViewModels.FieldPickerViewModel();

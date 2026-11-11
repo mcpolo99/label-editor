@@ -16,6 +16,16 @@ public enum ReplaceAnswer
     Cancel,
 }
 
+/// <summary>What to do with a version picked in the history dialog.</summary>
+public enum HistoryAction
+{
+    Restore,
+    OpenAsCopy,
+}
+
+/// <summary>The user's choice in the history dialog.</summary>
+public sealed record HistoryChoice(int Number, HistoryAction Action);
+
 /// <summary>Dialogs the view models need; implemented by the UI layer.</summary>
 public interface IUserInteraction
 {
@@ -33,6 +43,9 @@ public interface IUserInteraction
     Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason);
 
     Task ShowErrorAsync(string title, string message);
+
+    /// <summary>Shows the saved versions of a label (newest first); null when closed without a choice.</summary>
+    Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions);
 
     /// <summary>Lets the user choose a data field from the field tree.</summary>
     /// <param name="resolver">Field catalog and captions to show.</param>

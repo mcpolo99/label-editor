@@ -47,6 +47,8 @@ public class TextPropertiesViewModelTests
         public Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason) => throw new NotSupportedException();
 
         public Task ShowErrorAsync(string title, string message) => throw new NotSupportedException();
+
+        public Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions) => throw new NotSupportedException();
     }
 
     private static readonly FieldCatalog Catalog = new(new FieldCategory("root", TextReference.Literal("r"))

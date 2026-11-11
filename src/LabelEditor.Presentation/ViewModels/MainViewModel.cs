@@ -48,6 +48,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly IUserInteraction _interaction;
     private readonly ILogger<MainViewModel> _logger;
     private readonly IReadOnlyList<IPreviewDataSource> _previewSources;
+    private readonly ILabelVersionHistory _history;
     private EditorSettings _settings = new();
 
     public MainViewModel(
@@ -59,6 +60,7 @@ public sealed partial class MainViewModel : ObservableObject
         EditorContext context,
         IUserInteraction interaction,
         IEnumerable<IPreviewDataSource> previewSources,
+        ILabelVersionHistory history,
         ILogger<MainViewModel> logger)
     {
         _documents = documents;
@@ -68,6 +70,7 @@ public sealed partial class MainViewModel : ObservableObject
         _interaction = interaction;
         _logger = logger;
         _previewSources = previewSources.ToList();
+        _history = history;
         Context = context;
         Library = new LabelLibraryViewModel(library, locations);
         Tools =
@@ -111,7 +114,7 @@ public sealed partial class MainViewModel : ObservableObject
     public ObservableCollection<string> RecentFiles { get; } = [];
 
     [ObservableProperty]
-    [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(SaveAsCommand), nameof(CloseDocumentCommand))]
+    [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(SaveAsCommand), nameof(CloseDocumentCommand), nameof(ShowHistoryCommand))]
     private DocumentViewModel? _activeDocument;
 
     [ObservableProperty]
@@ -406,6 +409,46 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private bool HasDocument() => ActiveDocument is not null;
+
+    /// <summary>
+    /// Shows the label's saved versions. Restore brings one back as an undoable edit (save to make it current);
+    /// Open as copy opens it in a new, untitled tab.
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasDocument))]
+    private async Task ShowHistoryAsync()
+    {
+        if (ActiveDocument is not { } document)
+        {
+            return;
+        }
+
+        if (document.FilePath is not { } path)
+        {
+            await _interaction.ShowErrorAsync("History", "This label has not been saved yet. A version is recorded every time it is saved.");
+            return;
+        }
+
+        var versions = await _history.GetVersionsAsync(path);
+        if (await _interaction.ShowHistoryAsync(document.Session.Title, versions) is not { } choice)
+        {
+            return;
+        }
+
+        await RunBusyAsync($"Loading version {choice.Number}…", async () =>
+        {
+            var layout = await _history.LoadVersionAsync(path, choice.Number);
+            if (choice.Action == HistoryAction.Restore)
+            {
+                document.Session.Execute($"Restore version {choice.Number}", _ => layout, []);
+                Status = $"Restored version {choice.Number} of {document.Session.Title}. Save to make it the current version.";
+            }
+            else
+            {
+                AddDocument(new EditorSession(layout));
+                Status = $"Opened version {choice.Number} of {document.Session.Title} as a new label.";
+            }
+        });
+    }
 
     // ---------------------------------------------------------------- Edit
 

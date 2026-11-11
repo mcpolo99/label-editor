@@ -107,7 +107,7 @@ public sealed class StorageTests : IDisposable
 
         Assert.False(session.IsDirty);
         Assert.Equal(target, session.Location?.Path);
-        Assert.Single(Directory.GetFiles(locations.WorkingFolder)); // no temp file left behind
+        Assert.DoesNotContain(Directory.GetFiles(locations.WorkingFolder), f => f.EndsWith(".tmp", StringComparison.Ordinal)); // no temp file left behind
         var reloaded = await new FileLabelDocumentStore(new LeditLabelFormat()).LoadAsync(target);
         Assert.Equal(80_000, reloaded.Header.Shape.Width);
     }

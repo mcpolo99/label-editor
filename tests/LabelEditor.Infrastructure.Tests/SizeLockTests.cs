@@ -49,7 +49,7 @@ public sealed class SizeLockTests : IDisposable
     }
 
     [Fact]
-    public async Task No_sidecar_is_written_when_nothing_is_locked_and_a_stale_one_is_removed()
+    public async Task Unlocking_removes_the_lock_but_keeps_the_history()
     {
         var path = await CopyFixtureAsync("Plats128C.xml");
         await _store.SaveAsync(LockText(await _store.LoadAsync(path), out _), path);
@@ -58,7 +58,8 @@ public sealed class SizeLockTests : IDisposable
             ? l with { Entries = [.. l.Entries.Select(e => e with { IsSizeLocked = false })] }
             : l, path);
 
-        Assert.False(File.Exists(EditorMetadataSidecar.PathFor(path)));
+        Assert.DoesNotContain((await _store.LoadAsync(path)).Entries, e => e.IsSizeLocked);
+        Assert.NotEmpty(await _store.GetVersionsAsync(path));
     }
 
     [Fact]

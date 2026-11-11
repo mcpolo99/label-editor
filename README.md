@@ -17,6 +17,9 @@ and QR codes. It can fill the label with real part data from generated label she
   commands (the first selected entry is the reference).
 - **Lock size** per entry (property panel or Arrange menu): move freely without changing width/height. Stored in a
   `.labeleditor.json` sidecar beside the label, so the LEdit file is unaffected.
+- **Version history** instead of `_v1`/`_v2` copies: every Save that changes a label records a version (time, user, full
+  LEdit XML, compressed) in the sidecar. The first save over an existing label keeps the original as version 1.
+  *File → History…* restores a version (undoable) or opens it as a copy.
 - **Undo/redo** for every change. Typing in a property box is one step.
 - **Fields by element name**: the field tree comes from `LEditTreeXML.xml` and `ListaOriginaliId.xml`.
   Fields are shown and placeholdered by their element name (`[QMin]`, `[CabCode]`); the translated
