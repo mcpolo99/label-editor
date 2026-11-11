@@ -24,6 +24,29 @@ public class LeditLabelFormatTests
         return await _format.ReadAsync(stream);
     }
 
+    [Fact]
+    public async Task The_edge_indicator_reads_its_four_sides_orientation_and_a_side_without_an_edge()
+    {
+        var edges = (await ReadAsync("sample-edges.xml")).Entries.OfType<CornerLogoEntry>().Single();
+
+        Assert.Equal(("xx", "xx", string.Empty, "x"), (edges.TextTop, edges.TextBottom, edges.TextLeft, edges.TextRight));
+        Assert.Equal(0, edges.Orientation);
+        Assert.Equal(10, edges.EdgeThicknessPercent);
+        Assert.Equal(("MatEdgeUp", "MatEdgeLo", "MatEdgeL", "MatEdgeR"), edges.EdgeFieldNames);
+        Assert.Equal(("ColEdgeUp", "ColEdgeLo", "ColEdgeL", "ColEdgeR"), (edges with { EdgeInfo = 1 }).EdgeFieldNames);
+    }
+
+    [Fact]
+    public async Task Older_edge_indicators_without_orient_are_written_without_it()
+    {
+        var layout = await ReadAsync("LayoutDef.xml");
+        var edges = layout.Entries.OfType<CornerLogoEntry>().Single();
+        Assert.Null(edges.Orientation);
+
+        var xml = Encoding.Latin1.GetString(_format.Serialize(layout.ReplaceEntry(edges with { TextLeft = string.Empty })));
+        Assert.Contains("EdgeInfo=\"0\" TextT=\"Top_Edge\" TextB=\"Bottom_Edge\" TextR=\"right_Edge\"/>", xml, StringComparison.Ordinal);
+    }
+
     [Theory]
     [MemberData(nameof(TestData.AllLabelNames), MemberType = typeof(TestData))]
     public async Task Every_known_label_round_trips_without_losing_information(string name)

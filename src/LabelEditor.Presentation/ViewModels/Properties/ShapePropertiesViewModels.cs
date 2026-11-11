@@ -141,9 +141,28 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
     public CornerLogoPropertiesViewModel(EditorSession session, CornerLogoEntry entry)
         : base(session, entry) => Refresh(entry);
 
-    public override string Title => "Corner logo";
+    public override string Title => "Edges (corner logo)";
 
     public IReadOnlyList<string> EdgeInfoOptions { get; } = ["Material", "Color", "Type"];
+
+    public string Hint => "The part with its edge banding. When printing, each side shows the part's edge data; "
+        + "the texts below are samples for the design. Leave a side empty for no edge there.";
+
+    /// <summary>Part data shown on each side for the chosen edge info, e.g. "MatEdgeUp".</summary>
+    public string TopField => Fields.Top;
+
+    public string BottomField => Fields.Bottom;
+
+    public string LeftField => Fields.Left;
+
+    public string RightField => Fields.Right;
+
+    private (string Top, string Bottom, string Left, string Right) Fields =>
+        new CornerLogoEntry { Id = Id, Bounds = default, EdgeInfo = EdgeInfo }.EdgeFieldNames;
+
+    /// <summary>LEdit's Orient value; empty when the file has none (older LEdit).</summary>
+    [ObservableProperty]
+    private decimal? _orientation;
 
     [ObservableProperty]
     private bool _keepAspectRatio;
@@ -152,6 +171,7 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
     private bool _printEdgeMaterial;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(TopField), nameof(BottomField), nameof(LeftField), nameof(RightField))]
     private int _edgeInfo;
 
     [ObservableProperty]
@@ -176,6 +196,7 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
         PrintEdgeMaterial = c.PrintEdgeMaterial;
         EdgeInfo = c.EdgeInfo;
         EdgeThicknessPercent = c.EdgeThicknessPercent;
+        Orientation = c.Orientation;
         TextTop = c.TextTop;
         TextBottom = c.TextBottom;
         TextLeft = c.TextLeft;
@@ -189,6 +210,8 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
     partial void OnEdgeInfoChanged(int value) => Update<CornerLogoEntry>("edge info", e => e with { EdgeInfo = Math.Max(0, value) });
 
     partial void OnEdgeThicknessPercentChanged(decimal? value) => Update<CornerLogoEntry>("edge thickness", e => e with { EdgeThicknessPercent = (int)Math.Clamp(value ?? 0, 0, 50) });
+
+    partial void OnOrientationChanged(decimal? value) => Update<CornerLogoEntry>("orientation", e => e with { Orientation = value is null ? null : (int)value });
 
     partial void OnTextTopChanged(string value) => Update<CornerLogoEntry>("edge texts", e => e with { TextTop = value });
 

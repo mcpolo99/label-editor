@@ -216,21 +216,25 @@
       <StackPanel Spacing="4">
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
-        <CheckBox Content="Maintain aspect ratio" IsChecked="{Binding KeepAspectRatio}" Margin="0,6,0,0" />
-        <CheckBox Content="Print edge information" IsChecked="{Binding PrintEdgeMaterial}" />
-        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+        <TextBlock Classes="hint" Text="{Binding Hint}" />
+        <CheckBox Content="Maintain aspect ratio" IsChecked="{Binding KeepAspectRatio}" Margin="0,6,0,0" ToolTip.Tip="Draw the part with its real length / width proportions" />
+        <CheckBox Content="Print edge information" IsChecked="{Binding PrintEdgeMaterial}" ToolTip.Tip="Print the edge texts next to the sides; off = banding only" />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
           <TextBlock Classes="label" Text="Edge info" />
-          <ComboBox Grid.Column="1" ItemsSource="{Binding EdgeInfoOptions}" SelectedIndex="{Binding EdgeInfo}" HorizontalAlignment="Stretch" />
+          <ComboBox Grid.Column="1" ItemsSource="{Binding EdgeInfoOptions}" SelectedIndex="{Binding EdgeInfo}" HorizontalAlignment="Stretch" ToolTip.Tip="Which edge data each side prints: material, colour or type" />
           <TextBlock Grid.Row="1" Classes="label" Text="Edge thickness %" />
           <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding EdgeThicknessPercent}" Minimum="0" Maximum="50" FormatString="0" HorizontalAlignment="Left" />
-          <TextBlock Grid.Row="2" Classes="label" Text="Top" />
-          <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TextTop}" />
-          <TextBlock Grid.Row="3" Classes="label" Text="Bottom" />
-          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextBottom}" />
-          <TextBlock Grid.Row="4" Classes="label" Text="Left" />
-          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TextLeft}" />
-          <TextBlock Grid.Row="5" Classes="label" Text="Right" />
-          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextRight}" />
+          <TextBlock Grid.Row="2" Classes="label" Text="Orientation" />
+          <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Orientation}" Minimum="0" Increment="1" FormatString="0" HorizontalAlignment="Left"
+                         ToolTip.Tip="LEdit's 'Orient' value, kept as it is. Empty for labels from older LEdit versions." />
+          <TextBlock Grid.Row="3" Classes="label" Text="Top" />
+          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextTop}" Watermark="{Binding TopField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding TopField, StringFormat='Edge A top. Printed from the part data {0}'}" />
+          <TextBlock Grid.Row="4" Classes="label" Text="Bottom" />
+          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TextBottom}" Watermark="{Binding BottomField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding BottomField, StringFormat='Edge A bottom. Printed from the part data {0}'}" />
+          <TextBlock Grid.Row="5" Classes="label" Text="Left" />
+          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextLeft}" Watermark="{Binding LeftField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding LeftField, StringFormat='Edge B left. Printed from the part data {0}'}" />
+          <TextBlock Grid.Row="6" Classes="label" Text="Right" />
+          <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TextRight}" Watermark="{Binding RightField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding RightField, StringFormat='Edge B right. Printed from the part data {0}'}" />
         </Grid>
       </StackPanel>
     </controls:FreshDataTemplate>

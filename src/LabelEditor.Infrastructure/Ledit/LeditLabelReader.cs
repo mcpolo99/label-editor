@@ -103,10 +103,13 @@ internal static class LeditLabelReader
             KeepAspectRatio = IntAttr(data, "ImageProp", 1) != 0,
             PrintEdgeMaterial = IntAttr(data, "PrnMatEdge", 1) != 0,
             EdgeInfo = IntAttr(data, "EdgeInfo", 0),
-            TextTop = data?.Attribute("TextT")?.Value ?? defaults.TextTop,
-            TextBottom = data?.Attribute("TextB")?.Value ?? defaults.TextBottom,
-            TextLeft = data?.Attribute("TextL")?.Value ?? defaults.TextLeft,
-            TextRight = data?.Attribute("TextR")?.Value ?? defaults.TextRight,
+            Orientation = data?.Attribute("Orient") is { } orient && int.TryParse(orient.Value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var o) ? o : null,
+
+            // LEdit leaves out the text of a side without an edge.
+            TextTop = data?.Attribute("TextT")?.Value ?? string.Empty,
+            TextBottom = data?.Attribute("TextB")?.Value ?? string.Empty,
+            TextLeft = data?.Attribute("TextL")?.Value ?? string.Empty,
+            TextRight = data?.Attribute("TextR")?.Value ?? string.Empty,
             EdgeThicknessPercent = IntChild(e, "EdgeThickDisplay", defaults.EdgeThicknessPercent),
         };
     }

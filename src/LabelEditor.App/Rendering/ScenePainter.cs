@@ -216,25 +216,83 @@ public sealed class ScenePainter
 
     private void PaintCornerLogo(DrawingContext context, CornerLogoItem c, ViewTransform view)
     {
+        // Drawn like LEdit's preview: the part as a thin outline, a thick band on each side that has an edge, and the
+        // edge texts outside the part (the side texts turned along their edge).
         var box = view.ToView(c.Bounds);
-        var band = Math.Min(box.Width, box.Height) * Math.Clamp(c.Logo.EdgeThicknessPercent, 1, 40) / 100.0;
-        var bandBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
-        context.DrawRectangle(Paper, new Pen(Ink, 1), box);
-        context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Y, box.Width, band));
-        context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Bottom - band, box.Width, band));
-        context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Y, band, box.Height));
-        context.DrawRectangle(bandBrush, null, new Rect(box.Right - band, box.Y, band, box.Height));
-        var em = Math.Max(6, Math.Min(box.Height, box.Width) / 9);
-        void Label(string text, Point center)
+        if (box.Width < 4 || box.Height < 4)
         {
-            var formatted = new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, em, Ink);
-            context.DrawText(formatted, new Point(center.X - (formatted.Width / 2), center.Y - (formatted.Height / 2)));
+            return;
         }
 
-        Label(c.Logo.TextTop, new Point(box.Center.X, box.Y + band + em));
-        Label(c.Logo.TextBottom, new Point(box.Center.X, box.Bottom - band - em));
-        Label(c.Logo.TextLeft, new Point(box.X + band + (box.Width / 5), box.Center.Y));
-        Label(c.Logo.TextRight, new Point(box.Right - band - (box.Width / 5), box.Center.Y));
+        var em = Math.Clamp(Math.Min(box.Height, box.Width) / 11, 5, 40);
+        var margin = em * 1.9;
+        var part = box.Deflate(new Thickness(margin));
+        if (part.Width < 2 || part.Height < 2)
+        {
+            part = box.Deflate(Math.Min(box.Width, box.Height) / 4);
+        }
+
+        if (c.Logo.KeepAspectRatio && c.PartAspect is { } aspect && aspect > 0)
+        {
+            // The outline has the proportions of the previewed part (length / width).
+            var (w, h) = part.Width / part.Height > aspect ? (part.Height * aspect, part.Height) : (part.Width, part.Width / aspect);
+            part = new Rect(part.Center.X - (w / 2), part.Center.Y - (h / 2), w, h);
+        }
+
+        var band = Math.Max(1.5, Math.Min(part.Width, part.Height) * Math.Clamp(c.Logo.EdgeThicknessPercent, 1, 50) / 200.0);
+        context.DrawRectangle(null, new Pen(Ink, 1), part);
+        if (c.Top.Length > 0)
+        {
+            context.DrawRectangle(Ink, null, new Rect(part.X, part.Y, part.Width, band));
+        }
+
+        if (c.Bottom.Length > 0)
+        {
+            context.DrawRectangle(Ink, null, new Rect(part.X, part.Bottom - band, part.Width, band));
+        }
+
+        if (c.Left.Length > 0)
+        {
+            context.DrawRectangle(Ink, null, new Rect(part.X, part.Y, band, part.Height));
+        }
+
+        if (c.Right.Length > 0)
+        {
+            context.DrawRectangle(Ink, null, new Rect(part.Right - band, part.Y, band, part.Height));
+        }
+
+        if (!c.Logo.PrintEdgeMaterial)
+        {
+            return; // banding only, no edge texts
+        }
+
+        void Label(string text, Point center, double degrees)
+        {
+            if (text.Length == 0)
+            {
+                return;
+            }
+
+            var formatted = new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, Typeface.Default, em, Ink)
+            {
+                MaxTextWidth = Math.Max(em, degrees == 0 ? box.Width : box.Height),
+                MaxLineCount = 1,
+                Trimming = TextTrimming.CharacterEllipsis,
+            };
+            var transform = Matrix.CreateTranslation(-formatted.Width / 2, -formatted.Height / 2)
+                * Matrix.CreateRotation(degrees * Math.PI / 180)
+                * Matrix.CreateTranslation(center.X, center.Y);
+            using (context.PushTransform(transform))
+            {
+                context.DrawText(formatted, default);
+            }
+        }
+
+        var gap = em * 0.95;
+        Label(c.Top, new Point(part.Center.X, part.Top - gap), 0);
+        Label(c.Bottom, new Point(part.Center.X, part.Bottom + gap), 0);
+        Label(c.Left, new Point(part.Left - gap, part.Center.Y), -90);
+        Label(c.Right, new Point(part.Right + gap, part.Center.Y), 90);
     }
 
     /// <summary>LEdit shows frames for print-time content as a box with a diagonal cross.</summary>

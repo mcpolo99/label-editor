@@ -59,10 +59,13 @@ internal static class LeditLabelWriter
                 new XAttribute("ImageProp", Flag(c.KeepAspectRatio)),
                 new XAttribute("PrnMatEdge", Flag(c.PrintEdgeMaterial)),
                 new XAttribute("EdgeInfo", Format(c.EdgeInfo)),
-                new XAttribute("TextT", c.TextTop),
-                new XAttribute("TextB", c.TextBottom),
-                new XAttribute("TextL", c.TextLeft),
-                new XAttribute("TextR", c.TextRight)),
+                c.Orientation is { } orient ? new XAttribute("Orient", Format(orient)) : null,
+
+                // Like LEdit: a side without an edge text has no attribute.
+                EdgeText("TextT", c.TextTop),
+                EdgeText("TextB", c.TextBottom),
+                EdgeText("TextL", c.TextLeft),
+                EdgeText("TextR", c.TextRight)),
             Cdata("EdgeThickDisplay", Format(c.EdgeThicknessPercent))),
         DataRecordEntry d => Typed(DataRecordTag, d, WriteFont(d.Font)),
         UnknownEntry u => XElement.Parse(u.OpaqueContent),
@@ -151,6 +154,8 @@ internal static class LeditLabelWriter
     }
 
     private static string Flag(bool value) => value ? "1" : "0";
+
+    private static XAttribute? EdgeText(string name, string text) => text.Length == 0 ? null : new XAttribute(name, text);
 
     /// <summary>LEdit wraps every element value in CDATA. CDATA cannot escape, so check the encoding up front.</summary>
     private static XElement Cdata(string name, string value)

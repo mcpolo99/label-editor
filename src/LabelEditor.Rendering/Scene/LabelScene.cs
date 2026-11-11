@@ -59,4 +59,29 @@ public sealed record ImageItem(EntryId Id, LabelRect Bounds, string Path) : Scen
 public sealed record PlaceholderItem(EntryId Id, LabelRect Bounds, string Caption) : SceneItem(Id, Bounds);
 
 /// <summary>Corner/edge logo: four edge bands with their texts.</summary>
-public sealed record CornerLogoItem(EntryId Id, LabelRect Bounds, CornerLogoEntry Logo) : SceneItem(Id, Bounds);
+/// <summary>
+/// The edge indicator: a part outline with banding on the sides that have an edge.
+/// </summary>
+/// <param name="Id">The entry.</param>
+/// <param name="Bounds">The entry's box.</param>
+/// <param name="Logo">The entry's settings.</param>
+/// <param name="Top">Text of the top side (A top); empty = no edge on that side.</param>
+/// <param name="Bottom">Bottom side (A bottom).</param>
+/// <param name="Left">Left side (B left).</param>
+/// <param name="Right">Right side (B right).</param>
+/// <param name="PartAspect">Length / width of the previewed part when known; the outline keeps it if the logo maintains the aspect ratio.</param>
+public sealed record CornerLogoItem(
+    EntryId Id,
+    LabelRect Bounds,
+    CornerLogoEntry Logo,
+    string Top,
+    string Bottom,
+    string Left,
+    string Right,
+    double? PartAspect = null) : SceneItem(Id, Bounds)
+{
+    public CornerLogoItem(EntryId id, LabelRect bounds, CornerLogoEntry logo)
+        : this(id, bounds, logo, logo.TextTop, logo.TextBottom, logo.TextLeft, logo.TextRight)
+    {
+    }
+}

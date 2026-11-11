@@ -40,10 +40,31 @@ public sealed class LabelSceneBuilder(FieldTextResolver resolver)
         LineEntry l => new LineItem(l.Id, l.Bounds),
         BitmapEntry b => new ImageItem(b.Id, b.Bounds.Normalize(), b.Path),
         LabelGraphicEntry g => new PlaceholderItem(g.Id, g.Bounds.Normalize(), $"Draw {g.GraphicIndex + 1}"),
-        CornerLogoEntry c => new CornerLogoItem(c.Id, c.Bounds.Normalize(), c),
+        CornerLogoEntry c => BuildEdges(c, record),
         UnknownEntry u => new PlaceholderItem(u.Id, u.Bounds.Normalize(), $"<{u.ElementName}>"),
         _ => null,
     };
+
+    /// <summary>
+    /// Design view shows the entry's sample texts. With a data record each side shows the part's edge value
+    /// (MatEdgeUp, ColEdgeL, ...); a side the part has no value for is drawn without an edge, as on the printed label.
+    /// </summary>
+    private static CornerLogoItem BuildEdges(CornerLogoEntry c, PreviewRecord? record)
+    {
+        if (record is null)
+        {
+            return new CornerLogoItem(c.Id, c.Bounds.Normalize(), c);
+        }
+
+        var (top, bottom, left, right) = c.EdgeFieldNames;
+        string Side(string field) => record.Find(field)?.Trim() ?? string.Empty;
+        double? Number(params string[] names) => names.Select(record.Find).OfType<string>()
+            .Select(v => double.TryParse(v.Replace(',', '.'), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var d) ? d : (double?)null)
+            .FirstOrDefault(d => d > 0);
+        var length = Number("L", "FinalLength", "Length");
+        var width = Number("W", "FinalWidth", "Width");
+        return new CornerLogoItem(c.Id, c.Bounds.Normalize(), c, Side(top), Side(bottom), Side(left), Side(right), length / width);
+    }
 
     private SceneItem? BuildBarcode(TextEntry entry, PreviewRecord? record)
     {

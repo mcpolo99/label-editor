@@ -73,7 +73,7 @@ public static class EntryFactory
             EditorTool.Ellipse => new EllipseEntry { Id = id, Bounds = box },
             EditorTool.Bitmap => new BitmapEntry { Id = id, Bounds = box },
             EditorTool.LabelGraphic => new LabelGraphicEntry { Id = id, Bounds = box },
-            EditorTool.CornerLogo => new CornerLogoEntry { Id = id, Bounds = box },
+            EditorTool.CornerLogo => new CornerLogoEntry { Id = id, Bounds = box, Orientation = 0 }, // current LEdit writes Orient="0"
             _ => throw new ArgumentOutOfRangeException(nameof(tool), tool, "This tool does not create entries."),
         };
     }

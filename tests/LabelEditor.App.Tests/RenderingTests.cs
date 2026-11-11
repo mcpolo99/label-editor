@@ -92,6 +92,20 @@ public class RenderingTests
     }
 
     [AvaloniaFact]
+    public async Task Renders_the_edge_indicator_with_banding_only_where_there_is_an_edge()
+    {
+        var (builder, layout) = await LoadAsync("sample-edges.xml");
+        var edges = layout.Entries.OfType<Domain.Entries.CornerLogoEntry>().Single();
+        var single = Domain.Layout.LabelLayout.CreateNew().AddEntry(edges); // as LEdit's preview: just this entry
+
+        var withLeft = Render(builder.Build(single.ReplaceEntry(edges with { TextLeft = "x" })), OutputFile("sample-edges-all-sides.png"));
+        var ink = Render(builder.Build(single), OutputFile("sample-edges.png"));
+
+        Assert.True(ink > 300, $"Expected the part outline, bands and texts; got {ink} dark pixels.");
+        Assert.True(withLeft > ink + 50, "a left edge should add a band and a text");
+    }
+
+    [AvaloniaFact]
     public async Task Renders_a_label_filled_from_a_label_sheet()
     {
         var (builder, layout) = await LoadAsync("Plats128C_V3.xml");

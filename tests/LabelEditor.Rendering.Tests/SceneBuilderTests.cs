@@ -32,6 +32,33 @@ public class SceneBuilderTests
     };
 
     [Fact]
+    public void Edge_indicator_shows_its_sample_texts_in_design_view()
+    {
+        var edges = new CornerLogoEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 30_000, 20_000), TextTop = "xx", TextBottom = "xx", TextLeft = string.Empty, TextRight = "x" };
+
+        var item = Assert.IsType<CornerLogoItem>(Assert.Single(Builder.Build(LabelLayout.CreateNew().AddEntry(edges)).Items));
+
+        Assert.Equal(("xx", "xx", string.Empty, "x"), (item.Top, item.Bottom, item.Left, item.Right));
+        Assert.Null(item.PartAspect);
+    }
+
+    [Fact]
+    public void Edge_indicator_shows_the_parts_edges_from_the_record_and_no_edge_where_it_has_none()
+    {
+        var edges = new CornerLogoEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 30_000, 20_000), EdgeInfo = 0 };
+        var record = new PreviewRecord("P1", [new("MatEdgeUp", "STD-PALL"), new("MatEdgeLo", "P3"), new("ColEdgeR", "white"), new("L", "800"), new("W", "400")]);
+
+        var item = Assert.IsType<CornerLogoItem>(Assert.Single(Builder.Build(LabelLayout.CreateNew().AddEntry(edges), record).Items));
+
+        // Material is printed; the right side only has a colour, so it shows no edge (like the left one).
+        Assert.Equal(("STD-PALL", "P3", string.Empty, string.Empty), (item.Top, item.Bottom, item.Left, item.Right));
+        Assert.Equal(2.0, item.PartAspect);
+
+        var byColour = Assert.IsType<CornerLogoItem>(Builder.Build(LabelLayout.CreateNew().AddEntry(edges with { EdgeInfo = 1 }), record).Items.Single());
+        Assert.Equal("white", byColour.Right);
+    }
+
+    [Fact]
     public void Text_uses_record_values_and_point_sizes()
     {
         var record = new PreviewRecord("P1", [new("CabCode", "Customer 1")]);

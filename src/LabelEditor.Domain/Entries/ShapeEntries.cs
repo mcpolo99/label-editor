@@ -57,7 +57,15 @@ public sealed record LabelGraphicEntry : LabelEntry
     public int GraphicIndex { get; init; }
 }
 
-/// <summary>Corner/edge logo showing edge banding of the part. LEdit type 8.</summary>
+/// <summary>
+/// Edge indicator ("corner logo"): the part drawn as a rectangle with its edge banding. LEdit type 8.
+/// <para>
+/// It has four inputs, one per side of the part (top = A top, bottom = A bottom, left = B left, right = B right).
+/// When printing, each side shows the part's edge data for that side (material, colour or type, see
+/// <see cref="EdgeInfo"/>); a side without an edge has no banding. The four texts here are the design-time samples;
+/// an empty text means "no edge on this side" (LEdit then leaves the attribute out).
+/// </para>
+/// </summary>
 public sealed record CornerLogoEntry : LabelEntry
 {
     public override EntryKind Kind => EntryKind.CornerLogo;
@@ -71,6 +79,12 @@ public sealed record CornerLogoEntry : LabelEntry
     /// <summary>Edge information printing mode (CornerLogoData/@EdgeInfo): 0 material, 1 colour, 2 type (order of the LEdit dialog).</summary>
     public int EdgeInfo { get; init; }
 
+    /// <summary>
+    /// CornerLogoData/@Orient, written by newer LEdit versions (null when the file has none). Its meaning is not
+    /// documented; the value is kept and can be edited.
+    /// </summary>
+    public int? Orientation { get; init; }
+
     public string TextTop { get; init; } = "Top_Edge";
 
     public string TextBottom { get; init; } = "Bottom_Edge";
@@ -78,6 +92,16 @@ public sealed record CornerLogoEntry : LabelEntry
     public string TextLeft { get; init; } = "Left_Edge";
 
     public string TextRight { get; init; } = "Right_Edge";
+
+    /// <summary>Part data field per side for the chosen <see cref="EdgeInfo"/>, e.g. MatEdgeUp, ColEdgeL, TypeEdgeR.</summary>
+    public (string Top, string Bottom, string Left, string Right) EdgeFieldNames
+    {
+        get
+        {
+            var prefix = EdgeInfo switch { 1 => "Col", 2 => "Type", _ => "Mat" };
+            return ($"{prefix}EdgeUp", $"{prefix}EdgeLo", $"{prefix}EdgeL", $"{prefix}EdgeR");
+        }
+    }
 
     /// <summary>Edge thickness in % used for display.</summary>
     public int EdgeThicknessPercent { get; init; } = 8;
