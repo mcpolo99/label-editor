@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Adapters: LEdit file formats, file system, settings. Implements Application ports. -->
+  <PropertyGroup>
+    <RootNamespace>LabelEditor.Infrastructure</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LabelEditor.Application\LabelEditor.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Packaged LEdit defaults, copied next to the executable so the editor works without an LEdit installation. -->
+    <None Include="..\..\defaults\**\*" LinkBase="Defaults" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LabelEditor.Infrastructure.Tests" />
+  </ItemGroup>
+</Project>
