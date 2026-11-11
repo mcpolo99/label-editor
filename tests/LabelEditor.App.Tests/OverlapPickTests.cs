@@ -212,4 +212,41 @@ public class OverlapPickTests
         window.Close();
         await services.DisposeAsync();
     }
+
+    [AvaloniaFact]
+    public async Task Dropping_a_field_from_the_field_tree_inserts_it_where_it_was_dropped()
+    {
+        var (window, services, document, canvas, _, _) = await SetupAsync();
+        var data = new DataTransfer();
+        data.Add(DataTransferItem.Create(LabelCanvas.FieldDragFormat, "45836"));
+        var at = OnScreen(window, canvas, document, 60_000, 30_000);
+        var local = window.TranslatePoint(at, canvas)!.Value;
+
+        var over = new DragEventArgs(DragDrop.DragOverEvent, data, canvas, local, KeyModifiers.None);
+        canvas.RaiseEvent(over);
+        canvas.RaiseEvent(new DragEventArgs(DragDrop.DropEvent, data, canvas, local, KeyModifiers.None));
+        Dispatcher.UIThread.RunJobs();
+
+        Assert.Equal(DragDropEffects.Copy, over.DragEffects);
+        var text = Assert.Single(document.Layout.Entries.OfType<TextEntry>());
+        Assert.Equal(new Domain.Text.DataFieldReference(45836), Assert.Single(text.Elements).Source);
+        Assert.InRange(text.Bounds.Left, 55_000, 65_000);
+        window.Close();
+        await services.DisposeAsync();
+    }
+
+    [AvaloniaFact]
+    public async Task Other_dragged_data_is_refused()
+    {
+        var (window, services, _, canvas, _, _) = await SetupAsync();
+        var data = new DataTransfer();
+        data.Add(DataTransferItem.CreateText("hello"));
+
+        var over = new DragEventArgs(DragDrop.DragOverEvent, data, canvas, new Point(50, 50), KeyModifiers.None);
+        canvas.RaiseEvent(over);
+
+        Assert.Equal(DragDropEffects.None, over.DragEffects);
+        window.Close();
+        await services.DisposeAsync();
+    }
 }

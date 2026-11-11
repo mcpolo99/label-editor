@@ -24,8 +24,8 @@ namespace LabelEditor.App.Controls;
 /// </summary>
 public sealed class LabelCanvas : Control
 {
-    /// <summary>Drag-and-drop format carrying a field id from the field tree.</summary>
-    public const string FieldDragFormat = "application/x-labeleditor-field";
+    /// <summary>Drag-and-drop format carrying a field id (invariant digits) from the field tree.</summary>
+    public static readonly DataFormat<string> FieldDragFormat = DataFormat.CreateStringApplicationFormat("LabelEditor.Field");
 
     public static readonly StyledProperty<DocumentViewModel?> DocumentProperty =
         AvaloniaProperty.Register<LabelCanvas, DocumentViewModel?>(nameof(Document));
@@ -877,14 +877,12 @@ public sealed class LabelCanvas : Control
 
     // ------------------------------------------------------------------ drag and drop of fields
 
-    // TODO: migrate to Avalonia's DataTransfer API (the IDataObject API is obsolete since 11.3 but still supported).
-#pragma warning disable CS0618
     private void OnDragOver(object? sender, DragEventArgs e) =>
-        e.DragEffects = e.Data.Contains(FieldDragFormat) && Document is not null ? DragDropEffects.Copy : DragDropEffects.None;
+        e.DragEffects = e.DataTransfer.Contains(FieldDragFormat) && Document is not null ? DragDropEffects.Copy : DragDropEffects.None;
 
     private void OnDrop(object? sender, DragEventArgs e)
     {
-        if (Document is not { } document || e.Data.Get(FieldDragFormat) is not string text || !int.TryParse(text, CultureInfo.InvariantCulture, out var fieldId))
+        if (Document is not { } document || e.DataTransfer.TryGetValue(FieldDragFormat) is not { } text || !int.TryParse(text, CultureInfo.InvariantCulture, out var fieldId))
         {
             return;
         }
@@ -893,7 +891,6 @@ public sealed class LabelCanvas : Control
         Focus();
         e.Handled = true;
     }
-#pragma warning restore CS0618
 
     // ------------------------------------------------------------------ helpers
 

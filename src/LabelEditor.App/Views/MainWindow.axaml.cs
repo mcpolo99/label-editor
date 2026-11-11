@@ -95,11 +95,8 @@ public sealed partial class MainWindow : Window
 
         _fieldPressPoint = null;
 
-        // TODO: migrate to Avalonia's DataTransfer API (the IDataObject API is obsolete since 11.3 but still supported).
-#pragma warning disable CS0618
-        var data = new DataObject();
-        data.Set(LabelCanvas.FieldDragFormat, fieldId.ToString(CultureInfo.InvariantCulture));
-        await DragDrop.DoDragDrop(e, data, DragDropEffects.Copy);
-#pragma warning restore CS0618
+        var data = new DataTransfer();
+        data.Add(DataTransferItem.Create(LabelCanvas.FieldDragFormat, fieldId.ToString(CultureInfo.InvariantCulture)));
+        await DragDrop.DoDragDropAsync(e, data, DragDropEffects.Copy);
     }
 }
