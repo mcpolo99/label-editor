@@ -66,6 +66,10 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
     [ObservableProperty]
     private string _cursorPosition = string.Empty;
 
+    /// <summary>Pointer position in layout units while it is over the canvas (marked on the rulers); null outside.</summary>
+    [ObservableProperty]
+    private LabelPoint? _pointerPosition;
+
     /// <summary>
     /// Inserts a data field. With a position (drag and drop): appended to the text entry under it, or a new
     /// text entry there. Without: appended to the selected text entry, or a new entry below the others.

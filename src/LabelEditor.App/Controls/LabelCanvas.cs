@@ -30,7 +30,11 @@ public sealed class LabelCanvas : Control
     public static readonly StyledProperty<DocumentViewModel?> DocumentProperty =
         AvaloniaProperty.Register<LabelCanvas, DocumentViewModel?>(nameof(Document));
 
-    private const double CanvasMargin = 24;
+    /// <summary>Space around the label, in DIPs (the rulers line up with it).</summary>
+    internal const double CanvasMargin = 24;
+
+    /// <summary>How close (in DIPs) an edge must come to another entry's to snap to it.</summary>
+    private const double SnapDistance = 5;
     private const double HandleSize = 7;
     private const double DragThreshold = 3;
 
@@ -47,6 +51,7 @@ public sealed class LabelCanvas : Control
     private static readonly IPen LabelPen = new Pen(new SolidColorBrush(Color.FromRgb(120, 120, 120)), 1);
     private static readonly IBrush MarqueeFill = new SolidColorBrush(Color.FromArgb(30, 0, 120, 215));
     private static readonly IPen HighlightPen = new Pen(new SolidColorBrush(Color.FromRgb(255, 140, 0)), 2.5);
+    private static readonly IPen GuidePen = new Pen(new SolidColorBrush(Color.FromRgb(230, 0, 160)), 1);
 
     private readonly ScenePainter _painter = new();
     private (LabelLayout Layout, object? Record, object Resolver, LabelScene Scene)? _sceneCache;
@@ -59,6 +64,12 @@ public sealed class LabelCanvas : Control
     private EntryResize? _resize;
     private LabelPoint _resizeAnchor;
     private LabelRect _dragOrigin;
+    private (ResizeHandle Handle, bool Segment) _resizeHandle;
+
+    /// <summary>While dragging: what the dragged entries can line up with, the dragged box (all selected) at the start, and the guides to draw.</summary>
+    private IReadOnlyList<LabelRect> _snapTargets = [];
+    private LabelRect _dragUnion;
+    private IReadOnlyList<SnapLine> _guides = [];
 
     /// <summary>Entries stacked under the pointer at the last plain click; two or more open the pick list on release.</summary>
     private IReadOnlyList<EntryListItem> _pressStack = [];
@@ -248,6 +259,19 @@ public sealed class LabelCanvas : Control
             }
         }
         DrawInteraction(context, view);
+        DrawGuides(context, view);
+    }
+
+    private void DrawGuides(DrawingContext context, ViewTransform view)
+    {
+        foreach (var line in _guides)
+        {
+            var (from, to) = line.IsVertical
+                ? (view.ToView(line.Position, line.From), view.ToView(line.Position, line.To))
+                : (view.ToView(line.From, line.Position), view.ToView(line.To, line.Position));
+            var crisp = new Vector(line.IsVertical ? 0.5 : 0, line.IsVertical ? 0 : 0.5);
+            context.DrawLine(GuidePen, new Point(Math.Round(from.X), Math.Round(from.Y)) + crisp, new Point(Math.Round(to.X), Math.Round(to.Y)) + crisp);
+        }
     }
 
     private LabelScene BuildScene(DocumentViewModel document)
@@ -423,6 +447,8 @@ public sealed class LabelCanvas : Control
         if (HandleAt(_pressView) is { } hit)
         {
             _resizeAnchor = HandlePoint(hit.Entry, hit.Handle);
+            _resizeHandle = (hit.Handle, hit.Entry.IsSegment);
+            _snapTargets = SnapGuides.TargetsFor(session.Layout, session.Selection.Ids.ToHashSet());
             _resize = session.BeginResize(hit.Entry.Id, hit.Handle);
             _mode = Mode.Resizing;
             return;
@@ -508,6 +534,7 @@ public sealed class LabelCanvas : Control
 
         var position = e.GetPosition(this);
         var layoutPoint = View.ToLayout(position);
+        document.PointerPosition = layoutPoint;
         var stacked = _mode == Mode.None ? HitTesting.EntriesAt(document.Layout, layoutPoint, (int)(4 / View.Scale)).Count : 0;
         document.CursorPosition = string.Create(CultureInfo.CurrentCulture, $"{layoutPoint.X / 1000.0:0.0}, {layoutPoint.Y / 1000.0:0.0}")
             + (stacked > 1 ? $"   ·   {stacked} entries overlap here: click to choose (Shift adds, Ctrl toggles)" : string.Empty);
@@ -518,20 +545,34 @@ public sealed class LabelCanvas : Control
                 UpdateHoverCursor(position);
                 break;
             case Mode.PendingMove when Distance(position, _pressView) > DragThreshold:
-                _drag = document.Session.BeginMove();
-                _mode = Mode.Moving;
+                StartMove(document);
                 goto case Mode.Moving;
             case Mode.Moving:
             {
-                var target = SnapPoint(new LabelPoint(_dragOrigin.Left + layoutPoint.X - _pressLayout.X, _dragOrigin.Top + layoutPoint.Y - _pressLayout.Y), e.KeyModifiers);
-                _drag?.Update(target.X - _dragOrigin.Left, target.Y - _dragOrigin.Top);
+                var (dx, dy) = (layoutPoint.X - _pressLayout.X, layoutPoint.Y - _pressLayout.Y);
+                var target = SnapPoint(new LabelPoint(_dragOrigin.Left + dx, _dragOrigin.Top + dy), e.KeyModifiers);
+                var guides = SnapsToEntries(e.KeyModifiers) ? SnapGuides.ForMove(_dragUnion.Offset(dx, dy), _snapTargets, SnapTolerance) : SnapResult.None;
+                _guides = guides.Lines;
+
+                // An edge lining up with another entry wins over the grid on that axis.
+                _drag?.Update(guides.SnappedX ? dx + guides.Dx : target.X - _dragOrigin.Left, guides.SnappedY ? dy + guides.Dy : target.Y - _dragOrigin.Top);
+                InvalidateVisual();
                 break;
             }
 
             case Mode.Resizing:
             {
-                var target = SnapPoint(new LabelPoint(_resizeAnchor.X + layoutPoint.X - _pressLayout.X, _resizeAnchor.Y + layoutPoint.Y - _pressLayout.Y), e.KeyModifiers);
-                _resize?.Update(target.X - _resizeAnchor.X, target.Y - _resizeAnchor.Y, minimumSize: 200);
+                var raw = new LabelPoint(_resizeAnchor.X + layoutPoint.X - _pressLayout.X, _resizeAnchor.Y + layoutPoint.Y - _pressLayout.Y);
+                var target = SnapPoint(raw, e.KeyModifiers);
+                var (handle, segment) = _resizeHandle;
+                var movesX = segment || handle is not (ResizeHandle.Top or ResizeHandle.Bottom);
+                var movesY = segment || handle is not (ResizeHandle.Left or ResizeHandle.Right);
+                var guides = SnapsToEntries(e.KeyModifiers) ? SnapGuides.ForPoint(raw, movesX, movesY, _snapTargets, SnapTolerance) : SnapResult.None;
+                _guides = guides.Lines;
+                var x = guides.SnappedX ? raw.X + guides.Dx : target.X;
+                var y = guides.SnappedY ? raw.Y + guides.Dy : target.Y;
+                _resize?.Update(x - _resizeAnchor.X, y - _resizeAnchor.Y, minimumSize: 200);
+                InvalidateVisual();
                 break;
             }
 
@@ -587,6 +628,30 @@ public sealed class LabelCanvas : Control
         e.Pointer.Capture(null);
         InvalidateVisual();
     }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        base.OnPointerExited(e);
+        if (Document is { } document && _mode == Mode.None)
+        {
+            document.PointerPosition = null;
+        }
+    }
+
+    private void StartMove(DocumentViewModel document)
+    {
+        var session = document.Session;
+        var moved = session.Selection.Ids.Select(session.Layout.Find).OfType<LabelEntry>().Where(x => !x.IsPositionLocked).Select(x => x.Bounds.Normalize()).ToList();
+        _dragUnion = moved.Count > 0 ? moved.Aggregate((a, b) => a.Union(b)) : _dragOrigin;
+        _snapTargets = SnapGuides.TargetsFor(session.Layout, session.Selection.Ids.ToHashSet());
+        _drag = session.BeginMove();
+        _mode = Mode.Moving;
+    }
+
+    /// <summary>Snapping to other entries is on and Alt (move freely) is not held.</summary>
+    private bool SnapsToEntries(KeyModifiers modifiers) => Context is { SnapToEntries: true } && !modifiers.HasFlag(KeyModifiers.Alt);
+
+    private int SnapTolerance => (int)Math.Ceiling(SnapDistance / View.Scale);
 
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
@@ -905,6 +970,8 @@ public sealed class LabelCanvas : Control
     private void ResetInteraction()
     {
         _pressStack = [];
+        _guides = [];
+        _snapTargets = [];
         _drag = null;
         _resize = null;
         _mode = Mode.None;

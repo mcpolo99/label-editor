@@ -334,6 +334,9 @@
         <Separator />
         <MenuItem Header="Show _grid" ToggleType="CheckBox" IsChecked="{Binding Context.ShowGrid}" />
         <MenuItem Header="_Snap to grid" ToggleType="CheckBox" IsChecked="{Binding Context.SnapToGrid}" />
+        <MenuItem Header="Snap to _entries" ToggleType="CheckBox" IsChecked="{Binding Context.SnapToEntries}"
+                  ToolTip.Tip="While dragging, line up edges and centres with other entries and the label (hold Alt to move freely)" />
+        <MenuItem Header="_Rulers" ToggleType="CheckBox" IsChecked="{Binding Context.ShowRulers}" />
         <Separator />
         <MenuItem Header="_Theme">
           <MenuItem Header="_System (follow Windows)" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsSystemTheme, Mode=OneWay}" Command="{Binding SetThemeCommand}" CommandParameter="System" />
@@ -528,7 +531,11 @@
         </TabControl.ItemTemplate>
         <TabControl.ContentTemplate>
           <DataTemplate DataType="vm:DocumentViewModel">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource DeskBrush}">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,*">
+              <Border Width="20" Height="20" Background="{DynamicResource SubToolbarBackground}" IsVisible="{Binding Context.ShowRulers}" />
+              <controls:Ruler Grid.Column="1" Orientation="Horizontal" Document="{Binding}" Offset="{Binding #CanvasScroll.Offset}" IsVisible="{Binding Context.ShowRulers}" />
+              <controls:Ruler Grid.Row="1" Orientation="Vertical" Document="{Binding}" Offset="{Binding #CanvasScroll.Offset}" IsVisible="{Binding Context.ShowRulers}" />
+            <ScrollViewer x:Name="CanvasScroll" Grid.Row="1" Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource DeskBrush}">
               <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <controls:LabelCanvas.ContextMenu>
                   <ContextMenu>
@@ -574,6 +581,7 @@
                 </controls:LabelCanvas.ContextMenu>
               </controls:LabelCanvas>
             </ScrollViewer>
+            </Grid>
           </DataTemplate>
         </TabControl.ContentTemplate>
       </TabControl>
