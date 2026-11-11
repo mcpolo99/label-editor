@@ -121,16 +121,28 @@ public class LayoutTests
         Assert.Equal("L: BCD", TextComposer.Compose(entry, (_, e) => e.PreviewText));
     }
 
-    [Fact]
-    public void Barcode_settings_decode_the_known_bits()
+    [Theory]
+    [InlineData(65537, BarcodeType.Code128)]
+    [InlineData(65538, BarcodeType.Code39)]
+    [InlineData(65539, BarcodeType.Code128C)]
+    [InlineData(65548, BarcodeType.QrCode)]
+    public void Barcode_settings_carry_the_symbology_in_the_low_word(int raw, BarcodeType expected)
     {
-        var settings = new BarcodeSettings(65548);
+        var settings = new BarcodeSettings(raw);
 
         Assert.True(settings.IsBarcode);
-        Assert.True(settings.Compress);
-        Assert.True(settings.AddCheckCharacter);
-        Assert.False(settings.AddStartCharacter);
-        Assert.Equal(65539, BarcodeSettings.DefaultBarcode.Raw);
+        Assert.Equal(expected, settings.Type);
+        Assert.Equal(raw, BarcodeSettings.For(expected).Raw);
+    }
+
+    [Fact]
+    public void Unknown_symbology_codes_are_preserved()
+    {
+        var settings = new BarcodeSettings(65536 + 7);
+
+        Assert.Null(settings.Type);
+        Assert.Equal(7, settings.SymbologyCode);
+        Assert.Equal(65536 + 7, settings.WithBarcode(false).WithBarcode(true).Raw);
     }
 
     [Fact]

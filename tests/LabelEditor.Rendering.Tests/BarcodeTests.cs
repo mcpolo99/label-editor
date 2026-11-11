@@ -74,9 +74,15 @@ public class BarcodeTests
     }
 
     [Theory]
-    [InlineData("C28N", BarcodeSymbology.Code128)]
-    [InlineData("A39N", BarcodeSymbology.Code39)]
-    [InlineData("QR", BarcodeSymbology.QrCode)]
-    public void Symbology_follows_the_barcode_font(string font, BarcodeSymbology expected) =>
-        Assert.Equal(expected, BarcodeFonts.SymbologyFor(font));
+    [InlineData(65537, "C28N", BarcodeSymbology.Code128)]
+    [InlineData(65539, "C28N", BarcodeSymbology.Code128)]
+    [InlineData(65538, "A39N", BarcodeSymbology.Code39)]
+    [InlineData(65548, "Arial", BarcodeSymbology.QrCode)]
+    [InlineData(0, "A39N", BarcodeSymbology.Code39)]
+    public void Symbology_follows_the_settings_code_then_the_font(int raw, string font, BarcodeSymbology expected) =>
+        Assert.Equal(expected, BarcodeFonts.SymbologyFor(new Domain.Text.BarcodeSettings(raw), font));
+
+    [Fact]
+    public void Unknown_symbology_codes_are_not_guessed() =>
+        Assert.Null(BarcodeFonts.SymbologyFor(new Domain.Text.BarcodeSettings(65536 + 7), "C28N"));
 }

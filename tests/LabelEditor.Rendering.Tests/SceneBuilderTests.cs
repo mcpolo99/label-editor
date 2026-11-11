@@ -64,9 +64,9 @@ public class SceneBuilderTests
     }
 
     [Fact]
-    public void Qr_font_produces_a_matrix_code()
+    public void Symbology_code_12_produces_a_qr_code()
     {
-        var entry = Text(45836, face: "QR", barcode: 65536, preview: "115632793");
+        var entry = Text(45836, face: "Arial", barcode: 65548, preview: "115632793");
 
         var scene = Builder.Build(LabelLayout.CreateNew().AddEntry(entry));
 

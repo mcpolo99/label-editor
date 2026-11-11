@@ -49,8 +49,12 @@ public sealed class LabelSceneBuilder(FieldTextResolver resolver)
     {
         var data = resolver.BarcodeData(entry, record);
         var bounds = entry.Bounds.Normalize();
-        var symbology = BarcodeFonts.SymbologyFor(entry.Font.FaceName);
-        var result = BarcodeEncoder.Encode(symbology, data, entry.Options.Barcode.AddCheckCharacter);
+        if (BarcodeFonts.SymbologyFor(entry.Options.Barcode, entry.Font.FaceName) is not { } symbology)
+        {
+            return new BarcodeErrorItem(entry.Id, bounds, data, $"Bar code type {entry.Options.Barcode.SymbologyCode} is not supported yet");
+        }
+
+        var result = BarcodeEncoder.Encode(symbology, data);
         return result switch
         {
             { Linear: { } linear } => new LinearBarcodeItem(entry.Id, bounds, linear, data, entry.Font.Rotation),

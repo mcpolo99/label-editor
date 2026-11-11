@@ -24,28 +24,41 @@ public sealed record BarcodeResult(LinearBarcode? Linear, bool[,]? Matrix, strin
 }
 
 /// <summary>
-/// LEdit draws bar codes with bar code fonts; the font picks the symbology. Known fonts: C28N (Code 128),
-/// A39N (Code 39). A face name containing "QR" selects a QR code (editor extension, not verified with LEdit).
+/// Picks the symbology for a text entry. The <c>BarcodeSettings</c> code decides; for text that only uses a
+/// bar code font (C28N = Code 128, A39N = Code 39) without the bar code flag, the font decides.
 /// </summary>
 public static class BarcodeFonts
 {
     public const string Code128Font = "C28N";
     public const string Code39Font = "A39N";
-    public const string QrFont = "QR";
 
-    public static IReadOnlyList<string> Known { get; } = [Code128Font, Code39Font, QrFont];
+    public static bool IsBarcodeFont(string faceName) =>
+        string.Equals(faceName.Trim(), Code128Font, StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(faceName.Trim(), Code39Font, StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsBarcodeFont(string faceName) => Known.Any(f => string.Equals(f, faceName.Trim(), StringComparison.OrdinalIgnoreCase));
-
-    public static BarcodeSymbology SymbologyFor(string faceName)
+    /// <summary>The font LEdit uses for a symbology, or null when it draws without a bar code font (QR).</summary>
+    public static string? FontFor(Domain.Text.BarcodeType type) => type switch
     {
-        var face = faceName.ToUpperInvariant();
-        if (face.Contains("QR", StringComparison.Ordinal))
+        Domain.Text.BarcodeType.Code39 => Code39Font,
+        Domain.Text.BarcodeType.QrCode => null,
+        _ => Code128Font,
+    };
+
+    /// <returns>The symbology to draw, or null when the code is not supported yet.</returns>
+    public static BarcodeSymbology? SymbologyFor(Domain.Text.BarcodeSettings settings, string faceName)
+    {
+        if (settings.IsBarcode)
         {
-            return BarcodeSymbology.QrCode;
+            return settings.Type switch
+            {
+                Domain.Text.BarcodeType.Code128 or Domain.Text.BarcodeType.Code128C => BarcodeSymbology.Code128,
+                Domain.Text.BarcodeType.Code39 => BarcodeSymbology.Code39,
+                Domain.Text.BarcodeType.QrCode => BarcodeSymbology.QrCode,
+                _ => null,
+            };
         }
 
-        return face.Contains("39", StringComparison.Ordinal) ? BarcodeSymbology.Code39 : BarcodeSymbology.Code128;
+        return faceName.Contains("39", StringComparison.Ordinal) ? BarcodeSymbology.Code39 : BarcodeSymbology.Code128;
     }
 }
 

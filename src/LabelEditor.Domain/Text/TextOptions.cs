@@ -1,48 +1,48 @@
 namespace LabelEditor.Domain.Text;
 
 /// <summary>
-/// Bar code switches packed in <c>FontOptions/@BarcodeSettings</c>.
+/// Bar code symbologies, as LEdit codes them in the low word of <c>FontOptions/@BarcodeSettings</c>.
 /// <para>
-/// Decoded from the LEdit dialog and sampled files: bit 16 marks the text as a bar code and the low
-/// bits are the dialog check boxes in order (start, stop, compress, check). The symbology itself is
-/// determined by the bar code font (e.g. C28N = Code 128, A39N = Code 39). The raw value is kept so
-/// unknown bits survive a round trip.
+/// Values are inferred from real labels compared with LEdit's own previews: 1 and 3 always use the
+/// C28N font (Code 128 family), 2 the A39N font (Code 39), and 12 renders as a QR code. LEdit also
+/// offers PDF417, DataMatrix, EAN-8/13 and 2-of-5 variants whose codes are not yet known; such values
+/// are preserved and drawn as a marked placeholder.
 /// </para>
+/// </summary>
+public enum BarcodeType
+{
+    Code128 = 1,
+    Code39 = 2,
+    Code128C = 3,
+    QrCode = 12,
+}
+
+/// <summary>
+/// <c>FontOptions/@BarcodeSettings</c>: 0x10000 marks the text as a bar code, the low word is the
+/// <see cref="BarcodeType"/> code. The raw value is kept so unknown codes survive a round trip.
 /// </summary>
 public readonly record struct BarcodeSettings(int Raw)
 {
     private const int EnabledBit = 1 << 16;
-    private const int StartBit = 1 << 0;
-    private const int StopBit = 1 << 1;
-    private const int CompressBit = 1 << 2;
-    private const int CheckBit = 1 << 3;
 
     public static BarcodeSettings None => default;
 
-    /// <summary>Default for a new bar code: start + stop characters (what LEdit files most often use).</summary>
-    public static BarcodeSettings DefaultBarcode => new(EnabledBit | StartBit | StopBit);
+    /// <summary>What most existing labels use for new bar codes.</summary>
+    public static BarcodeSettings DefaultBarcode => For(BarcodeType.Code128C);
+
+    public static BarcodeSettings For(BarcodeType type) => new(EnabledBit | (int)type);
 
     public bool IsBarcode => (Raw & EnabledBit) != 0;
 
-    public bool AddStartCharacter => (Raw & StartBit) != 0;
+    /// <summary>The symbology code (low word), whether or not it is a known <see cref="BarcodeType"/>.</summary>
+    public int SymbologyCode => Raw & 0xFFFF;
 
-    public bool AddStopCharacter => (Raw & StopBit) != 0;
+    /// <summary>The symbology, or null when the code is not one the editor knows.</summary>
+    public BarcodeType? Type => Enum.IsDefined(typeof(BarcodeType), SymbologyCode) ? (BarcodeType)SymbologyCode : null;
 
-    public bool Compress => (Raw & CompressBit) != 0;
+    public BarcodeSettings WithBarcode(bool value) => new(value ? Raw | EnabledBit : Raw & ~EnabledBit);
 
-    public bool AddCheckCharacter => (Raw & CheckBit) != 0;
-
-    public BarcodeSettings WithBarcode(bool value) => Set(EnabledBit, value);
-
-    public BarcodeSettings WithStartCharacter(bool value) => Set(StartBit, value);
-
-    public BarcodeSettings WithStopCharacter(bool value) => Set(StopBit, value);
-
-    public BarcodeSettings WithCompress(bool value) => Set(CompressBit, value);
-
-    public BarcodeSettings WithCheckCharacter(bool value) => Set(CheckBit, value);
-
-    private BarcodeSettings Set(int bit, bool value) => new(value ? Raw | bit : Raw & ~bit);
+    public BarcodeSettings WithType(BarcodeType type) => new((Raw & ~0xFFFF) | (int)type);
 }
 
 /// <summary>LEdit <c>&lt;FontOptions&gt;</c>. Optional attributes are null when the file did not contain them.</summary>
