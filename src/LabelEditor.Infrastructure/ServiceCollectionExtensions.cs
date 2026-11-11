@@ -19,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILabelLibrary, FileSystemLabelLibrary>();
         services.AddSingleton<IFieldCatalogSource, LeditFieldCatalogSource>();
         services.AddSingleton<ILanguageSource, LeditLanguageSource>();
+        services.AddSingleton<Application.Preview.IPreviewDataSource, Preview.CutListPreviewDataSource>();
         services.AddSingleton<ISettingsStore>(sp => new JsonSettingsStore(paths.SettingsFile, sp.GetRequiredService<ILogger<JsonSettingsStore>>()));
         return services;
     }

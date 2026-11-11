@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CutList>
+  <Part id="P1" qMin="1" L="260" W="527" MatNo="1" Material="CB16_MEL_GREY" IDesc="P1" InfoDraw_1="LEGRA_BOTTEN" InfoDraw_2="LPX=260 LPY=527 LPZ=16" DrillInfo="LEGRA_BOTTEN" EdgingInfo="NR:14" CabCode="Customer 1" CabInfo="100000001" MatEdgeUp="STD-PALL" MatEdgeLo="P9" Description11="*Std" Description13="LBG270" Description14="ORDERNR:90001" />
+  <Part id="P2" qMin="1" L="260" W="527" MatNo="1" Material="CB16_MEL_GREY" IDesc="P2" InfoDraw_1="LEGRA_BOTTEN" InfoDraw_2="LPX=260 LPY=527 LPZ=16" DrillInfo="LEGRA_BOTTEN" EdgingInfo="NR:22" CabCode="Customer 2" CabInfo="100000002" MatEdgeUp="STD-PALL" MatEdgeLo="P7" Description11="*Std" Description13="LBG270" Description14="ORDERNR:90002" />
+  <Part id="P3" qMin="1" L="260" W="527" MatNo="1" Material="CB16_MEL_GREY" IDesc="P3" InfoDraw_1="LEGRA_BOTTEN" InfoDraw_2="LPX=260 LPY=527 LPZ=16" DrillInfo="LEGRA_BOTTEN" EdgingInfo="NR:1" CabCode="Customer 3" CabInfo="100000003" MatEdgeUp="STD-PALL" MatEdgeLo="P3" Description11="*Std" Description13="LBG270" Description14="ORDERNR:90003" />
+  <Board id="B1" L="2800" W="2070" Thickness="16" MatNo="1" />
+  <Material Code="CB16_MEL_GREY" Thickness="16" id="1" />
+</CutList>
