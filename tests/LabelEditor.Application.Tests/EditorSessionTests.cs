@@ -171,6 +171,22 @@ public class EditorSessionTests
     }
 
     [Fact]
+    public void Consecutive_edits_with_the_same_merge_key_are_one_undo_step()
+    {
+        var session = NewSession();
+        var box = AddBox(session);
+        var start = session.Layout;
+
+        foreach (var x in new[] { 1, 12, 123 })
+        {
+            session.Execute("X", l => l.ReplaceEntry(l.Find(box.Id)! with { Bounds = box.Bounds with { X = x } }), mergeKey: "x");
+        }
+
+        session.Undo();
+        Assert.Same(start, session.Layout);
+    }
+
+    [Fact]
     public void Selection_keeps_the_first_entry_as_dominant()
     {
         var session = NewSession();

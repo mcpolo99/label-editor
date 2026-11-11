@@ -3,7 +3,11 @@ using LabelEditor.Domain.Layout;
 namespace LabelEditor.Application.Documents;
 
 /// <summary>One undoable step: the layout before and after a named edit.</summary>
-public sealed record HistoryStep(string Description, LabelLayout Before, LabelLayout After);
+/// <param name="Description">Shown in the Undo menu.</param>
+/// <param name="Before">Layout before the edit.</param>
+/// <param name="After">Layout after the edit.</param>
+/// <param name="MergeKey">Consecutive steps with the same key (e.g. typing in one property box) merge into one.</param>
+public sealed record HistoryStep(string Description, LabelLayout Before, LabelLayout After, string? MergeKey = null);
 
 /// <summary>
 /// Undo/redo stack of layout snapshots. Layouts are immutable and share unchanged entries,
@@ -26,8 +30,15 @@ public sealed class EditHistory
 
     public string? RedoDescription => _redo.TryPeek(out var step) ? step.Description : null;
 
+    /// <summary>Records a step, merging it into the previous one when both carry the same merge key.</summary>
     public void Push(HistoryStep step)
     {
+        if (step.MergeKey is not null && _redo.Count == 0 && _undo.Last is { } last && last.Value.MergeKey == step.MergeKey)
+        {
+            last.Value = last.Value with { After = step.After };
+            return;
+        }
+
         _undo.AddLast(step);
         if (_undo.Count > Capacity)
         {

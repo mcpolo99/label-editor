@@ -75,8 +75,9 @@ public sealed class EditorSession
     /// <param name="description">Shown in the Undo menu.</param>
     /// <param name="edit">Pure transformation of the current layout.</param>
     /// <param name="selectAfter">Optional new selection (e.g. the pasted entries).</param>
+    /// <param name="mergeKey">Merge with the previous step if it had the same key (one undo step per edited property box).</param>
     /// <returns>True if the layout changed.</returns>
-    public bool Execute(string description, Func<LabelLayout, LabelLayout> edit, IEnumerable<EntryId>? selectAfter = null)
+    public bool Execute(string description, Func<LabelLayout, LabelLayout> edit, IEnumerable<EntryId>? selectAfter = null, string? mergeKey = null)
     {
         EnsureNotInteracting();
         var before = Layout;
@@ -86,7 +87,7 @@ public sealed class EditorSession
             return false;
         }
 
-        History.Push(new HistoryStep(description, before, after));
+        History.Push(new HistoryStep(description, before, after, mergeKey));
         SetLayout(after, SessionChange.Layout | SessionChange.History);
         if (selectAfter is not null)
         {
