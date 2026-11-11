@@ -29,7 +29,7 @@ with all samples but not confirmed by writing a file in LEdit.
 | 4 | `LabelGraphic` | `GraphicIndex` 0..3 = part drawing "Draw 1..4", supplied at print time |
 | 5 | `LineEntry` | field only |
 | 6 | `EllipseEntry` | `PenWidth`, `PenStyle`, `PenColor`/`BrushColor` as "r,g,b" |
-| 8 | `CornerLogoEntry` | `CornerLogoData` attributes + `EdgeThickDisplay` (%) |
+| 8 | `CornerLogoEntry` | `CornerLogoData` attributes + `EdgeThickDisplay` (%); see below |
 | 9 | `DataRecord` | font for file printing; present in every label, not drawn |
 
 ## Text
@@ -39,8 +39,12 @@ with all samples but not confirmed by writing a file in LEdit.
 - `PrvTxt` is the sample value shown while designing.
 - `DelFirst` / `DelLast` skip characters at the start/end; `Count` limits characters (-1 = all).
   LEdit 1.32 files use `First` instead of `DelFirst`/`DelLast`.
-- `FillChar`: 0 or -1 in all samples. The meaning of other values (leading zeros/blanks, trailing blanks
-  in the dialog) is **inferred** from the dialog order.
+- `FillChar` is the index of the checked button in the element dialog's "Insert filler characters" radio
+  group: 0 = none, 1 = leading zeros, 2 = leading blanks, 3 = trailing blanks; -1 = no button checked (what
+  LEdit writes for fixed text). *Verified from the dialog resource in `LEdit.exe`* (dialog 7003: the group
+  starts at "None" and the buttons follow in that order; MFC `DDX_Radio` stores the 0-based index, -1 for
+  none). The samples only contain 0 and -1. That the fill pads the value up to the "Number of characters"
+  (`Count`) is **inferred** from the dialog, where the group sits under that field.
 - `Font/Escapement` in tenths of a degree, counter-clockwise: 0, 900, 1800, 2700.
 - **`FontOptions/@FontSize` is tenths of a point.** `Font/Height` (LOGFONT) is stale and ignored by LEdit:
   entries with different `Height` but the same `FontSize` look identical in LEdit's previews.
@@ -86,3 +90,12 @@ to language names.
 UTF-8 `<CutList>` with one `<Part>` per label; attributes are named after field-tree elements (IDesc, CabCode,
 CabInfo, DrillInfo, Description11, …), so they fill fields by name. Aliases: `L`→FinalLength/Length,
 `W`→FinalWidth/Width, `Material`→MatCode; board `Thickness` is added to every part.
+
+## Corner logo (edge indicator)
+
+From the corner-logo dialog in `LEdit.exe` (dialog 7006), radio buttons stored as 0-based indexes:
+
+- `EdgeInfo`: 0 = material (`Mat…`), 1 = colour (`Col…`), 2 = type (`Type…`) of the part's edges.
+- `Orient` (newer LEdit only): 0 = 0°, 1 = +90°, 2 = -90°, 3 = 180°. What LEdit rotates with it is not
+  verified, so the editor keeps the value but does not rotate the drawing.
+- `ImageProp` = "maintain aspect ratio", `PrnMatEdge` = print the edge texts.

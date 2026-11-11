@@ -122,6 +122,21 @@ public class LayoutTests
     }
 
     [Theory]
+    [InlineData(1, 6, "42", "000042")]
+    [InlineData(2, 6, "42", "    42")]
+    [InlineData(3, 6, "42", "42    ")]
+    [InlineData(0, 6, "42", "42")]
+    [InlineData(-1, 6, "42", "42")]
+    [InlineData(1, -1, "42", "42")] // no character count: nothing to pad to
+    [InlineData(1, 3, "12345", "123")] // longer values are cut by the count, not padded
+    public void Filler_characters_pad_the_value_up_to_the_character_count(int fill, int count, string value, string expected)
+    {
+        var element = TextElement.ForField(45804, value) with { Count = count, FillCharacter = fill };
+
+        Assert.Equal(expected, TextComposer.ApplyTrimming(value, element));
+    }
+
+    [Theory]
     [InlineData(65537, BarcodeType.Code128)]
     [InlineData(65538, BarcodeType.Code39)]
     [InlineData(65539, BarcodeType.Code128C)]
