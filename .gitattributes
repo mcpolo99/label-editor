@@ -1,0 +1,10 @@
+* text=auto eol=lf
+*.cs text eol=lf
+*.axaml text eol=lf
+*.sln text eol=crlf
+# LEdit data files are ISO-8859-1 / Windows code pages with CRLF: keep bytes exactly as shipped.
+defaults/** -text
+tests/**/Fixtures/** -text
+*.bmp binary
+*.png binary
+*.ico binary

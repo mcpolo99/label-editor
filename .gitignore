@@ -1,0 +1,17 @@
+# Local working area (cloned sources, original LEdit install snapshot)
+.temp/
+
+# Build output
+bin/
+obj/
+artifacts/
+publish/
+TestResults/
+*.user
+*.suo
+.vs/
+.idea/
+.vscode/
+
+# Portable-mode user data written next to the executable
+UserData/
