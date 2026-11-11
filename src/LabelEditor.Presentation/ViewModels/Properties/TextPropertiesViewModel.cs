@@ -165,7 +165,10 @@ public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
     /// <summary>Inserts a data field after the selected piece (field tree double-click / drop on the entry).</summary>
     public void AddField(int fieldId) => InsertElements("Add field", [ElementFor(fieldId)]);
 
-    /// <summary>Adds one or more fields chosen in the field tree dialog, in the order chosen, after the selected piece.</summary>
+    /// <summary>
+    /// Adds one or more pieces chosen in the field tree dialog, in the order chosen, after the selected piece.
+    /// Choosing "Raw text" adds a fixed-text piece.
+    /// </summary>
     [RelayCommand]
     private async Task AddFieldsAsync()
     {
@@ -175,10 +178,6 @@ public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
             InsertElements(ids.Count == 1 ? "Add field" : $"Add {ids.Count} fields", ids.Select(ElementFor).ToList());
         }
     }
-
-    /// <summary>Adds a fixed-text piece (e.g. a separator or a caption like "L: ") after the selected piece.</summary>
-    [RelayCommand]
-    private void AddText() => InsertElements("Add text", [TextElement.ForLiteral(" ")]);
 
     [RelayCommand(CanExecute = nameof(HasSelectedElement))]
     private void RemoveElement()

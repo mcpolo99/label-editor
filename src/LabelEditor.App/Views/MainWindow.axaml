@@ -84,10 +84,9 @@
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <TextBlock Classes="hint" Text="Empty: add fields and fixed text below." IsVisible="{Binding !Elements.Count}" />
+        <TextBlock Classes="hint" Text="Empty: use + Field… to add data fields or Raw text." IsVisible="{Binding !Elements.Count}" />
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Content="+ Field…" Command="{Binding AddFieldsCommand}" ToolTip.Tip="Add one or more data fields from the field tree (Ctrl+click for several), after the selected piece" />
-          <Button Content="+ Text" Command="{Binding AddTextCommand}" ToolTip.Tip="Add fixed text (e.g. a separator or &quot;L: &quot;) after the selected piece" />
+          <Button Content="+ Field…" Command="{Binding AddFieldsCommand}" ToolTip.Tip="Add data fields, or Raw text for fixed text such as &quot;L: &quot; or &quot; / &quot;, after the selected piece (Ctrl+click for several)" />
           <Button Content="◀" Command="{Binding MoveElementUpCommand}" ToolTip.Tip="Move the selected piece left" />
           <Button Content="▶" Command="{Binding MoveElementDownCommand}" ToolTip.Tip="Move the selected piece right" />
         </StackPanel>

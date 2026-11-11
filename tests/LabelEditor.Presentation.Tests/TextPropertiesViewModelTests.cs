@@ -181,11 +181,12 @@ public class TextPropertiesViewModelTests
     }
 
     [Fact]
-    public void Text_pieces_go_after_the_selected_piece_so_fields_and_text_can_be_mixed()
+    public async Task Raw_text_from_the_tree_adds_a_fixed_text_piece_so_fields_and_text_can_be_mixed()
     {
-        var (session, entry, panel, _) = Setup();
+        var (session, entry, panel, dialog) = Setup();
 
-        panel.AddTextCommand.Execute(null);
+        dialog.MultiAnswers.Enqueue([FieldCatalog.RawTextId]); // "Raw text" in the tree
+        await panel.AddFieldsCommand.ExecuteAsync(null);
         RefreshFromSession(panel, session, entry.Id);
         panel.Elements[1].LiteralText = " / ";
         RefreshFromSession(panel, session, entry.Id);
