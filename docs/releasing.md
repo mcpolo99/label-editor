@@ -26,7 +26,7 @@ The first page of the setup asks for the installation type.
 | | Install on this PC | Portable |
 | --- | --- | --- |
 | Where | `C:\Program Files\Label Editor`, for all users | Any folder: USB stick, network share, fixed folder |
-| Administrator rights | Yes: setup starts normally and asks (UAC) when you choose this mode | **No** |
+| Administrator rights | Setup asks for them automatically (UAC) when it starts | Same setup, so also asked; for PCs without admin rights use the portable **zip** instead (no setup needed) |
 | Windows entry ("Installed apps") + uninstaller | Yes | **No** (nothing in the registry) |
 | Start menu / desktop shortcut | Yes / optional | No |
 | Settings and labels | `%APPDATA%\LabelEditor`, `Documents\LabelEditor\Labels` | `UserData\` next to the program |
@@ -40,10 +40,10 @@ Re-running the same version repairs; an older version asks before downgrading.
 ## Silent / scripted use
 
 ```powershell
-LabelEditor-Setup-0.2.0.exe /VERYSILENT /SUPPRESSMSGBOXES /ALLUSERS                     # PC install or update (elevated prompt)
+LabelEditor-Setup-0.2.0.exe /VERYSILENT /SUPPRESSMSGBOXES                               # PC install or update
 LabelEditor-Setup-0.2.0.exe /VERYSILENT /SUPPRESSMSGBOXES /PORTABLE=1 /DIR="E:\LabelEditor" # portable to a USB stick
 "C:\Program Files\Label Editor\unins000.exe" /VERYSILENT                                 # uninstall a PC install (elevated)
 ```
 
-Silent updates do not ask about downgrades. A silent PC install started without `/ALLUSERS` from a normal prompt
-raises a UAC prompt and continues elevated.
+Silent updates do not ask about downgrades. Silent runs from a normal (non-admin) prompt still show the UAC prompt;
+run them from an elevated prompt for fully unattended installs.

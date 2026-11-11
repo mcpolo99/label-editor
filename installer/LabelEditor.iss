@@ -7,11 +7,11 @@
 ;
 ; Two modes, chosen on the first page (or /PORTABLE=1 on the command line):
 ;   * Install on this PC: all users, in Program Files (C:\Program Files\Label Editor), with Start menu entry
-;     and an entry in Windows "Installed apps" (uninstaller). Needs administrator rights: setup starts without
-;     them and, when this mode is chosen, restarts itself elevated (UAC prompt) directly into the PC install.
+;     and an entry in Windows "Installed apps" (uninstaller).
 ;   * Portable: extracts to any folder (USB stick, network share, fixed folder). Writes the "portable"
-;     marker so settings and labels stay in that folder. No uninstall entry, no registry, no shortcuts,
-;     and no administrator rights needed.
+;     marker so settings and labels stay in that folder. No uninstall entry, no registry, no shortcuts.
+; Setup requests administrator rights (UAC) automatically when it starts. For PCs without admin rights use the
+; portable zip (artifacts/LabelEditor-<version>-portable-win-x64.zip), which needs no setup at all.
 ; Running a newer setup against an existing location upgrades it in place and keeps settings and labels.
 
 #ifndef AppVersion
@@ -42,10 +42,8 @@ DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 DisableDirPage=no
 UsePreviousAppDir=yes
-; Start unelevated so portable extraction never needs admin; the PC install relaunches with /ALLUSERS,
-; which makes {autopf} = C:\Program Files and puts the uninstall entry in HKLM (all users).
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=commandline
+; Elevate automatically at start-up: {autopf} = C:\Program Files, uninstall entry in HKLM (all users).
+PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 ; Portable extraction must leave no trace in Windows.
@@ -79,7 +77,6 @@ en.DowngradeQuestion=This folder contains a NEWER version (%1) than this setup (
 en.NotEmptyQuestion=The folder is not empty and does not contain {#AppName}.%n%nExtract into it anyway?
 en.PortableMarker=Label Editor portable mode: settings and labels are stored in the UserData folder next to the program. Delete this file to use the Windows user profile instead.
 en.DesktopIcon=Create a desktop shortcut
-en.ElevationFailed=Installing on this PC needs administrator rights (it installs to Program Files for all users).%n%nChoose Portable to extract without administrator rights.
 sv.ModeTitle=Installationstyp
 sv.ModeDescription=Hur vill du använda {#AppName}?
 sv.ModeSub=Båda kan uppdateras senare genom att köra en nyare installation och välja samma plats.
@@ -91,7 +88,6 @@ sv.DowngradeQuestion=Mappen innehåller en NYARE version (%1) än den här insta
 sv.NotEmptyQuestion=Mappen är inte tom och innehåller inte {#AppName}.%n%nPacka upp i den ändå?
 sv.PortableMarker=Label Editor portabelt läge: inställningar och etiketter sparas i mappen UserData bredvid programmet. Ta bort den här filen för att använda Windows-användarprofilen i stället.
 sv.DesktopIcon=Skapa genväg på skrivbordet
-sv.ElevationFailed=Installation på den här datorn kräver administratörsbehörighet (den installeras i Program Files för alla användare).%n%nVälj Portabel för att packa upp utan administratörsbehörighet.
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopIcon}"; Flags: unchecked; Check: not IsPortable
@@ -114,7 +110,6 @@ Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags
 var
   ModePage: TInputOptionWizardPage;
   PcDir: String;
-  Relaunched: Boolean;
 
 function IsPortable: Boolean;
 begin
@@ -124,35 +119,6 @@ begin
     Result := ModePage.Values[1];
 end;
 
-{ Set by the elevated restart: the PC install was already chosen, so skip the mode page. }
-function PcModePreselected: Boolean;
-begin
-  Result := CompareText(ExpandConstant('{param:MODE|}'), 'pc') = 0;
-end;
-
-{ Restarts this setup with administrator rights in all-users (Program Files) mode. }
-function RelaunchElevated: Boolean;
-var
-  Params: String;
-  ResultCode: Integer;
-begin
-  Params := '/ALLUSERS /MODE=pc /LANG=' + ActiveLanguage;
-  if WizardSilent then
-    Params := Params + ' /VERYSILENT /SUPPRESSMSGBOXES /NORESTART';
-  Result := ShellExec('runas', ExpandConstant('{srcexe}'), Params, '', SW_SHOW, ewNoWait, ResultCode);
-end;
-
-function ShouldSkipPage(PageID: Integer): Boolean;
-begin
-  Result := (ModePage <> nil) and (PageID = ModePage.ID) and PcModePreselected;
-end;
-
-procedure CancelButtonClick(CurPageID: Integer; var Cancel, Confirm: Boolean);
-begin
-  { Closing after handing over to the elevated setup is not a cancellation the user must confirm. }
-  if Relaunched then
-    Confirm := False;
-end;
 
 { Compares dotted versions numerically: -1 if A < B, 0 if equal, 1 if A > B. }
 function CompareVersions(A, B: String): Integer;
@@ -180,7 +146,7 @@ begin
     CustomMessage('ModeSub'), True, False);
   ModePage.Add(CustomMessage('ModePc'));
   ModePage.Add(CustomMessage('ModePortable'));
-  ModePage.Values[0] := PcModePreselected or (ExpandConstant('{param:PORTABLE|0}') <> '1');
+  ModePage.Values[0] := ExpandConstant('{param:PORTABLE|0}') <> '1';
   ModePage.Values[1] := not ModePage.Values[0];
   PcDir := WizardForm.DirEdit.Text;
 end;
@@ -195,20 +161,6 @@ begin
 
   { Switching mode suggests a matching folder; the user can still browse anywhere (e.g. a USB stick).
     Never in silent mode or when /DIR= was given: then the folder is exactly what was asked for. }
-  { Install on this PC goes to Program Files for all users: hand over to an elevated setup. }
-  if (CurPageID = ModePage.ID) and not IsPortable and not IsAdminInstallMode then
-  begin
-    Result := False;
-    if RelaunchElevated then
-    begin
-      Relaunched := True;
-      WizardForm.Close;
-    end
-    else if not WizardSilent then
-      MsgBox(CustomMessage('ElevationFailed'), mbError, MB_OK);
-    Exit;
-  end;
-
   if (CurPageID = ModePage.ID) and not WizardSilent and (ExpandConstant('{param:DIR|}') = '') then
   begin
     if IsPortable then
