@@ -12,7 +12,8 @@ and QR codes. It can fill the label with real part data from generated label she
   LEdit directions; encoded Code 128, Code 39 and QR codes; ellipses, lines, bitmaps, part graphics
   and corner logos.
 - **Layout editing**: select, marquee, multi-select, move, resize (box handles and line end points),
-  grid snapping (hold **Alt** to move freely), arrow-key nudging (**Shift** = 0.1 mm), Shift-constrained
+  grid snapping and **snap-to-entries guides** (edges and centres line up with other entries and the label;
+  hold **Alt** to move freely), **rulers** in mm or inch (View menu), arrow-key nudging (**Shift** = 0.1 mm), Shift-constrained
   drawing, z-order, cut/copy/paste/duplicate between labels, and LEdit's align / same size / space
   commands (the first selected entry is the reference). Dragging a handle with several entries selected resizes them
   all. Widths and heights follow each entry's text direction, so a 90° text gets longer along its own reading direction.
@@ -25,6 +26,12 @@ and QR codes. It can fill the label with real part data from generated label she
 - **Version history** instead of `_v1`/`_v2` copies: every Save that changes a label records a version (time, user, full
   LEdit XML, compressed) in the sidecar. The first save over an existing label keeps the original as version 1.
   *File → History…* restores a version (undoable) or opens it as a copy.
+- **Text that does not fit**: a fixed-size text wider than its field at print size is outlined in orange on the
+  canvas (fields without a sample value are not judged). *File ▸ Warn when text does not fit* also checks before
+  saving, with the sample values and every loaded preview record.
+- **Filler characters** (LEdit's "Insert filler characters"): leading zeros, leading or trailing blanks pad a value
+  up to the element's character count.
+- **File ▸ Open recent** lists the last ten labels; missing files are removed from the list.
 - **Undo/redo** for every change. Typing in a property box is one step.
 - **Fields by element name**: the field tree comes from `LEditTreeXML.xml` and `ListaOriginaliId.xml`.
   Fields are shown and placeholdered by their element name (`[QMin]`, `[CabCode]`); the translated

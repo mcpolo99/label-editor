@@ -13,9 +13,6 @@
 
 ## Improvements
 
-- Rulers and snap-to-other-entries guides on the canvas.
-- Field `FillChar` semantics: confirm values 1..3 with a file saved by LEdit.
-- Move drag-and-drop to Avalonia's `DataTransfer` API (the `IDataObject` API is obsolete since 11.3; it is
-  still used in `LabelCanvas` and `MainWindow` with a local suppression).
-- Optional "save in LEdit's preview size" check that warns when text overflows its field.
-- A recent-files menu (recent files are already stored in settings).
+- Edge indicator `Orient`: the values are known (0°, +90°, -90°, 180°), but not what LEdit rotates; once a label
+  saved by LEdit with each setting is available, draw the part rotated accordingly.
+- Filler characters: confirm with a label printed by LEdit that the fill pads up to the character count.

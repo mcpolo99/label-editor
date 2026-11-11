@@ -24,6 +24,11 @@ public sealed record EditorSettings
 
     public bool ShowGrid { get; init; } = true;
 
+    /// <summary>While dragging, line up edges and centres with other entries and the label (guide lines).</summary>
+    public bool SnapToEntries { get; init; } = true;
+
+    public bool ShowRulers { get; init; } = true;
+
     public double Zoom { get; init; } = 2.0;
 
     /// <summary>

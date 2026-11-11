@@ -30,6 +30,13 @@ public sealed partial class EditorContext : ObservableObject
     [ObservableProperty]
     private bool _showGrid = true;
 
+    /// <summary>Snap to the edges and centres of other entries and the label while dragging.</summary>
+    [ObservableProperty]
+    private bool _snapToEntries = true;
+
+    [ObservableProperty]
+    private bool _showRulers = true;
+
     /// <summary>In the dark theme, draw the label paper light grey instead of white.</summary>
     [ObservableProperty]
     private bool _dimLabelInDarkTheme = true;

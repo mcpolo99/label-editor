@@ -166,6 +166,8 @@ public sealed partial class MainViewModel : ObservableObject
         _settings = settings;
         Context.SnapToGrid = settings.SnapToGrid;
         Context.ShowGrid = settings.ShowGrid;
+        Context.SnapToEntries = settings.SnapToEntries;
+        Context.ShowRulers = settings.ShowRulers;
         Context.DimLabelInDarkTheme = settings.DimLabelInDarkTheme;
         WarnTextOverflowOnSave = settings.WarnTextOverflowOnSave;
         _loadingTheme = true;
@@ -497,7 +499,14 @@ public sealed partial class MainViewModel : ObservableObject
             }
         }
 
-        await SaveSettingsAsync(_settings with { SnapToGrid = Context.SnapToGrid, ShowGrid = Context.ShowGrid, DimLabelInDarkTheme = Context.DimLabelInDarkTheme });
+        await SaveSettingsAsync(_settings with
+        {
+            SnapToGrid = Context.SnapToGrid,
+            ShowGrid = Context.ShowGrid,
+            SnapToEntries = Context.SnapToEntries,
+            ShowRulers = Context.ShowRulers,
+            DimLabelInDarkTheme = Context.DimLabelInDarkTheme,
+        });
         return true;
     }
 
