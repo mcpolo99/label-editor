@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Turns a layout (+ optional data record) into a UI-agnostic scene: positioned text runs, encoded
+    bar codes, shapes and images. The UI paints the scene; future exporters (PNG/BMP previews,
+    printing) can reuse it unchanged.
+  -->
+  <PropertyGroup>
+    <RootNamespace>LabelEditor.Rendering</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LabelEditor.Application\LabelEditor.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="QRCoder" />
+  </ItemGroup>
+</Project>
