@@ -93,6 +93,16 @@ public class SaveFlowTests
 
         public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
 
+        public Queue<bool> Confirmations { get; } = new();
+
+        public List<string> Questions { get; } = [];
+
+        public Task<bool> ConfirmAsync(string title, string message, string confirmButton)
+        {
+            Questions.Add(message);
+            return Task.FromResult(Confirmations.Dequeue());
+        }
+
         public Task<IReadOnlyList<int>> PickFieldsAsync(FieldTextResolver resolver) => Task.FromResult<IReadOnlyList<int>>([]);
 
         public Task<int?> PickFieldAsync(FieldTextResolver resolver, int? currentFieldId) => Task.FromResult<int?>(null);
@@ -123,6 +133,20 @@ public class SaveFlowTests
         public Task<IReadOnlyList<LabelLibraryItem>> GetItemsAsync(CancellationToken cancellationToken = default) => Task.FromResult<IReadOnlyList<LabelLibraryItem>>([]);
     }
 
+    /// <summary>Reports the entries it is given as overflowing.</summary>
+    private sealed class Overflows : ITextOverflowCheck
+    {
+        public List<TextOverflow> Found { get; } = [];
+
+        public int Checks { get; private set; }
+
+        public IReadOnlyList<TextOverflow> Find(LabelLayout layout, FieldTextResolver resolver, IReadOnlyList<PreviewRecord> records)
+        {
+            Checks++;
+            return Found;
+        }
+    }
+
     private sealed class History : ILabelVersionHistory
     {
         public LabelLayout Version1 { get; } = LabelLayout.CreateNew(50_000, 30_000);
@@ -133,7 +157,9 @@ public class SaveFlowTests
         public Task<LabelLayout> LoadVersionAsync(string path, int number, CancellationToken cancellationToken = default) => Task.FromResult(Version1);
     }
 
-    private static (MainViewModel Vm, Store Store, Dialogs Dialogs) Setup(ILabelVersionHistory? history = null)
+    private static (MainViewModel Vm, Store Store, Dialogs Dialogs) Setup(ILabelVersionHistory? history = null) => Setup(history, new Overflows());
+
+    private static (MainViewModel Vm, Store Store, Dialogs Dialogs) Setup(ILabelVersionHistory? history, Overflows overflows)
     {
         var store = new Store();
         var dialogs = new Dialogs();
@@ -150,6 +176,7 @@ public class SaveFlowTests
             Array.Empty<IPreviewDataSource>(),
             history ?? nothing,
             new ApplicationInfo("1.0.0", null, "Development build", "", "", Work, ""),
+            overflows,
             NullLogger<MainViewModel>.Instance);
         return (vm, store, dialogs);
     }
@@ -284,5 +311,53 @@ public class SaveFlowTests
     {
         Assert.Equal("_3  my__label.xml", new RecentFileItem(@"C:\labels\my_label.xml", 3).Header);
         Assert.Equal("10  b.xml", new RecentFileItem(@"C:\labels\b.xml", 10).Header);
+    }
+
+    [Fact]
+    public async Task Saving_warns_about_texts_that_do_not_fit_and_cancelling_selects_them()
+    {
+        var overflows = new Overflows();
+        var (vm, store, dialogs) = Setup(null, overflows);
+        var document = await OpenEditedAsync(vm, store, Path.Combine(Work, "Mine.xml"));
+        var tooLong = document.Layout.Entries[^1].Id;
+        overflows.Found.Add(new TextOverflow(tooLong, "A very long customer name", "P7"));
+        vm.WarnTextOverflowOnSave = true;
+        dialogs.Confirmations.Enqueue(false);
+
+        Assert.False(await vm.SaveDocumentAsync(document));
+
+        Assert.Equal(0, store.Saves);
+        Assert.Contains("\"A very long customer name\"  (record P7)", Assert.Single(dialogs.Questions), StringComparison.Ordinal);
+        Assert.Equal([tooLong], document.Session.Selection.Ids);
+        Assert.Empty(dialogs.ReplaceQuestions); // stopped before anything else was asked
+    }
+
+    [Fact]
+    public async Task Saving_anyway_writes_the_label()
+    {
+        var overflows = new Overflows();
+        var (vm, store, dialogs) = Setup(null, overflows);
+        var document = await OpenEditedAsync(vm, store, Path.Combine(Work, "Mine.xml"));
+        overflows.Found.Add(new TextOverflow(document.Layout.Entries[^1].Id, "x", null));
+        vm.WarnTextOverflowOnSave = true;
+        dialogs.Confirmations.Enqueue(true);
+        dialogs.ReplaceAnswers.Enqueue(ReplaceAnswer.Replace);
+
+        Assert.True(await vm.SaveDocumentAsync(document));
+        Assert.Equal(1, store.Saves);
+    }
+
+    [Fact]
+    public async Task The_fit_check_is_off_unless_turned_on()
+    {
+        var overflows = new Overflows();
+        var (vm, store, dialogs) = Setup(null, overflows);
+        var document = await OpenEditedAsync(vm, store, Path.Combine(Work, "Mine.xml"));
+        overflows.Found.Add(new TextOverflow(document.Layout.Entries[^1].Id, "x", null));
+        dialogs.ReplaceAnswers.Enqueue(ReplaceAnswer.Replace);
+
+        Assert.True(await vm.SaveDocumentAsync(document));
+        Assert.Empty(dialogs.Questions);
+        Assert.Equal(0, overflows.Checks);
     }
 }

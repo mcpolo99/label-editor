@@ -24,6 +24,7 @@ public abstract record SceneItem(EntryId Id, LabelRect Bounds);
 /// <param name="Rotation">Text direction.</param>
 /// <param name="Color">Text colour.</param>
 /// <param name="WordWrap">Wrap at the box width.</param>
+/// <param name="HasPlaceholder">Design view only: a field without a sample value shows its "[FieldName]" instead, so the text is not what prints.</param>
 public sealed record TextItem(
     EntryId Id,
     LabelRect Bounds,
@@ -36,7 +37,8 @@ public sealed record TextItem(
     bool StrikeOut,
     TextRotation Rotation,
     RgbColor Color,
-    bool WordWrap) : SceneItem(Id, Bounds);
+    bool WordWrap,
+    bool HasPlaceholder = false) : SceneItem(Id, Bounds);
 
 /// <summary>An encoded 1-D bar code; bars run across the (rotated) box.</summary>
 public sealed record LinearBarcodeItem(EntryId Id, LabelRect Bounds, LinearBarcode Barcode, string Data, TextRotation Rotation) : SceneItem(Id, Bounds);

@@ -76,7 +76,17 @@ public class SceneBuilderTests
     {
         var scene = Builder.Build(LabelLayout.CreateNew().AddEntry(Text(45831)));
 
-        Assert.Equal("Kund: [CabCode]", Assert.IsType<TextItem>(Assert.Single(scene.Items)).Text);
+        var text = Assert.IsType<TextItem>(Assert.Single(scene.Items));
+        Assert.Equal("Kund: [CabCode]", text.Text);
+        Assert.True(text.HasPlaceholder);
+    }
+
+    [Fact]
+    public void Sample_values_and_record_values_are_real_text_not_placeholders()
+    {
+        Assert.False(Assert.IsType<TextItem>(Builder.Build(LabelLayout.CreateNew().AddEntry(Text(45831, preview: "Customer 1"))).Items.Single()).HasPlaceholder);
+        var record = new PreviewRecord("P1", []);
+        Assert.False(Assert.IsType<TextItem>(Builder.Build(LabelLayout.CreateNew().AddEntry(Text(45831)), record).Items.Single()).HasPlaceholder);
     }
 
     [Fact]

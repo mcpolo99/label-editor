@@ -49,6 +49,9 @@ public interface IUserInteraction
 
     Task ShowMessageAsync(string title, string message);
 
+    /// <summary>Asks a yes/no question; true when the user chose <paramref name="confirmButton"/>.</summary>
+    Task<bool> ConfirmAsync(string title, string message, string confirmButton);
+
     /// <summary>Shows the saved versions of a label (newest first); null when closed without a choice.</summary>
     Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions);
 

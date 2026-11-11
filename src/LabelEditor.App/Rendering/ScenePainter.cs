@@ -37,6 +37,7 @@ public sealed class ScenePainter
     private static readonly IBrush Ink = Brushes.Black;
     private static readonly IPen FramePen = new Pen(new SolidColorBrush(Color.FromRgb(150, 150, 150)), 1, DashStyle.Dash);
     private static readonly IBrush WarningFill = new SolidColorBrush(Color.FromArgb(60, 255, 80, 0));
+    private static readonly IPen OverflowPen = new Pen(Brushes.OrangeRed, 1.5, DashStyle.Dash);
     private readonly Dictionary<string, Bitmap?> _bitmaps = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Draws design aids (frames around placeholders). Off for a clean print preview.</summary>
@@ -51,7 +52,15 @@ public sealed class ScenePainter
         {
             switch (item)
             {
-                case TextItem t: PaintText(context, t, view); break;
+                case TextItem t:
+                    PaintText(context, t, view);
+                    if (ShowDesignAids && TextFit.Overflows(t))
+                    {
+                        // The text runs over its field when printed: outline the field as a warning.
+                        context.DrawRectangle(null, OverflowPen, view.ToView(t.Bounds).Inflate(1));
+                    }
+
+                    break;
                 case LinearBarcodeItem b: PaintLinearBarcode(context, b, view); break;
                 case MatrixBarcodeItem m: PaintMatrix(context, m, view); break;
                 case BarcodeErrorItem e: PaintError(context, e, view); break;
