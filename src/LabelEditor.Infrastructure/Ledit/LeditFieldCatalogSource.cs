@@ -46,7 +46,17 @@ public sealed partial class LeditFieldCatalogSource(IStorageLocations locations,
         if (flat?.Root is { } flatRoot)
         {
             var all = flatRoot.Descendants().Select(ParseField).OfType<DataFieldDefinition>().ToValueList();
-            categories.Add(new FieldCategory("AllFields", new TextReference(95, 9078, "All fields")) { Fields = all });
+
+            // The part's edge data per side, which the edge indicator (corner logo) prints: Up / Lo are the length
+            // edges (Len1 / Len2), L / R the width edges (Wdt1 / Wdt2). LEdit's own tree only lists a few of them.
+            var edges = all.Where(f => EdgeFieldPattern().IsMatch(f.Key)).OrderBy(f => f.Id).ToValueList();
+            if (edges.Count > 0)
+            {
+                categories.Add(new FieldCategory("Edges", new TextReference(0, 10, "Edges")) { Fields = edges });
+            }
+
+            // No LEdit text means "all fields" (95/9078 is "Enhanced Data"), so this caption is not translated.
+            categories.Add(new FieldCategory("AllFields", TextReference.Literal("All fields")) { Fields = all });
         }
 
         return new FieldCatalog(new FieldCategory("root", TextReference.Literal("Fields")) { Children = categories.ToValueList() });
@@ -119,6 +129,9 @@ public sealed partial class LeditFieldCatalogSource(IStorageLocations locations,
 
     internal static FileStream OpenRead(string path) =>
         new(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, 16 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
+
+    [GeneratedRegex(@"^((Type|Mat|Col)Edge(Up|Lo|L|R)|EdgingInfo)$", RegexOptions.CultureInvariant)]
+    private static partial Regex EdgeFieldPattern();
 
     [GeneratedRegex(@"^\(\s*(?<section>\d+)\s*,\s*(?<number>\d+)\s*,(?<fallback>.*)\)\s*$", RegexOptions.CultureInvariant | RegexOptions.Singleline)]
     private static partial Regex TextReferencePattern();

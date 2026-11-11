@@ -46,6 +46,20 @@ public class LeditReferenceDataTests
         Assert.Contains("PartDescriptions", keys);
         Assert.Contains("AllFields", keys);
         Assert.NotNull(catalog.Find(FieldCatalog.RawTextId));
+        Assert.Equal("All fields", catalog.Root.Children.Single(c => c.Key == "AllFields").Caption.Fallback);
+    }
+
+    [Fact]
+    public async Task The_edge_fields_of_every_side_are_grouped_for_the_edge_indicator()
+    {
+        var catalog = await LoadCatalogAsync();
+
+        var edges = catalog.Root.Children.Single(c => c.Key == "Edges");
+        Assert.Equal(new TextReference(0, 10, "Edges"), edges.Caption); // LEdit's translated "Edges"
+        Assert.Equal(
+            ["EdgingInfo", "TypeEdgeUp", "MatEdgeUp", "ColEdgeUp", "TypeEdgeLo", "MatEdgeLo", "ColEdgeLo", "TypeEdgeL", "MatEdgeL", "ColEdgeL", "TypeEdgeR", "MatEdgeR", "ColEdgeR"],
+            edges.Fields.Select(f => f.Key));
+        Assert.Equal(45862, catalog.Fields.Single(f => f.Name == "MatEdgeR").Id);
     }
 
     [Fact]

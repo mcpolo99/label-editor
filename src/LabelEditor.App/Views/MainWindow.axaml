@@ -228,13 +228,13 @@
           <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Orientation}" Minimum="0" Increment="1" FormatString="0" HorizontalAlignment="Left"
                          ToolTip.Tip="LEdit's 'Orient' value, kept as it is. Empty for labels from older LEdit versions." />
           <TextBlock Grid.Row="3" Classes="label" Text="Top" />
-          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextTop}" Watermark="{Binding TopField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding TopField, StringFormat='Edge A top. Printed from the part data {0}'}" />
+          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextTop}" Watermark="{Binding TopField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding TopField, StringFormat='Length edge 1 (Len1). Printed from the part data {0}'}" />
           <TextBlock Grid.Row="4" Classes="label" Text="Bottom" />
-          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TextBottom}" Watermark="{Binding BottomField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding BottomField, StringFormat='Edge A bottom. Printed from the part data {0}'}" />
+          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TextBottom}" Watermark="{Binding BottomField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding BottomField, StringFormat='Length edge 2 (Len2). Printed from the part data {0}'}" />
           <TextBlock Grid.Row="5" Classes="label" Text="Left" />
-          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextLeft}" Watermark="{Binding LeftField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding LeftField, StringFormat='Edge B left. Printed from the part data {0}'}" />
+          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextLeft}" Watermark="{Binding LeftField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding LeftField, StringFormat='Width edge 1 (Wdt1). Printed from the part data {0}'}" />
           <TextBlock Grid.Row="6" Classes="label" Text="Right" />
-          <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TextRight}" Watermark="{Binding RightField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding RightField, StringFormat='Edge B right. Printed from the part data {0}'}" />
+          <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding TextRight}" Watermark="{Binding RightField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding RightField, StringFormat='Width edge 2 (Wdt2). Printed from the part data {0}'}" />
         </Grid>
       </StackPanel>
     </controls:FreshDataTemplate>
