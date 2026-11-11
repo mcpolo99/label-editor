@@ -10,6 +10,7 @@
         x:Class="LabelEditor.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
         Title="Label Editor"
+        Icon="/Assets/app.ico"
         Width="1400" Height="860" MinWidth="900" MinHeight="560"
         WindowStartupLocation="CenterScreen">
 
@@ -88,11 +89,12 @@
                 <TextBlock Grid.Row="1" Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
                 <TextBlock Grid.Row="1" Classes="label" Text="Field" IsVisible="{Binding IsField}" />
-                <AutoCompleteBox Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}"
-                                 ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField}"
-                                 FilterMode="ContainsOrdinal" MinimumPrefixLength="0" MaxDropDownHeight="320"
-                                 Watermark="Type to search fields" ToolTip.Tip="{Binding FieldCaption}">
-                  <AutoCompleteBox.ItemTemplate>
+                <!-- A strict dropdown: only fields from the catalog can be chosen (typing jumps to matching names). -->
+                <ComboBox Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}" HorizontalAlignment="Stretch"
+                          ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField}"
+                          MaxDropDownHeight="360" IsTextSearchEnabled="True"
+                          PlaceholderText="(unknown field)" ToolTip.Tip="{Binding FieldCaption}">
+                  <ComboBox.ItemTemplate>
                     <DataTemplate DataType="props:FieldOption">
                       <StackPanel Orientation="Horizontal" Spacing="6">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
@@ -100,8 +102,8 @@
                         <TextBlock Text="{Binding Id}" Foreground="#aaa" />
                       </StackPanel>
                     </DataTemplate>
-                  </AutoCompleteBox.ItemTemplate>
-                </AutoCompleteBox>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
                 <TextBlock Grid.Row="2" Classes="label" Text="ID" IsVisible="{Binding IsField}" />
                 <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding IsField}" Foreground="#777" Text="{Binding FieldId}" ToolTip.Tip="{Binding FieldCaption}" />
                 <TextBlock Grid.Row="3" Classes="label" Text="Sample value" IsVisible="{Binding IsField}" />
@@ -429,7 +431,6 @@
           <DataTemplate DataType="vm:DocumentViewModel">
             <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}">
               <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
-              <TextBlock Text="🔒" IsVisible="{Binding IsReadOnly}" VerticalAlignment="Center" />
               <Button Content="✕" Padding="4,0" FontSize="10" Background="Transparent" Click="OnCloseTabClick" Tag="{Binding}" />
             </StackPanel>
           </DataTemplate>

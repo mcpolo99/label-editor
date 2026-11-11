@@ -46,7 +46,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
 
     public bool IsReadOnly => Session.Location?.IsReadOnly ?? false;
 
-    public string ToolTip => FilePath is null ? "Not saved yet" : FilePath + (IsReadOnly ? " (read-only: use Save As)" : string.Empty);
+    public string ToolTip => FilePath is null ? "Not saved yet" : FilePath + (IsReadOnly ? "\nProtected location: saving asks for a new name." : string.Empty);
 
     public ObservableCollection<EntryListItem> Entries { get; } = [];
 

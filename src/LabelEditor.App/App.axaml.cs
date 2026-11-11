@@ -49,6 +49,7 @@ public sealed class App : Avalonia.Application
                 PackagedDefaultsRoot = paths.PackagedDefaultsRoot,
                 MachineInstallationRoot = settings.LeditInstallationPath ?? StorageOptions.DefaultMachineInstallation,
                 WorkingFolder = settings.WorkingFolder ?? paths.DefaultWorkingFolder,
+                AllowWritingMachineLabels = settings.AllowWritingMachineLabels,
             };
 
             _services = ConfigureServices(paths, storage, window);

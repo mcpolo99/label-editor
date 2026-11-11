@@ -44,6 +44,23 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
         };
     }
 
+    public async Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason)
+    {
+        if (protectedReason is not null)
+        {
+            var choice = await ShowDialogAsync("Save label", $"{protectedReason}\n\n{path}\n\nSave your changes as a new label?", ["Save As…", "Cancel"]);
+            return choice == 0 ? ReplaceAnswer.SaveAs : ReplaceAnswer.Cancel;
+        }
+
+        var answer = await ShowDialogAsync("Replace existing label", $"Replace the existing file?\n\n{path}", ["Replace", "Save As…", "Cancel"]);
+        return answer switch
+        {
+            0 => ReplaceAnswer.Replace,
+            1 => ReplaceAnswer.SaveAs,
+            _ => ReplaceAnswer.Cancel,
+        };
+    }
+
     public async Task ShowErrorAsync(string title, string message) => await ShowDialogAsync(title, message, ["OK"]);
 
     private async Task<string?> PickOneAsync(string title, FilePickerFileType type, string? initialFolder)

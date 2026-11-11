@@ -8,6 +8,14 @@ public enum SaveChangesAnswer
     Cancel,
 }
 
+/// <summary>Answer to "replace the existing file?".</summary>
+public enum ReplaceAnswer
+{
+    Replace,
+    SaveAs,
+    Cancel,
+}
+
 /// <summary>Dialogs the view models need; implemented by the UI layer.</summary>
 public interface IUserInteraction
 {
@@ -20,6 +28,9 @@ public interface IUserInteraction
     Task<string?> PickPreviewDataAsync(string? initialFolder);
 
     Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle);
+
+    /// <summary>First save over an opened file. When <paramref name="protectedReason"/> is set, replacing is not offered.</summary>
+    Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason);
 
     Task ShowErrorAsync(string title, string message);
 }

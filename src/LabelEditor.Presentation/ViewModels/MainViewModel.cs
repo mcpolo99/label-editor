@@ -275,7 +275,7 @@ public sealed partial class MainViewModel : ObservableObject
             AddDocument(session);
             await RememberRecentAsync(session.Location!.Path);
             Status = session.Location.IsReadOnly
-                ? $"Opened {session.Title} read-only. Use Save As to keep changes."
+                ? $"Opened {session.Title} (protected location: saving will ask for a new name)"
                 : $"Opened {session.Title}";
         });
     }
@@ -300,15 +300,50 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
+    /// <summary>
+    /// Saves in place. The first save over an opened file asks "replace existing?"; protected files
+    /// (packaged templates, the machine's LEdit folder) can only be saved under a new name.
+    /// </summary>
     /// <returns>False when the user cancelled or the save failed.</returns>
-    public async Task<bool> SaveDocumentAsync(DocumentViewModel document) =>
-        DocumentService.CanSaveInPlace(document.Session)
-            ? await RunBusyAsync("Saving…", async () =>
+    public async Task<bool> SaveDocumentAsync(DocumentViewModel document)
+    {
+        var session = document.Session;
+        if (session.Location is not { } location)
+        {
+            return await SaveDocumentAsAsync(document);
+        }
+
+        if (!session.OverwriteConfirmed)
+        {
+            var reason = location.IsReadOnly ? ProtectedReason(location.Path) : null;
+            switch (await _interaction.AskReplaceExistingAsync(location.Path, reason))
             {
-                await _documents.SaveAsync(document.Session);
-                Status = $"Saved {document.FilePath}";
-            })
-            : await SaveDocumentAsAsync(document);
+                case ReplaceAnswer.Cancel:
+                    return false;
+                case ReplaceAnswer.SaveAs:
+                    return await SaveDocumentAsAsync(document);
+                default:
+                    session.ConfirmOverwrite();
+                    break;
+            }
+        }
+
+        if (!DocumentService.CanSaveInPlace(session))
+        {
+            return await SaveDocumentAsAsync(document);
+        }
+
+        return await RunBusyAsync("Saving…", async () =>
+        {
+            await _documents.SaveAsync(session);
+            Status = $"Saved {document.FilePath}";
+        });
+    }
+
+    private string ProtectedReason(string path) =>
+        _locations.IsMachineInstallation && path.StartsWith(_locations.DataRoot, StringComparison.OrdinalIgnoreCase)
+            ? "This label is in the machine's LEdit folder, which is protected (enable AllowWritingMachineLabels in settings to change that)."
+            : "This label is a template packaged with the editor and cannot be replaced.";
 
     private async Task<bool> SaveDocumentAsAsync(DocumentViewModel document)
     {

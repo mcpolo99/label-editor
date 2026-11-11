@@ -69,6 +69,14 @@ public sealed class EditorSession
 
     public bool IsInteracting => _activeEdit is not null;
 
+    /// <summary>
+    /// False for a file that was opened but never saved in this session: the first save over it must be
+    /// confirmed ("replace existing?"). True after any save or an explicit confirmation.
+    /// </summary>
+    public bool OverwriteConfirmed { get; private set; }
+
+    public void ConfirmOverwrite() => OverwriteConfirmed = true;
+
     public string Title => Location?.FileName ?? "Untitled";
 
     /// <summary>Applies an edit as one undoable step. No-op edits are not recorded.</summary>
@@ -137,6 +145,7 @@ public sealed class EditorSession
     public void MarkSaved(DocumentLocation location, LabelLayout? savedLayout = null)
     {
         _savedLayout = savedLayout ?? Layout;
+        OverwriteConfirmed = true;
         Location = location;
         Raise(SessionChange.Document);
     }

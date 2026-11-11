@@ -25,7 +25,7 @@ public sealed class DocumentService(ILabelDocumentStore store, IStorageLocations
         return new EditorSession(layout);
     }
 
-    /// <summary>True when the session can be saved in place.</summary>
+    /// <summary>True when the session has a location that is not write protected (it may still need a replace confirmation).</summary>
     public static bool CanSaveInPlace(EditorSession session) => session.Location is { IsReadOnly: false };
 
     /// <summary>Saves to the session's current location.</summary>

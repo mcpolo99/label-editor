@@ -367,7 +367,7 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
 
     partial void OnSelectedFieldChanged(FieldOption? value)
     {
-        // Null while the user is still typing a search: keep the current field.
+        // Null (e.g. an unknown field id with no matching option): keep the current field.
         if (value is not null && !IsLiteral && value.Id != FieldId)
         {
             Update("field", e => e with { Source = new DataFieldReference(value.Id), PreviewText = null });

@@ -15,6 +15,12 @@ public sealed record EditorSettings
     /// <summary>Override for the installed LEdit folder; null = auto-detect.</summary>
     public string? LeditInstallationPath { get; init; }
 
+    /// <summary>
+    /// Allow saving into the installed LEdit's label folder (production data). Off by default; labels from there
+    /// can always be opened and edited, and saved elsewhere.
+    /// </summary>
+    public bool AllowWritingMachineLabels { get; init; }
+
     /// <summary>Override for the writable working folder; null = default.</summary>
     public string? WorkingFolder { get; init; }
 

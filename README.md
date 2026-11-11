@@ -22,8 +22,9 @@ and QR codes. It can fill the label with real part data from generated label she
 - **Preview with data**: *Load data…* takes a label sheet (`*_lbl.xml`) and fills every field from the
   chosen part (PageUp/PageDown to step through the parts).
 - **19 LEdit languages**, decoded with their original code pages; picked from the OS language.
-- **Safe with production data**: the installed LEdit folder and the packaged templates are read-only.
-  Labels from there open read-only and must be saved elsewhere (Save As).
+- **Safe saving**: every label opens editable. The first Save over an opened file asks *Replace existing?*
+  (Replace / Save As / Cancel). Packaged templates and the installed LEdit folder are protected and only offer
+  Save As; set `AllowWritingMachineLabels` in settings to allow replacing labels in the LEdit folder.
 - **Portable**: self-contained single executable, no installer.
 
 ## Data sources
