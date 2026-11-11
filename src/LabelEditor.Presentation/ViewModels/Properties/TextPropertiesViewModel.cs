@@ -11,12 +11,6 @@ namespace LabelEditor.Presentation.ViewModels.Properties;
 /// <summary>A selectable text direction.</summary>
 public sealed record RotationOption(TextRotation Rotation, string Name);
 
-/// <summary>A data field offered in an element's field picker. <see cref="ToString"/> is the element name, used for search.</summary>
-public sealed record FieldOption(int Id, string Name, string? Caption)
-{
-    public override string ToString() => Name;
-}
-
 /// <summary>A selectable bar code symbology; <see cref="Type"/> is null for a code the editor does not know.</summary>
 public sealed record BarcodeTypeOption(BarcodeType? Type, int Code, string Name);
 
@@ -24,23 +18,20 @@ public sealed record BarcodeTypeOption(BarcodeType? Type, int Code, string Name)
 public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
 {
     private readonly EditorContext _context;
+    private readonly Services.IUserInteraction _interaction;
 
-    public TextPropertiesViewModel(EditorSession session, TextEntry entry, EditorContext context)
+    public TextPropertiesViewModel(EditorSession session, TextEntry entry, EditorContext context, Services.IUserInteraction interaction)
         : base(session, entry)
     {
         _context = context;
-        FieldOptions = context.Resolver.Catalog.Fields
-            .Where(f => f.Id != Domain.Fields.FieldCatalog.RawTextId)
-            .OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase)
-            .Select(f => new FieldOption(f.Id, f.Name, context.Resolver.Texts.Resolve(f.Caption)))
-            .ToList();
+        _interaction = interaction;
         Refresh(entry);
     }
 
     public override string Title => IsBarcode ? "Bar code" : "Text";
 
-    /// <summary>All data fields, by element name, for the element field pickers.</summary>
-    public IReadOnlyList<FieldOption> FieldOptions { get; }
+    /// <summary>Opens the field selection dialog.</summary>
+    internal Task<int?> PickFieldAsync(int? currentFieldId) => _interaction.PickFieldAsync(_context.Resolver, currentFieldId);
 
     /// <summary>LEdit's bar code fonts first, then installed fonts.</summary>
     public IReadOnlyList<string> FontFamilies => [.. BarcodeFontNames, .. _context.Fonts.FontFamilies];
@@ -292,12 +283,6 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
         set => IsLiteral = !value;
     }
 
-    public IReadOnlyList<FieldOption> Fields => owner.FieldOptions;
-
-    /// <summary>The field this element prints; choosing another one re-targets the element.</summary>
-    [ObservableProperty]
-    private FieldOption? _selectedField;
-
     /// <summary>Short display: "Text" in quotes, or [FieldName].</summary>
     [ObservableProperty]
     private string _display = string.Empty;
@@ -343,7 +328,6 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
             FieldId = element.Source is DataFieldReference f ? f.FieldId : 0;
             FieldName = IsLiteral ? string.Empty : resolver.FieldName(FieldId);
             FieldCaption = IsLiteral ? null : resolver.FieldCaption(FieldId);
-            SelectedField = IsLiteral ? null : owner.FieldOptions.FirstOrDefault(o => o.Id == FieldId);
             Display = resolver.DescribeElement(element);
             PreviewText = element.PreviewText ?? string.Empty;
             DeleteFirst = element.DeleteFirst ?? element.First ?? 0;
@@ -365,19 +349,55 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
         }
     }
 
-    partial void OnSelectedFieldChanged(FieldOption? value)
+    /// <summary>Chooses the field this element prints from the field tree dialog.</summary>
+    [RelayCommand]
+    private Task ChooseFieldAsync() => PickAndApplyAsync(revertToTextOnCancel: false);
+
+    /// <summary>Switching to fixed text keeps the field name as text; switching to a field asks which one.</summary>
+    partial void OnIsLiteralChanged(bool value)
     {
-        // Null (e.g. an unknown field id with no matching option): keep the current field.
-        if (value is not null && !IsLiteral && value.Id != FieldId)
+        if (_refreshing || owner.Refreshing)
         {
-            Update("field", e => e with { Source = new DataFieldReference(value.Id), PreviewText = null });
+            return;
+        }
+
+        if (value)
+        {
+            Update("element kind", e => e with { Source = new LiteralText(FieldName.Length > 0 ? FieldName : "Text"), PreviewText = null });
+        }
+        else
+        {
+            _ = PickAndApplyAsync(revertToTextOnCancel: true);
         }
     }
 
-    /// <summary>Switches between fixed text and a data field; the sample text of the old field is dropped.</summary>
-    partial void OnIsLiteralChanged(bool value) => Update("element kind", e => value
-        ? e with { Source = new LiteralText(FieldName.Length > 0 ? FieldName : "Text"), PreviewText = null }
-        : e with { Source = new DataFieldReference(SelectedField?.Id ?? (FieldId != 0 ? FieldId : owner.FieldOptions.FirstOrDefault()?.Id ?? 0)), PreviewText = null });
+    private async Task PickAndApplyAsync(bool revertToTextOnCancel)
+    {
+        var picked = await owner.PickFieldAsync(FieldId == 0 ? null : FieldId);
+        if (picked is not { } id)
+        {
+            if (revertToTextOnCancel)
+            {
+                _refreshing = true;
+                IsLiteral = true;
+                _refreshing = false;
+            }
+
+            return;
+        }
+
+        if (id == Domain.Fields.FieldCatalog.RawTextId)
+        {
+            // "Raw text" in the tree means fixed text.
+            Update("element kind", e => e.Source is LiteralText ? e : e with { Source = new LiteralText(FieldName.Length > 0 ? FieldName : "Text"), PreviewText = null });
+            return;
+        }
+
+        if (id != FieldId)
+        {
+            Update("field", e => e with { Source = new DataFieldReference(id), PreviewText = null });
+        }
+    }
 
     partial void OnLiteralTextChanged(string value)
     {

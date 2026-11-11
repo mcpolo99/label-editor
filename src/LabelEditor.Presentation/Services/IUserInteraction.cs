@@ -33,6 +33,12 @@ public interface IUserInteraction
     Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason);
 
     Task ShowErrorAsync(string title, string message);
+
+    /// <summary>Lets the user choose a data field from the field tree.</summary>
+    /// <param name="resolver">Field catalog and captions to show.</param>
+    /// <param name="currentFieldId">Field to select initially, if any.</param>
+    /// <returns>The chosen field id, or null when cancelled.</returns>
+    Task<int?> PickFieldAsync(Application.Preview.FieldTextResolver resolver, int? currentFieldId);
 }
 
 /// <summary>Installed font families, for the font picker.</summary>

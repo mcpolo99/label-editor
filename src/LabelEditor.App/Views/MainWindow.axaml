@@ -89,21 +89,13 @@
                 <TextBlock Grid.Row="1" Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
                 <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
                 <TextBlock Grid.Row="1" Classes="label" Text="Field" IsVisible="{Binding IsField}" />
-                <!-- A strict dropdown: only fields from the catalog can be chosen (typing jumps to matching names). -->
-                <ComboBox Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}" HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField}"
-                          MaxDropDownHeight="360" IsTextSearchEnabled="True"
-                          PlaceholderText="(unknown field)" ToolTip.Tip="{Binding FieldCaption}">
-                  <ComboBox.ItemTemplate>
-                    <DataTemplate DataType="props:FieldOption">
-                      <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-                        <TextBlock Text="{Binding Caption}" Foreground="#888" />
-                        <TextBlock Text="{Binding Id}" Foreground="#aaa" />
-                      </StackPanel>
-                    </DataTemplate>
-                  </ComboBox.ItemTemplate>
-                </ComboBox>
+                <!-- Fields are chosen from the structured field tree (dialog), never typed. -->
+                <DockPanel Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}">
+                  <Button DockPanel.Dock="Right" Content="Choose…" Command="{Binding ChooseFieldCommand}" Margin="4,0,0,0" />
+                  <Border BorderBrush="#ccc" BorderThickness="1" CornerRadius="3" Padding="6,4" Background="#fafafa" ToolTip.Tip="{Binding FieldCaption}">
+                    <TextBlock Text="{Binding FieldName}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  </Border>
+                </DockPanel>
                 <TextBlock Grid.Row="2" Classes="label" Text="ID" IsVisible="{Binding IsField}" />
                 <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding IsField}" Foreground="#777" Text="{Binding FieldId}" ToolTip.Tip="{Binding FieldCaption}" />
                 <TextBlock Grid.Row="3" Classes="label" Text="Sample value" IsVisible="{Binding IsField}" />
@@ -365,6 +357,11 @@
             <TextBox DockPanel.Dock="Top" Text="{Binding FieldPicker.Filter}" Watermark="Filter (name, caption or ID)" Margin="0,0,0,4" />
             <TextBlock DockPanel.Dock="Bottom" Classes="hint" Margin="0,4,0,0" Text="Drag a field onto the label, or double-click to add it to the selected text." />
             <TreeView x:Name="FieldTree" ItemsSource="{Binding FieldPicker.Nodes}" SelectedItem="{Binding FieldPicker.SelectedNode}" DoubleTapped="OnFieldDoubleTapped">
+              <TreeView.Styles>
+                <Style Selector="TreeViewItem" x:DataType="vm:FieldNodeViewModel">
+                  <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                </Style>
+              </TreeView.Styles>
               <TreeView.ItemTemplate>
                 <TreeDataTemplate DataType="vm:FieldNodeViewModel" ItemsSource="{Binding Children}">
                   <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}" Background="Transparent"

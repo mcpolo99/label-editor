@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LabelEditor.Presentation.ViewModels"
+        xmlns:views="using:LabelEditor.App.Views"
+        x:Class="LabelEditor.App.Views.FieldPickerDialog"
+        x:DataType="vm:FieldPickerViewModel"
+        Title="Choose field"
+        Icon="/Assets/app.ico"
+        Width="460" Height="560" MinWidth="320" MinHeight="300"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False">
+  <DockPanel Margin="10">
+    <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Text="{Binding Filter}" Watermark="Filter (name, caption or ID)" Margin="0,0,0,6" />
+
+    <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+      <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="#555"
+                 Text="{Binding SelectedNode.ToolTip, FallbackValue='Select a field'}" />
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+        <Button Content="OK" MinWidth="80" IsDefault="True" IsEnabled="{Binding HasSelectedField}" Click="OnOk" />
+        <Button Content="Cancel" MinWidth="80" IsCancel="True" Click="OnCancel" />
+      </StackPanel>
+    </Grid>
+
+    <TreeView x:Name="Tree" ItemsSource="{Binding Nodes}" SelectedItem="{Binding SelectedNode}" DoubleTapped="OnTreeDoubleTapped">
+      <TreeView.Styles>
+        <Style Selector="TreeViewItem" x:DataType="vm:FieldNodeViewModel">
+          <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+        </Style>
+      </TreeView.Styles>
+      <TreeView.ItemTemplate>
+        <TreeDataTemplate DataType="vm:FieldNodeViewModel" ItemsSource="{Binding Children}">
+          <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}">
+            <TextBlock Text="{Binding Name}" FontWeight="{Binding IsField, Converter={x:Static views:MainWindow.FieldWeight}}" />
+            <TextBlock Text="{Binding Caption}" Foreground="#888" IsVisible="{Binding IsField}" />
+            <TextBlock Text="{Binding FieldId}" Foreground="#aaa" IsVisible="{Binding IsField}" />
+          </StackPanel>
+        </TreeDataTemplate>
+      </TreeView.ItemTemplate>
+    </TreeView>
+  </DockPanel>
+</Window>

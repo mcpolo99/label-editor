@@ -6,7 +6,7 @@ using LabelEditor.Domain.Fields;
 namespace LabelEditor.Presentation.ViewModels;
 
 /// <summary>A category or field in the field tree.</summary>
-public sealed class FieldNodeViewModel
+public sealed partial class FieldNodeViewModel : ObservableObject
 {
     public FieldNodeViewModel(string name, string? caption, int? fieldId, IReadOnlyList<FieldNodeViewModel> children)
     {
@@ -29,9 +29,12 @@ public sealed class FieldNodeViewModel
     public IReadOnlyList<FieldNodeViewModel> Children { get; }
 
     public string ToolTip => FieldId is { } id ? $"{Name} (ID {id}){(Caption is null ? string.Empty : " – " + Caption)}" : Name;
+
+    [ObservableProperty]
+    private bool _isExpanded;
 }
 
-/// <summary>The LEdit field tree with a filter box.</summary>
+/// <summary>The LEdit field tree with a filter box. Used by the Fields panel and the field selection dialog.</summary>
 public sealed partial class FieldPickerViewModel : ObservableObject
 {
     private FieldTextResolver? _resolver;
@@ -42,12 +45,53 @@ public sealed partial class FieldPickerViewModel : ObservableObject
     private string _filter = string.Empty;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SelectedFieldId), nameof(HasSelectedField))]
     private FieldNodeViewModel? _selectedNode;
+
+    /// <summary>Id of the selected node when it is a field (not a category).</summary>
+    public int? SelectedFieldId => SelectedNode?.FieldId;
+
+    public bool HasSelectedField => SelectedFieldId is not null;
 
     public void Load(FieldTextResolver resolver)
     {
         _resolver = resolver;
         Rebuild();
+    }
+
+    /// <summary>Selects the first node for <paramref name="fieldId"/> and expands its categories.</summary>
+    /// <returns>False when the field is not in the tree.</returns>
+    public bool Reveal(int fieldId)
+    {
+        foreach (var node in Nodes)
+        {
+            if (Reveal(node, fieldId))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool Reveal(FieldNodeViewModel node, int fieldId)
+    {
+        if (node.FieldId == fieldId)
+        {
+            SelectedNode = node;
+            return true;
+        }
+
+        foreach (var child in node.Children)
+        {
+            if (Reveal(child, fieldId))
+            {
+                node.IsExpanded = true;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     partial void OnFilterChanged(string value) => Rebuild();
@@ -87,7 +131,11 @@ public sealed partial class FieldPickerViewModel : ObservableObject
             return null;
         }
 
-        return new FieldNodeViewModel(resolver.Texts.Resolve(category.Caption) is { Length: > 0 } c ? c : category.Key, null, null, children);
+        // While filtering, show the matches without making the user open every category.
+        return new FieldNodeViewModel(resolver.Texts.Resolve(category.Caption) is { Length: > 0 } c ? c : category.Key, null, null, children)
+        {
+            IsExpanded = filter.Length > 0,
+        };
     }
 
     private static bool Matches(string text, string filter) => text.Contains(filter, StringComparison.CurrentCultureIgnoreCase);

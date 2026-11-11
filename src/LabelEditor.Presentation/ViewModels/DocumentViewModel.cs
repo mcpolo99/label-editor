@@ -231,7 +231,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
 
         Properties = entry switch
         {
-            TextEntry t => new TextPropertiesViewModel(Session, t, Context),
+            TextEntry t => new TextPropertiesViewModel(Session, t, Context, _interaction),
             EllipseEntry el => new EllipsePropertiesViewModel(Session, el),
             LineEntry l => new LinePropertiesViewModel(Session, l),
             BitmapEntry b => new BitmapPropertiesViewModel(Session, b, _interaction),

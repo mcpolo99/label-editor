@@ -63,6 +63,18 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
 
     public async Task ShowErrorAsync(string title, string message) => await ShowDialogAsync(title, message, ["OK"]);
 
+    public async Task<int?> PickFieldAsync(Application.Preview.FieldTextResolver resolver, int? currentFieldId)
+    {
+        var picker = new Presentation.ViewModels.FieldPickerViewModel();
+        picker.Load(resolver);
+        if (currentFieldId is { } id)
+        {
+            picker.Reveal(id);
+        }
+
+        return await new Views.FieldPickerDialog { DataContext = picker }.ShowDialog<int?>(owner);
+    }
+
     private async Task<string?> PickOneAsync(string title, FilePickerFileType type, string? initialFolder)
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions

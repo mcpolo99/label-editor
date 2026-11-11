@@ -73,6 +73,8 @@ public class SaveFlowTests
         public Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle) => Task.FromResult(SaveChangesAnswer.Cancel);
 
         public Task ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
+
+        public Task<int?> PickFieldAsync(FieldTextResolver resolver, int? currentFieldId) => Task.FromResult<int?>(null);
     }
 
     private sealed class Nothing : IFieldCatalogSource, ILanguageSource, ISettingsStore, ILabelLibrary, IFontCatalog
