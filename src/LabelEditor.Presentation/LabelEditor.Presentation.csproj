@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- View models. UI-framework independent: no Avalonia reference, so they are unit-testable. -->
+  <PropertyGroup>
+    <RootNamespace>LabelEditor.Presentation</RootNamespace>
+    <!-- Bound properties must be instance members even when constant. -->
+    <NoWarn>$(NoWarn);CA1822</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LabelEditor.Application\LabelEditor.Application.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

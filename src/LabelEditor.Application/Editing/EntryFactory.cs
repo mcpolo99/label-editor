@@ -10,6 +10,7 @@ public enum EditorTool
     Select,
     Text,
     Barcode,
+    QrCode,
     Line,
     Ellipse,
     Bitmap,
@@ -30,6 +31,7 @@ public static class EntryFactory
     {
         EditorTool.Text => (30_000, 6_000),
         EditorTool.Barcode => (50_000, 10_000),
+        EditorTool.QrCode => (15_000, 15_000),
         EditorTool.Line => (30_000, 0),
         EditorTool.Ellipse => (6_000, 6_000),
         EditorTool.CornerLogo => (30_000, 20_000),
@@ -59,6 +61,13 @@ public static class EntryFactory
                 Font = FontSpec.Default with { FaceName = "C28N", Height = -37, PitchAndFamily = 2 },
                 Options = new TextOptions { FontSize = 280, Barcode = BarcodeSettings.DefaultBarcode },
                 Elements = [fieldId is { } f ? TextElement.ForField(f, previewText) : TextElement.ForLiteral("123456")],
+            },
+            EditorTool.QrCode => new TextEntry
+            {
+                Id = id,
+                Bounds = box,
+                Options = new TextOptions { Barcode = BarcodeSettings.For(BarcodeType.QrCode) },
+                Elements = [fieldId is { } f ? TextElement.ForField(f, previewText) : TextElement.ForLiteral("123456789")],
             },
             EditorTool.Line => new LineEntry { Id = id, Bounds = bounds },
             EditorTool.Ellipse => new EllipseEntry { Id = id, Bounds = box },
