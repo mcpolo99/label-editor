@@ -52,7 +52,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
 
     /// <summary>Zoom factor, 1 = physical size.</summary>
     [ObservableProperty]
-    private double _zoom = 2.5;
+    private double _zoom = 2.0;
 
     [ObservableProperty]
     private EntryListItem? _selectedListItem;

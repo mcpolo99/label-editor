@@ -10,7 +10,7 @@ public sealed record EditorSettings
 
     public bool ShowGrid { get; init; } = true;
 
-    public double Zoom { get; init; } = 4.0;
+    public double Zoom { get; init; } = 2.0;
 
     /// <summary>Override for the installed LEdit folder; null = auto-detect.</summary>
     public string? LeditInstallationPath { get; init; }
