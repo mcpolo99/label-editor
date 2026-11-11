@@ -1,6 +1,25 @@
 # Releasing and installing
 
-## Build a release
+## Publish a release
+
+```powershell
+./build/release.ps1 -Version 0.3.0        # on develop: version, CHANGELOG.md, commit "chore: release 0.3.0", tag v0.3.0
+git push origin develop --follow-tags     # the tag starts the GitHub "Release" workflow
+```
+
+The **Release** workflow (`.github/workflows/release.yml`) builds the installer and the portable zip on GitHub and
+publishes them as a GitHub release. Its notes are that version's section of the changelog.
+
+**The changelog is generated** from the commit messages by [git-cliff](https://git-cliff.org) (`cliff.toml`):
+`feature:` commits are listed under *Features*, `fix:` under *Fixes*, `refactor:` under *Changes*, and so on, so
+writing good commit messages is all it takes. Preview the next release's notes with
+`npx git-cliff@2.10.0 --unreleased`.
+
+The **CI** workflow runs all tests on every push to `develop`/`main` and on pull requests. Tests that need Biesse's
+own LEdit files are skipped there (those files are not in the repository); locally they run when LEdit is installed,
+or point `LABELEDITOR_LEDIT_DATA` at an LEdit folder.
+
+## Build locally
 
 ```powershell
 ./build/package.ps1                  # package the version in Directory.Build.props

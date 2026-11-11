@@ -1,0 +1,53 @@
+name: Release
+
+# Pushing a version tag (build/release.ps1 creates it) builds the installer and the portable zip and publishes
+# them as a GitHub release, with the changelog of that version as release notes.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # the changelog is built from the whole history
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe")) { choco install innosetup -y --no-progress }
+
+      - name: Check the tag matches the version
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content Directory.Build.props)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("v$version" -ne "${{ github.ref_name }}") { throw "Tag ${{ github.ref_name }} does not match version $version in Directory.Build.props" }
+
+      - name: Build installer and portable zip
+        shell: pwsh
+        run: ./build/package.ps1
+
+      - name: Release notes
+        shell: pwsh
+        run: npx --yes git-cliff@2.10.0 --latest --strip header -o release-notes.md
+
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart("v")
+          gh release create "${{ github.ref_name }}" `
+            --title "Label Editor $version" `
+            --notes-file release-notes.md `
+            "artifacts/installer/LabelEditor-Setup-$version.exe" `
+            "artifacts/LabelEditor-$version-portable-win-x64.zip"
