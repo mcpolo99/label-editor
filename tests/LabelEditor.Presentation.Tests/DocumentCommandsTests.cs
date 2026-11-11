@@ -61,6 +61,24 @@ public class DocumentCommandsTests
     }
 
     [Fact]
+    public void Overlapping_entries_can_be_listed_and_picked()
+    {
+        var back = new EllipseEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 20_000, 20_000) };
+        var front = new LineEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 10_000, 20_000, 0) };
+        var session = new EditorSession(LabelLayout.CreateNew().AddEntries([back, front]));
+        var document = new DocumentViewModel(session, new EditorContext(new EntryClipboard(), new NoFonts()), null!);
+
+        var stack = document.EntriesAt(new LabelPoint(5_000, 10_000), 100);
+
+        Assert.Equal([front.Id, back.Id], stack.Select(i => i.Id));
+        Assert.Equal(["Line", "Ellipse"], stack.Select(i => i.Kind));
+        document.HighlightedEntry = back.Id;
+        document.SelectEntry(back.Id);
+        Assert.Equal([back.Id], session.Selection.Ids);
+        Assert.Null(document.HighlightedEntry);
+    }
+
+    [Fact]
     public void Toggle_lock_locks_a_mixed_selection_and_unlocks_a_locked_one()
     {
         var (document, boxes) = Setup();

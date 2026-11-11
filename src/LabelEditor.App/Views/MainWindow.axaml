@@ -480,6 +480,8 @@
               <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <controls:LabelCanvas.ContextMenu>
                   <ContextMenu>
+                  <MenuItem Header="Select _overlapping" Tag="pick-overlapping" IsVisible="False" ToolTip.Tip="All entries under the pointer, topmost first (also: Alt+click)" />
+                  <Separator Tag="pick-overlapping" IsVisible="False" />
                   <MenuItem Header="Cu_t" Command="{Binding CutCommand}" InputGesture="Ctrl+X" />
                   <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGesture="Ctrl+C" />
                   <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />

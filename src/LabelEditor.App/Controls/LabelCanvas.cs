@@ -2,6 +2,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using LabelEditor.App.Rendering;
 using LabelEditor.Application.Documents;
@@ -40,6 +41,7 @@ public sealed class LabelCanvas : Control
     private static readonly IPen GridPen = new Pen(new SolidColorBrush(Color.FromArgb(40, 0, 90, 200)), 1);
     private static readonly IPen LabelPen = new Pen(new SolidColorBrush(Color.FromRgb(120, 120, 120)), 1);
     private static readonly IBrush MarqueeFill = new SolidColorBrush(Color.FromArgb(30, 0, 120, 215));
+    private static readonly IPen HighlightPen = new Pen(new SolidColorBrush(Color.FromRgb(255, 140, 0)), 2.5);
 
     private readonly ScenePainter _painter = new();
     private (LabelLayout Layout, object? Record, object Resolver, LabelScene Scene)? _sceneCache;
@@ -184,6 +186,17 @@ public sealed class LabelCanvas : Control
 
         context.DrawRectangle(null, LabelPen, label);
         DrawSelection(context, document, view);
+        if (document.HighlightedEntry is { } highlighted && document.Layout.Find(highlighted) is { } hover)
+        {
+            if (hover.IsSegment)
+            {
+                context.DrawLine(HighlightPen, view.ToView(hover.Bounds.Start), view.ToView(hover.Bounds.End));
+            }
+            else
+            {
+                context.DrawRectangle(null, HighlightPen, view.ToView(hover.Bounds).Inflate(2));
+            }
+        }
         DrawInteraction(context, view);
     }
 
@@ -320,6 +333,7 @@ public sealed class LabelCanvas : Control
             // The context menu acts on the selection: right-clicking an entry outside it selects that entry first.
             var probe = View.ToLayout(e.GetPosition(this));
             Document?.SelectForContextMenu(HitTesting.EntryAt(session.Layout, probe, (int)(4 / View.Scale))?.Id);
+            FillPickMenu(probe);
             return;
         }
 
@@ -351,7 +365,16 @@ public sealed class LabelCanvas : Control
             return;
         }
 
-        var entry = HitTesting.EntryAt(session.Layout, _pressLayout, (int)(4 / view.Scale));
+        // Alt+click: select the next entry behind the current one at this point ("select behind"), wrapping around.
+        var alt = e.KeyModifiers.HasFlag(KeyModifiers.Alt) && !e.KeyModifiers.HasFlag(KeyModifiers.Control) && !e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        var entry = alt
+            ? HitTesting.NextEntryAt(session.Layout, _pressLayout, (int)(4 / view.Scale), session.Selection.Count == 1 ? session.Selection.Dominant : null)
+            : HitTesting.EntryAt(session.Layout, _pressLayout, (int)(4 / view.Scale));
+        if (alt && entry is not null)
+        {
+            session.Selection.Select(entry.Id);
+        }
+
         var toggle = e.KeyModifiers.HasFlag(KeyModifiers.Control);
         var add = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         if (entry is null)
@@ -391,7 +414,9 @@ public sealed class LabelCanvas : Control
 
         var position = e.GetPosition(this);
         var layoutPoint = View.ToLayout(position);
-        document.CursorPosition = string.Create(CultureInfo.CurrentCulture, $"{layoutPoint.X / 1000.0:0.0}, {layoutPoint.Y / 1000.0:0.0}");
+        var stacked = _mode == Mode.None ? HitTesting.EntriesAt(document.Layout, layoutPoint, (int)(4 / View.Scale)).Count : 0;
+        document.CursorPosition = string.Create(CultureInfo.CurrentCulture, $"{layoutPoint.X / 1000.0:0.0}, {layoutPoint.Y / 1000.0:0.0}")
+            + (stacked > 1 ? $"   ·   {stacked} entries here: Alt+click or right-click to pick" : string.Empty);
 
         switch (_mode)
         {
@@ -596,6 +621,58 @@ public sealed class LabelCanvas : Control
 
         var side = Math.Max(Math.Abs(dx), Math.Abs(dy));
         return new LabelPoint(start.X + (Math.Sign(dx == 0 ? 1 : dx) * side), start.Y + (Math.Sign(dy == 0 ? 1 : dy) * side));
+    }
+
+    // ------------------------------------------------------------------ "Select overlapping" list in the context menu
+
+    /// <summary>Tag of the context menu item (and its separator) that lists the entries stacked under the pointer.</summary>
+    public const string PickMenuTag = "pick-overlapping";
+
+    private void FillPickMenu(LabelPoint point)
+    {
+        if (Document is not { } document || ContextMenu is not { } menu)
+        {
+            return;
+        }
+
+        var stack = document.EntriesAt(point, (int)(4 / View.Scale));
+        var parts = menu.Items.OfType<Control>().Where(c => Equals(c.Tag, PickMenuTag)).ToList();
+        foreach (var part in parts)
+        {
+            part.IsVisible = stack.Count > 1;
+        }
+
+        if (parts.OfType<MenuItem>().FirstOrDefault() is not { } pick)
+        {
+            return;
+        }
+
+        pick.Items.Clear();
+        foreach (var item in stack)
+        {
+            var id = item.Id;
+            var option = new MenuItem
+            {
+                Header = string.IsNullOrEmpty(item.Description) ? item.Kind : $"{item.Kind}   {item.Description}",
+                ToggleType = MenuItemToggleType.CheckBox,
+                IsChecked = document.Session.Selection.Contains(id),
+            };
+            option.Click += (_, _) => document.SelectEntry(id);
+            option.PointerEntered += (_, _) => document.HighlightedEntry = id;
+            option.PointerExited += (_, _) => document.HighlightedEntry = null;
+            pick.Items.Add(option);
+        }
+
+        menu.Closed -= OnContextMenuClosed;
+        menu.Closed += OnContextMenuClosed;
+    }
+
+    private void OnContextMenuClosed(object? sender, RoutedEventArgs e)
+    {
+        if (Document is { } document)
+        {
+            document.HighlightedEntry = null;
+        }
     }
 
     // ------------------------------------------------------------------ keyboard

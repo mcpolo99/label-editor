@@ -190,6 +190,29 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
     /// <summary>True when every selected entry is size-locked (drives the lock toggle button).</summary>
     public bool IsSelectionSizeLocked => Session.SelectedEntries() is { Count: > 0 } selected && selected.All(e => e.IsSizeLocked);
 
+    /// <summary>Entry outlined while the user hovers it in the "Select overlapping" list.</summary>
+    [ObservableProperty]
+    private EntryId? _highlightedEntry;
+
+    partial void OnHighlightedEntryChanged(EntryId? value) => RenderInvalidated?.Invoke(this, EventArgs.Empty);
+
+    /// <summary>The entries stacked at a point, topmost first, described like the outline list.</summary>
+    public IReadOnlyList<EntryListItem> EntriesAt(LabelPoint point, int tolerance)
+    {
+        var ids = HitTesting.EntriesAt(Layout, point, tolerance).Select(e => e.Id).ToList();
+        return ids.Select(id => Entries.FirstOrDefault(i => i.Id == id)).OfType<EntryListItem>().ToList();
+    }
+
+    /// <summary>Selects exactly this entry (from the "Select overlapping" list).</summary>
+    public void SelectEntry(EntryId id)
+    {
+        HighlightedEntry = null;
+        if (Layout.Find(id) is not null && !Session.IsInteracting)
+        {
+            Session.Selection.Select(id);
+        }
+    }
+
     /// <summary>Right-click on the canvas: select the entry under the pointer unless it is already part of the selection.</summary>
     public void SelectForContextMenu(EntryId? hit)
     {
