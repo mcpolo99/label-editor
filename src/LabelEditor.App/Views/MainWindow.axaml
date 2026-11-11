@@ -79,25 +79,42 @@
         <ContentControl Content="{Binding SelectedElement}">
           <ContentControl.ContentTemplate>
             <DataTemplate DataType="props:TextElementViewModel">
-              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4" Margin="0,4,0,0">
-                <TextBlock Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
-                <TextBox Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
-                <TextBlock Classes="label" Text="Field" IsVisible="{Binding !IsLiteral}" />
-                <TextBlock Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding !IsLiteral}" ToolTip.Tip="{Binding FieldCaption}">
-                  <Run Text="{Binding FieldName}" FontWeight="SemiBold" />
-                  <Run Text="{Binding FieldId, StringFormat=' (ID {0})'}" Foreground="#777" />
-                </TextBlock>
-                <TextBlock Grid.Row="1" Classes="label" Text="Sample value" IsVisible="{Binding !IsLiteral}" />
-                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PreviewText}" Watermark="shown while designing" IsVisible="{Binding !IsLiteral}" />
-                <TextBlock Grid.Row="2" Classes="label" Text="Skip first / last" />
-                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4" Margin="0,4,0,0">
+                <TextBlock Classes="label" Text="Prints" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12">
+                  <RadioButton GroupName="elementKind" Content="Data field" IsChecked="{Binding IsField}" />
+                  <RadioButton GroupName="elementKind" Content="Fixed text" IsChecked="{Binding IsLiteral}" />
+                </StackPanel>
+                <TextBlock Grid.Row="1" Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
+                <TextBlock Grid.Row="1" Classes="label" Text="Field" IsVisible="{Binding IsField}" />
+                <AutoCompleteBox Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}"
+                                 ItemsSource="{Binding Fields}" SelectedItem="{Binding SelectedField}"
+                                 FilterMode="ContainsOrdinal" MinimumPrefixLength="0" MaxDropDownHeight="320"
+                                 Watermark="Type to search fields" ToolTip.Tip="{Binding FieldCaption}">
+                  <AutoCompleteBox.ItemTemplate>
+                    <DataTemplate DataType="props:FieldOption">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding Caption}" Foreground="#888" />
+                        <TextBlock Text="{Binding Id}" Foreground="#aaa" />
+                      </StackPanel>
+                    </DataTemplate>
+                  </AutoCompleteBox.ItemTemplate>
+                </AutoCompleteBox>
+                <TextBlock Grid.Row="2" Classes="label" Text="ID" IsVisible="{Binding IsField}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding IsField}" Foreground="#777" Text="{Binding FieldId}" ToolTip.Tip="{Binding FieldCaption}" />
+                <TextBlock Grid.Row="3" Classes="label" Text="Sample value" IsVisible="{Binding IsField}" />
+                <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PreviewText}" Watermark="shown while designing" IsVisible="{Binding IsField}" />
+                <TextBlock Grid.Row="4" Classes="label" Text="Skip first / last" />
+                <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="4">
                   <NumericUpDown Value="{Binding DeleteFirst}" Minimum="0" Increment="1" FormatString="0" />
                   <NumericUpDown Value="{Binding DeleteLast}" Minimum="0" Increment="1" FormatString="0" />
                 </StackPanel>
-                <TextBlock Grid.Row="3" Classes="label" Text="Characters" />
-                <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding Count}" Minimum="-1" Increment="1" FormatString="0" ToolTip.Tip="-1 = all" HorizontalAlignment="Left" />
-                <TextBlock Grid.Row="4" Classes="label" Text="Fill" />
-                <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch" />
+                <TextBlock Grid.Row="5" Classes="label" Text="Characters" />
+                <NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding Count}" Minimum="-1" Increment="1" FormatString="0" ToolTip.Tip="-1 = all" HorizontalAlignment="Left" />
+                <TextBlock Grid.Row="6" Classes="label" Text="Fill" />
+                <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch" />
               </Grid>
             </DataTemplate>
           </ContentControl.ContentTemplate>

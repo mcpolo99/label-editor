@@ -11,6 +11,12 @@ namespace LabelEditor.Presentation.ViewModels.Properties;
 /// <summary>A selectable text direction.</summary>
 public sealed record RotationOption(TextRotation Rotation, string Name);
 
+/// <summary>A data field offered in an element's field picker. <see cref="ToString"/> is the element name, used for search.</summary>
+public sealed record FieldOption(int Id, string Name, string? Caption)
+{
+    public override string ToString() => Name;
+}
+
 /// <summary>A selectable bar code symbology; <see cref="Type"/> is null for a code the editor does not know.</summary>
 public sealed record BarcodeTypeOption(BarcodeType? Type, int Code, string Name);
 
@@ -23,10 +29,18 @@ public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
         : base(session, entry)
     {
         _context = context;
+        FieldOptions = context.Resolver.Catalog.Fields
+            .Where(f => f.Id != Domain.Fields.FieldCatalog.RawTextId)
+            .OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase)
+            .Select(f => new FieldOption(f.Id, f.Name, context.Resolver.Texts.Resolve(f.Caption)))
+            .ToList();
         Refresh(entry);
     }
 
     public override string Title => IsBarcode ? "Bar code" : "Text";
+
+    /// <summary>All data fields, by element name, for the element field pickers.</summary>
+    public IReadOnlyList<FieldOption> FieldOptions { get; }
 
     /// <summary>LEdit's bar code fonts first, then installed fonts.</summary>
     public IReadOnlyList<string> FontFamilies => [.. BarcodeFontNames, .. _context.Fonts.FontFamilies];
@@ -268,7 +282,21 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
     public IReadOnlyList<FillCharacterMode> FillModes { get; } = Enum.GetValues<FillCharacterMode>();
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsField))]
     private bool _isLiteral;
+
+    /// <summary>Two-way counterpart of <see cref="IsLiteral"/> for the "Data field" option.</summary>
+    public bool IsField
+    {
+        get => !IsLiteral;
+        set => IsLiteral = !value;
+    }
+
+    public IReadOnlyList<FieldOption> Fields => owner.FieldOptions;
+
+    /// <summary>The field this element prints; choosing another one re-targets the element.</summary>
+    [ObservableProperty]
+    private FieldOption? _selectedField;
 
     /// <summary>Short display: "Text" in quotes, or [FieldName].</summary>
     [ObservableProperty]
@@ -315,6 +343,7 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
             FieldId = element.Source is DataFieldReference f ? f.FieldId : 0;
             FieldName = IsLiteral ? string.Empty : resolver.FieldName(FieldId);
             FieldCaption = IsLiteral ? null : resolver.FieldCaption(FieldId);
+            SelectedField = IsLiteral ? null : owner.FieldOptions.FirstOrDefault(o => o.Id == FieldId);
             Display = resolver.DescribeElement(element);
             PreviewText = element.PreviewText ?? string.Empty;
             DeleteFirst = element.DeleteFirst ?? element.First ?? 0;
@@ -335,6 +364,20 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
             owner.UpdateElement(Index, property, change);
         }
     }
+
+    partial void OnSelectedFieldChanged(FieldOption? value)
+    {
+        // Null while the user is still typing a search: keep the current field.
+        if (value is not null && !IsLiteral && value.Id != FieldId)
+        {
+            Update("field", e => e with { Source = new DataFieldReference(value.Id), PreviewText = null });
+        }
+    }
+
+    /// <summary>Switches between fixed text and a data field; the sample text of the old field is dropped.</summary>
+    partial void OnIsLiteralChanged(bool value) => Update("element kind", e => value
+        ? e with { Source = new LiteralText(FieldName.Length > 0 ? FieldName : "Text"), PreviewText = null }
+        : e with { Source = new DataFieldReference(SelectedField?.Id ?? (FieldId != 0 ? FieldId : owner.FieldOptions.FirstOrDefault()?.Id ?? 0)), PreviewText = null });
 
     partial void OnLiteralTextChanged(string value)
     {
