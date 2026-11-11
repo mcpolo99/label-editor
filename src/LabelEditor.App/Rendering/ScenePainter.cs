@@ -42,6 +42,9 @@ public sealed class ScenePainter
     /// <summary>Draws design aids (frames around placeholders). Off for a clean print preview.</summary>
     public bool ShowDesignAids { get; set; } = true;
 
+    /// <summary>The label paper colour; white surfaces on the label (corner logo) use it so they match a dimmed label.</summary>
+    public IBrush Paper { get; set; } = Brushes.White;
+
     public void Paint(DrawingContext context, LabelScene scene, ViewTransform view)
     {
         foreach (var item in scene.Items)
@@ -216,7 +219,7 @@ public sealed class ScenePainter
         var box = view.ToView(c.Bounds);
         var band = Math.Min(box.Width, box.Height) * Math.Clamp(c.Logo.EdgeThicknessPercent, 1, 40) / 100.0;
         var bandBrush = new SolidColorBrush(Color.FromRgb(90, 90, 90));
-        context.DrawRectangle(Brushes.White, new Pen(Ink, 1), box);
+        context.DrawRectangle(Paper, new Pen(Ink, 1), box);
         context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Y, box.Width, band));
         context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Bottom - band, box.Width, band));
         context.DrawRectangle(bandBrush, null, new Rect(box.X, box.Y, band, box.Height));

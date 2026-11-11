@@ -151,6 +151,10 @@ public sealed partial class MainViewModel : ObservableObject
         _settings = settings;
         Context.SnapToGrid = settings.SnapToGrid;
         Context.ShowGrid = settings.ShowGrid;
+        Context.DimLabelInDarkTheme = settings.DimLabelInDarkTheme;
+        _loadingTheme = true;
+        Theme = settings.Theme;
+        _loadingTheme = false;
         foreach (var file in settings.RecentFiles)
         {
             RecentFiles.Add(file);
@@ -412,8 +416,39 @@ public sealed partial class MainViewModel : ObservableObject
             }
         }
 
-        await SaveSettingsAsync(_settings with { SnapToGrid = Context.SnapToGrid, ShowGrid = Context.ShowGrid });
+        await SaveSettingsAsync(_settings with { SnapToGrid = Context.SnapToGrid, ShowGrid = Context.ShowGrid, DimLabelInDarkTheme = Context.DimLabelInDarkTheme });
         return true;
+    }
+
+    /// <summary>Colour theme; the view applies it (System follows the Windows app mode).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSystemTheme), nameof(IsLightTheme), nameof(IsDarkTheme))]
+    private AppTheme _theme = AppTheme.System;
+
+    private bool _loadingTheme;
+
+    public bool IsSystemTheme => Theme == AppTheme.System;
+
+    public bool IsLightTheme => Theme == AppTheme.Light;
+
+    public bool IsDarkTheme => Theme == AppTheme.Dark;
+
+    /// <summary>View ▸ Theme: "System", "Light" or "Dark".</summary>
+    [RelayCommand]
+    private void SetTheme(string? theme)
+    {
+        if (Enum.TryParse<AppTheme>(theme, ignoreCase: true, out var value))
+        {
+            Theme = value;
+        }
+    }
+
+    partial void OnThemeChanged(AppTheme value)
+    {
+        if (!_loadingTheme)
+        {
+            _ = SaveSettingsAsync(_settings with { Theme = value });
+        }
     }
 
     private async Task<bool> ConfirmCloseAsync(DocumentViewModel document)

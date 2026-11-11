@@ -1,8 +1,22 @@
 namespace LabelEditor.Application.Settings;
 
+/// <summary>Colour theme of the editor window.</summary>
+public enum AppTheme
+{
+    /// <summary>Follow the Windows light / dark app mode.</summary>
+    System,
+    Light,
+    Dark,
+}
+
 /// <summary>User preferences, persisted between runs.</summary>
 public sealed record EditorSettings
 {
+    public AppTheme Theme { get; init; } = AppTheme.System;
+
+    /// <summary>In the dark theme, show the label paper light grey instead of bright white (easier on the eyes).</summary>
+    public bool DimLabelInDarkTheme { get; init; } = true;
+
     /// <summary>LEdit language name; null = pick from the OS culture.</summary>
     public string? Language { get; init; }
 

@@ -2,10 +2,12 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using Avalonia.Threading;
 using LabelEditor.App.Services;
 using LabelEditor.App.Views;
 using LabelEditor.Application;
+using LabelEditor.Application.Settings;
 using LabelEditor.Infrastructure;
 using LabelEditor.Infrastructure.Storage;
 using LabelEditor.Presentation.Services;
@@ -52,9 +54,17 @@ public sealed class App : Avalonia.Application
                 AllowWritingMachineLabels = settings.AllowWritingMachineLabels,
             };
 
+            ApplyTheme(settings.Theme); // before anything else shows, so the window doesn't flash light first
             _services = ConfigureServices(paths, storage, window);
             window.Title = _services.GetRequiredService<MainViewModel>().WindowTitle;
             var viewModel = _services.GetRequiredService<MainViewModel>();
+            viewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.Theme))
+                {
+                    ApplyTheme(viewModel.Theme);
+                }
+            };
             window.DataContext = viewModel;
             await viewModel.InitializeAsync(settings, args.Where(File.Exists).ToList());
         }
@@ -63,6 +73,14 @@ public sealed class App : Avalonia.Application
             await new AvaloniaUserInteraction(window).ShowErrorAsync("Start-up failed", ex.ToString());
         }
     }
+
+    /// <summary>Switches every window between light and dark; System follows the Windows app mode.</summary>
+    internal void ApplyTheme(AppTheme theme) => RequestedThemeVariant = theme switch
+    {
+        AppTheme.Light => ThemeVariant.Light,
+        AppTheme.Dark => ThemeVariant.Dark,
+        _ => ThemeVariant.Default,
+    };
 
     /// <summary>Version (from the assembly, stamped by build/package.ps1) and where this copy keeps its data.</summary>
     private static ApplicationInfo DescribeApplication(AppPaths paths, StorageOptions storage, Application.Abstractions.IStorageLocations locations)

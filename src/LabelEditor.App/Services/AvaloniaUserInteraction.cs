@@ -115,8 +115,8 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
                 ? "No versions yet. A version is recorded every time the label is saved."
                 : "Restore brings the version back into the editor (save to make it current). Open as copy opens it in a new tab.",
             TextWrapping = TextWrapping.Wrap,
-            Foreground = Brushes.DimGray,
         };
+        hint.Bind(TextBlock.ForegroundProperty, hint.GetResourceObservable("HintForeground")); // follows the theme
         var buttons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6, HorizontalAlignment = HorizontalAlignment.Right, Children = { restore, copy, close } };
         var panel = new DockPanel { Margin = new Avalonia.Thickness(10) };
         DockPanel.SetDock(hint, Dock.Top);

@@ -8,7 +8,8 @@ namespace LabelEditor.Infrastructure.Storage;
 /// <summary>Settings as JSON in the user data folder. A missing or corrupt file yields defaults.</summary>
 public sealed class JsonSettingsStore(string filePath, ILogger<JsonSettingsStore> logger) : ISettingsStore
 {
-    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true };
+    // Enums as names ("Theme": "Dark") so the file stays readable and hand-editable.
+    private static readonly JsonSerializerOptions Options = new() { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 
     public async Task<EditorSettings> LoadAsync(CancellationToken cancellationToken = default)
     {

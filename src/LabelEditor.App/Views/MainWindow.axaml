@@ -61,7 +61,7 @@
         <TextBlock Classes="section" Text="{Binding Title}" />
         <views:GeometryEditor />
         <TextBlock Classes="section" Text="Content" />
-        <Border BorderBrush="#ccc" BorderThickness="1" Padding="6,4" Background="#fafafa">
+        <Border BorderBrush="{DynamicResource BoxBorder}" BorderThickness="1" Padding="6,4" Background="{DynamicResource BoxBackground}">
           <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" FontFamily="Consolas,monospace" />
         </Border>
         <!-- Composer: the entry prints its pieces in this order. Click a chip to edit it; new pieces go after it. -->
@@ -106,12 +106,12 @@
                 <!-- Fields are chosen from the structured field tree (dialog), never typed. -->
                 <DockPanel Grid.Row="1" Grid.Column="1" IsVisible="{Binding IsField}">
                   <Button DockPanel.Dock="Right" Content="Choose…" Command="{Binding ChooseFieldCommand}" Margin="4,0,0,0" />
-                  <Border BorderBrush="#ccc" BorderThickness="1" CornerRadius="3" Padding="6,4" Background="#fafafa" ToolTip.Tip="{Binding FieldCaption}">
+                  <Border BorderBrush="{DynamicResource BoxBorder}" BorderThickness="1" CornerRadius="3" Padding="6,4" Background="{DynamicResource BoxBackground}" ToolTip.Tip="{Binding FieldCaption}">
                     <TextBlock Text="{Binding FieldName}" FontWeight="SemiBold" VerticalAlignment="Center" />
                   </Border>
                 </DockPanel>
                 <TextBlock Grid.Row="2" Classes="label" Text="ID" IsVisible="{Binding IsField}" />
-                <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding IsField}" Foreground="#777" Text="{Binding FieldId}" ToolTip.Tip="{Binding FieldCaption}" />
+                <TextBlock Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding IsField}" Foreground="{DynamicResource MutedForeground}" Text="{Binding FieldId}" ToolTip.Tip="{Binding FieldCaption}" />
                 <TextBlock Grid.Row="3" Classes="label" Text="Sample value" IsVisible="{Binding IsField}" />
                 <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding PreviewText}" Watermark="shown while designing" IsVisible="{Binding IsField}" />
                 <TextBlock Grid.Row="4" Classes="label" Text="Skip first / last" />
@@ -307,17 +307,25 @@
         <Separator />
         <MenuItem Header="Show _grid" ToggleType="CheckBox" IsChecked="{Binding Context.ShowGrid}" />
         <MenuItem Header="_Snap to grid" ToggleType="CheckBox" IsChecked="{Binding Context.SnapToGrid}" />
+        <Separator />
+        <MenuItem Header="_Theme">
+          <MenuItem Header="_System (follow Windows)" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsSystemTheme, Mode=OneWay}" Command="{Binding SetThemeCommand}" CommandParameter="System" />
+          <MenuItem Header="_Light" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsLightTheme, Mode=OneWay}" Command="{Binding SetThemeCommand}" CommandParameter="Light" />
+          <MenuItem Header="_Dark" ToggleType="Radio" GroupName="theme" IsChecked="{Binding IsDarkTheme, Mode=OneWay}" Command="{Binding SetThemeCommand}" CommandParameter="Dark" />
+          <Separator />
+          <MenuItem Header="Dim _label paper in dark theme" ToggleType="CheckBox" IsChecked="{Binding Context.DimLabelInDarkTheme}" />
+        </MenuItem>
       </MenuItem>
     </Menu>
 
     <!-- Toolbar -->
-    <Border DockPanel.Dock="Top" BorderBrush="#ddd" BorderThickness="0,0,0,1" Padding="6,4" Background="#f6f7f9">
+    <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource BarBorder}" BorderThickness="0,0,0,1" Padding="6,4" Background="{DynamicResource ToolbarBackground}">
       <DockPanel>
         <StackPanel Orientation="Horizontal" Spacing="4">
           <Button Classes="tool" Content="New" Command="{Binding NewDocumentCommand}" />
           <Button Classes="tool" Content="Open" Command="{Binding OpenCommand}" />
           <Button Classes="tool" Content="Save" Command="{Binding SaveCommand}" />
-          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,2" />
           <ItemsControl ItemsSource="{Binding Tools}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
@@ -332,7 +340,7 @@
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
-          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,2" />
           <Button Classes="tool" Content="−" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (Ctrl+wheel)" />
           <TextBlock VerticalAlignment="Center" MinWidth="44" TextAlignment="Center" Text="{Binding ActiveDocument.Zoom, StringFormat='{}{0:P0}', FallbackValue=''}" />
           <Button Classes="tool" Content="+" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (Ctrl+wheel)" />
@@ -351,7 +359,7 @@
           </ComboBox>
           <Button Classes="tool" Content="▶" Command="{Binding NextRecordCommand}" ToolTip.Tip="Next record (PageDown)" />
           <Button Classes="tool" Content="Load data…" Command="{Binding LoadPreviewDataCommand}" ToolTip.Tip="Fill the label with values from a label sheet (*_lbl.xml)" />
-          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,2" />
           <TextBlock VerticalAlignment="Center" Text="Language:" />
           <ComboBox MinWidth="110" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}">
             <ComboBox.ItemTemplate>
@@ -365,34 +373,34 @@
     </Border>
 
     <!-- Edit / arrange toolbar. Buttons are enabled only when the selection allows the command. -->
-    <Border DockPanel.Dock="Top" BorderBrush="#ddd" BorderThickness="0,0,0,1" Padding="6,2" Background="#fbfbfc">
+    <Border DockPanel.Dock="Top" BorderBrush="{DynamicResource BarBorder}" BorderThickness="0,0,0,1" Padding="6,2" Background="{DynamicResource SubToolbarBackground}">
       <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
         <StackPanel Orientation="Horizontal" Spacing="1">
           <Button Classes="icon" Command="{Binding UndoCommand}" ToolTip.Tip="Undo (Ctrl+Z)"><PathIcon Data="{StaticResource IconUndo}" /></Button>
           <Button Classes="icon" Command="{Binding RedoCommand}" ToolTip.Tip="Redo (Ctrl+Y)"><PathIcon Data="{StaticResource IconRedo}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding DuplicateCommand}" ToolTip.Tip="Duplicate (Ctrl+D)"><PathIcon Data="{StaticResource IconDuplicate}" /></Button>
           <Button Classes="icon" Command="{Binding DeleteCommand}" ToolTip.Tip="Delete (Del)"><PathIcon Data="{StaticResource IconDelete}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignLeft" ToolTip.Tip="Align left edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignLeft}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignRight" ToolTip.Tip="Align right edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignRight}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignTop" ToolTip.Tip="Align top edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignTop}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="AlignBottom" ToolTip.Tip="Align bottom edges to the first selected entry"><PathIcon Data="{StaticResource IconAlignBottom}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterH" ToolTip.Tip="Center horizontally in the label"><PathIcon Data="{StaticResource IconCenterH}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterV" ToolTip.Tip="Center vertically in the label"><PathIcon Data="{StaticResource IconCenterV}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth" ToolTip.Tip="Make same width as the first selected entry (along each entry's text direction)"><PathIcon Data="{StaticResource IconSameWidth}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight" ToolTip.Tip="Make same height as the first selected entry (across each entry's text direction)"><PathIcon Data="{StaticResource IconSameHeight}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameSize" ToolTip.Tip="Make same size as the first selected entry"><PathIcon Data="{StaticResource IconSameSize}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SpaceAcross" ToolTip.Tip="Space evenly across (3 or more entries)"><PathIcon Data="{StaticResource IconSpaceAcross}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SpaceDown" ToolTip.Tip="Space evenly down (3 or more entries)"><PathIcon Data="{StaticResource IconSpaceDown}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SnapToGrid" ToolTip.Tip="Snap position to grid"><PathIcon Data="{StaticResource IconSnapGrid}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="Front" ToolTip.Tip="Bring to front"><PathIcon Data="{StaticResource IconFront}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="Back" ToolTip.Tip="Send to back"><PathIcon Data="{StaticResource IconBack}" /></Button>
-          <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
+          <Rectangle Width="1" Fill="{DynamicResource SeparatorBrush}" Margin="4,3" />
           <ToggleButton Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="ToggleLock" IsChecked="{Binding IsSelectionSizeLocked, Mode=OneWay}" ToolTip.Tip="Lock size: move freely without changing width and height"><PathIcon Data="{StaticResource IconLock}" /></ToggleButton>
           <ToggleButton Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="TogglePositionLock" IsChecked="{Binding IsSelectionPositionLocked, Mode=OneWay}" ToolTip.Tip="Lock position: keep X / Y; still resizable from the right and bottom"><PathIcon Data="{StaticResource IconPin}" /></ToggleButton>
         </StackPanel>
@@ -400,7 +408,7 @@
     </Border>
 
     <!-- Status bar -->
-    <Border DockPanel.Dock="Bottom" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="8,3" Background="#f6f7f9">
+    <Border DockPanel.Dock="Bottom" BorderBrush="{DynamicResource BarBorder}" BorderThickness="0,1,0,0" Padding="8,3" Background="{DynamicResource ToolbarBackground}">
       <DockPanel>
         <TextBlock DockPanel.Dock="Right" Text="{Binding ActiveDocument.CursorPosition, FallbackValue=''}" MinWidth="120" TextAlignment="Right" />
         <ProgressBar DockPanel.Dock="Right" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="80" Margin="8,0" />
@@ -426,7 +434,7 @@
                   <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}" Background="Transparent"
                               PointerPressed="OnFieldPointerPressed" PointerMoved="OnFieldPointerMoved">
                     <TextBlock Text="{Binding Name}" FontWeight="{Binding IsField, Converter={x:Static views:MainWindow.FieldWeight}}" />
-                    <TextBlock Text="{Binding Caption}" Foreground="#888" IsVisible="{Binding IsField}" />
+                    <TextBlock Text="{Binding Caption}" Foreground="{DynamicResource MutedForeground}" IsVisible="{Binding IsField}" />
                   </StackPanel>
                 </TreeDataTemplate>
               </TreeView.ItemTemplate>
@@ -479,7 +487,7 @@
           </DockPanel>
         </TabItem>
       </TabControl>
-      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#e5e5e5" />
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="{DynamicResource SplitterBrush}" />
 
       <!-- Centre: open documents -->
       <TabControl Grid.Column="2" ItemsSource="{Binding Documents}" SelectedItem="{Binding ActiveDocument}" Padding="0">
@@ -493,7 +501,7 @@
         </TabControl.ItemTemplate>
         <TabControl.ContentTemplate>
           <DataTemplate DataType="vm:DocumentViewModel">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#e1e4e8">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="{DynamicResource DeskBrush}">
               <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top">
                 <controls:LabelCanvas.ContextMenu>
                   <ContextMenu>
@@ -542,21 +550,21 @@
           </DataTemplate>
         </TabControl.ContentTemplate>
       </TabControl>
-      <GridSplitter Grid.Column="3" ResizeDirection="Columns" Background="#e5e5e5" />
+      <GridSplitter Grid.Column="3" ResizeDirection="Columns" Background="{DynamicResource SplitterBrush}" />
 
       <!-- Right: properties + outline -->
       <Grid Grid.Column="4" RowDefinitions="*,4,200" Margin="6,4">
         <ScrollViewer Grid.Row="0">
           <ContentControl Content="{Binding ActiveDocument.Properties, FallbackValue={x:Null}}" Margin="0,0,8,0" />
         </ScrollViewer>
-        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="#e5e5e5" />
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="{DynamicResource SplitterBrush}" />
         <DockPanel Grid.Row="2">
           <TextBlock DockPanel.Dock="Top" Classes="section" Text="Entries" />
           <ListBox ItemsSource="{Binding ActiveDocument.Entries, FallbackValue={x:Null}}" SelectedItem="{Binding ActiveDocument.SelectedListItem, FallbackValue={x:Null}}">
             <ListBox.ItemTemplate>
               <DataTemplate DataType="vm:EntryListItem">
                 <DockPanel>
-                  <TextBlock DockPanel.Dock="Right" Text="{Binding Position}" Foreground="#888" Margin="6,0,0,0" />
+                  <TextBlock DockPanel.Dock="Right" Text="{Binding Position}" Foreground="{DynamicResource MutedForeground}" Margin="6,0,0,0" />
                   <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" Margin="0,0,6,0" />
                   <TextBlock Text="{Binding Description}" TextTrimming="CharacterEllipsis" />
                 </DockPanel>

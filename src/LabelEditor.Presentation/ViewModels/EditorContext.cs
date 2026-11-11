@@ -30,6 +30,10 @@ public sealed partial class EditorContext : ObservableObject
     [ObservableProperty]
     private bool _showGrid = true;
 
+    /// <summary>In the dark theme, draw the label paper light grey instead of white.</summary>
+    [ObservableProperty]
+    private bool _dimLabelInDarkTheme = true;
+
     [ObservableProperty]
     private EditorTool _activeTool = EditorTool.Select;
 

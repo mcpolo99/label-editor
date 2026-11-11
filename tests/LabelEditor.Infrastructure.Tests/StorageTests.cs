@@ -123,6 +123,12 @@ public sealed class StorageTests : IDisposable
         Assert.Equal("Svenska", loaded.Language);
         Assert.Equal([@"C:\a.xml"], loaded.RecentFiles);
 
+        await store.SaveAsync(loaded with { Theme = Application.Settings.AppTheme.Dark, DimLabelInDarkTheme = false });
+        Assert.Contains("\"Theme\": \"Dark\"", await File.ReadAllTextAsync(file)); // readable in the file
+        var themed = await store.LoadAsync();
+        Assert.Equal(Application.Settings.AppTheme.Dark, themed.Theme);
+        Assert.False(themed.DimLabelInDarkTheme);
+
         await File.WriteAllTextAsync(file, "{ not json");
         Assert.Null((await store.LoadAsync()).Language);
     }

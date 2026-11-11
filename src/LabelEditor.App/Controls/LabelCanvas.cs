@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Styling;
 using LabelEditor.App.Rendering;
 using LabelEditor.Application.Documents;
 using SelectionMode = LabelEditor.Application.Documents.SelectionMode;
@@ -34,7 +35,11 @@ public sealed class LabelCanvas : Control
     private const double DragThreshold = 3;
 
     private static readonly IBrush Desk = new SolidColorBrush(Color.FromRgb(225, 228, 232));
+    private static readonly IBrush DarkDesk = new SolidColorBrush(Color.FromRgb(30, 31, 34));
+    private static readonly IBrush DimPaper = new SolidColorBrush(Color.FromRgb(200, 201, 204));
     private static readonly IBrush Shadow = new SolidColorBrush(Color.FromArgb(50, 0, 0, 0));
+    private static readonly IBrush DarkShadow = new SolidColorBrush(Color.FromArgb(120, 0, 0, 0));
+    private static readonly IPen DarkLabelPen = new Pen(new SolidColorBrush(Color.FromRgb(90, 93, 99)), 1);
     private static readonly IBrush Accent = new SolidColorBrush(Color.FromRgb(0, 120, 215));
     private static readonly IPen SelectionPen = new Pen(Accent, 1, DashStyle.Dash);
     private static readonly IPen HandlePen = new Pen(Accent, 1);
@@ -130,7 +135,16 @@ public sealed class LabelCanvas : Control
 
             CancelInteraction();
         }
+        else if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
+        {
+            InvalidateVisual();
+        }
     }
+
+    private bool IsDark => ActualThemeVariant == ThemeVariant.Dark;
+
+    /// <summary>The label paper: white, or soft grey in the dark theme (unless the user turned dimming off).</summary>
+    private IBrush Paper => IsDark && Context?.DimLabelInDarkTheme != false ? DimPaper : Brushes.White;
 
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
@@ -196,7 +210,8 @@ public sealed class LabelCanvas : Control
 
     public override void Render(DrawingContext context)
     {
-        context.FillRectangle(Desk, new Rect(Bounds.Size));
+        var dark = IsDark;
+        context.FillRectangle(dark ? DarkDesk : Desk, new Rect(Bounds.Size));
         if (Layout is not { } layout || Document is not { } document)
         {
             return;
@@ -204,8 +219,10 @@ public sealed class LabelCanvas : Control
 
         var view = View;
         var label = view.ToView(layout.Header.Shape.Bounds);
-        context.FillRectangle(Shadow, label.Translate(new Vector(3, 3)));
-        context.FillRectangle(Brushes.White, label);
+        var paper = Paper;
+        context.FillRectangle(dark ? DarkShadow : Shadow, label.Translate(new Vector(3, 3)));
+        context.FillRectangle(paper, label);
+        _painter.Paper = paper;
 
         if (document.Context.ShowGrid)
         {
@@ -217,7 +234,7 @@ public sealed class LabelCanvas : Control
             _painter.Paint(context, BuildScene(document), view);
         }
 
-        context.DrawRectangle(null, LabelPen, label);
+        context.DrawRectangle(null, dark ? DarkLabelPen : LabelPen, label);
         DrawSelection(context, document, view);
         if (document.HighlightedEntry is { } highlighted && document.Layout.Find(highlighted) is { } hover)
         {

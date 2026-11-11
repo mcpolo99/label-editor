@@ -16,6 +16,8 @@ and QR codes. It can fill the label with real part data from generated label she
   drawing, z-order, cut/copy/paste/duplicate between labels, and LEdit's align / same size / space
   commands (the first selected entry is the reference). Dragging a handle with several entries selected resizes them
   all. Widths and heights follow each entry's text direction, so a 90° text gets longer along its own reading direction.
+- **Dark theme** (View ▸ Theme: System / Light / Dark). In dark mode the label paper is shown soft grey instead of
+  bright white; turn that off with View ▸ Theme ▸ Dim label paper. Remembered between runs.
 - **Lock size** and **lock position** per entry (property panel, Arrange menu, toolbar, right-click): a size-locked
   entry moves without changing width/height; a position-locked one keeps its X / Y (no dragging, nudging or
   aligning) and only resizes from its right and bottom. Stored in a `.labeleditor.json` sidecar beside the label,

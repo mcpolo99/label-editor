@@ -1,8 +1,49 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="LabelEditor.App.App"
-             RequestedThemeVariant="Light">
+             RequestedThemeVariant="Default">
   <Application.Resources>
+    <ResourceDictionary>
+    <!-- Editor colours per theme (View ▸ Theme). Views use them as DynamicResource so switching is instant. -->
+    <ResourceDictionary.ThemeDictionaries>
+      <ResourceDictionary x:Key="Light">
+        <SolidColorBrush x:Key="ToolbarBackground" Color="#F6F7F9" />
+        <SolidColorBrush x:Key="SubToolbarBackground" Color="#FBFBFC" />
+        <SolidColorBrush x:Key="BarBorder" Color="#DDDDDD" />
+        <SolidColorBrush x:Key="SeparatorBrush" Color="#CCCCCC" />
+        <SolidColorBrush x:Key="SplitterBrush" Color="#E5E5E5" />
+        <SolidColorBrush x:Key="DeskBrush" Color="#E1E4E8" />
+        <SolidColorBrush x:Key="HintForeground" Color="#666666" />
+        <SolidColorBrush x:Key="MutedForeground" Color="#888888" />
+        <SolidColorBrush x:Key="FaintForeground" Color="#AAAAAA" />
+        <SolidColorBrush x:Key="BoxBackground" Color="#FAFAFA" />
+        <SolidColorBrush x:Key="BoxBorder" Color="#CCCCCC" />
+        <SolidColorBrush x:Key="ChipFieldBackground" Color="#E8F0FB" />
+        <SolidColorBrush x:Key="ChipFieldBorder" Color="#B9CCE6" />
+        <SolidColorBrush x:Key="ChipTextBackground" Color="#FFF4DD" />
+        <SolidColorBrush x:Key="ChipTextBorder" Color="#E9CF9A" />
+        <SolidColorBrush x:Key="ChipSelectedBorder" Color="#0078D7" />
+      </ResourceDictionary>
+      <ResourceDictionary x:Key="Dark">
+        <SolidColorBrush x:Key="ToolbarBackground" Color="#2B2D31" />
+        <SolidColorBrush x:Key="SubToolbarBackground" Color="#26282C" />
+        <SolidColorBrush x:Key="BarBorder" Color="#3C3F44" />
+        <SolidColorBrush x:Key="SeparatorBrush" Color="#4A4D52" />
+        <SolidColorBrush x:Key="SplitterBrush" Color="#36393E" />
+        <SolidColorBrush x:Key="DeskBrush" Color="#1E1F22" />
+        <SolidColorBrush x:Key="HintForeground" Color="#A3A7AD" />
+        <SolidColorBrush x:Key="MutedForeground" Color="#8E939A" />
+        <SolidColorBrush x:Key="FaintForeground" Color="#70757C" />
+        <SolidColorBrush x:Key="BoxBackground" Color="#232528" />
+        <SolidColorBrush x:Key="BoxBorder" Color="#45484D" />
+        <SolidColorBrush x:Key="ChipFieldBackground" Color="#1E3350" />
+        <SolidColorBrush x:Key="ChipFieldBorder" Color="#36557A" />
+        <SolidColorBrush x:Key="ChipTextBackground" Color="#43361A" />
+        <SolidColorBrush x:Key="ChipTextBorder" Color="#76602F" />
+        <SolidColorBrush x:Key="ChipSelectedBorder" Color="#4AA3FF" />
+      </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
     <StreamGeometry x:Key="IconAlignLeft">M1,1 H2.5 V15 H1 Z M4,3 H14 V6.5 H4 Z M4,9.5 H10 V13 H4 Z</StreamGeometry>
     <StreamGeometry x:Key="IconAlignRight">M13.5,1 H15 V15 H13.5 Z M2,3 H12 V6.5 H2 Z M6,9.5 H12 V13 H6 Z</StreamGeometry>
     <StreamGeometry x:Key="IconAlignTop">M1,1 H15 V2.5 H1 Z M3,4 H6.5 V14 H3 Z M9.5,4 H13 V10 H9.5 Z</StreamGeometry>
@@ -23,6 +64,7 @@
     <StreamGeometry x:Key="IconRedo">M10,2 L15,6 L10,10 V7.5 H6 A3,3 0 0 0 6,13.5 H11 V15 H6 A4.5,4.5 0 0 1 6,6 H10 Z</StreamGeometry>
     <StreamGeometry x:Key="IconDelete">M5,1 H11 V2.5 H14 V4 H2 V2.5 H5 Z M3.5,5 H12.5 L11.5,15 H4.5 Z</StreamGeometry>
     <StreamGeometry x:Key="IconDuplicate">M1,1 H10 V3 H3 V10 H1 Z M5,5 H15 V15 H5 Z</StreamGeometry>
+    </ResourceDictionary>
   </Application.Resources>
   <Application.Styles>
     <FluentTheme DensityStyle="Compact" />
@@ -31,7 +73,7 @@
       <Setter Property="Margin" Value="0,10,0,4" />
     </Style>
     <Style Selector="TextBlock.hint">
-      <Setter Property="Foreground" Value="#666" />
+      <Setter Property="Foreground" Value="{DynamicResource HintForeground}" />
       <Setter Property="TextWrapping" Value="Wrap" />
       <Setter Property="FontSize" Value="11" />
     </Style>
@@ -56,18 +98,18 @@
     </Style>
     <!-- Composer chips: fields blue, fixed text amber, the selected one outlined. -->
     <Style Selector="Border.chip">
-      <Setter Property="Background" Value="#E8F0FB" />
-      <Setter Property="BorderBrush" Value="#B9CCE6" />
+      <Setter Property="Background" Value="{DynamicResource ChipFieldBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ChipFieldBorder}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="10" />
       <Setter Property="Margin" Value="0,0,4,4" />
     </Style>
     <Style Selector="Border.chip.literal">
-      <Setter Property="Background" Value="#FFF4DD" />
-      <Setter Property="BorderBrush" Value="#E9CF9A" />
+      <Setter Property="Background" Value="{DynamicResource ChipTextBackground}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ChipTextBorder}" />
     </Style>
     <Style Selector="Border.chip.selected">
-      <Setter Property="BorderBrush" Value="#0078D7" />
+      <Setter Property="BorderBrush" Value="{DynamicResource ChipSelectedBorder}" />
       <Setter Property="BorderThickness" Value="2" />
     </Style>
     <Style Selector="Button.chipbody, Button.chipremove">
@@ -83,7 +125,7 @@
     <Style Selector="Button.chipremove">
       <Setter Property="Padding" Value="4,2,7,2" />
       <Setter Property="FontSize" Value="10" />
-      <Setter Property="Foreground" Value="#888" />
+      <Setter Property="Foreground" Value="{DynamicResource MutedForeground}" />
     </Style>
     <Style Selector="Button.tool, ToggleButton.tool, RadioButton.tool">
       <Setter Property="MinWidth" Value="30" />
