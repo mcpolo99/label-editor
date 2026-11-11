@@ -1,0 +1,453 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LabelEditor.Presentation.ViewModels"
+        xmlns:props="using:LabelEditor.Presentation.ViewModels.Properties"
+        xmlns:ports="using:LabelEditor.Application.Abstractions"
+        xmlns:preview="using:LabelEditor.Application.Preview"
+        xmlns:loc="using:LabelEditor.Application.Localization"
+        xmlns:controls="using:LabelEditor.App.Controls"
+        xmlns:views="using:LabelEditor.App.Views"
+        x:Class="LabelEditor.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Label Editor"
+        Width="1400" Height="860" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding NewDocumentCommand}" />
+    <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenCommand}" />
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}" />
+    <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveAsCommand}" />
+    <KeyBinding Gesture="Ctrl+W" Command="{Binding CloseDocumentCommand}" />
+    <KeyBinding Gesture="Ctrl+Add" Command="{Binding ZoomInCommand}" />
+    <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}" />
+    <KeyBinding Gesture="Ctrl+Subtract" Command="{Binding ZoomOutCommand}" />
+    <KeyBinding Gesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}" />
+    <KeyBinding Gesture="Ctrl+D0" Command="{Binding ZoomActualSizeCommand}" />
+    <KeyBinding Gesture="PageDown" Command="{Binding NextRecordCommand}" />
+    <KeyBinding Gesture="PageUp" Command="{Binding PreviousRecordCommand}" />
+  </Window.KeyBindings>
+
+  <!-- Property panels, chosen by the type of the active document's Properties view model. -->
+  <Window.DataTemplates>
+    <DataTemplate DataType="props:LabelSettingsViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="Label" />
+        <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+          <TextBlock Classes="label" Text="Width / Height" />
+          <NumericUpDown Grid.Column="1" Value="{Binding LabelWidth}" Increment="1" Minimum="1" FormatString="0.###" />
+          <NumericUpDown Grid.Column="2" Value="{Binding LabelHeight}" Increment="1" Minimum="1" FormatString="0.###" />
+          <TextBlock Grid.Row="1" Classes="label" Text="Grid" />
+          <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding GridSize}" Increment="0.5" Minimum="0" FormatString="0.###" />
+          <TextBlock Grid.Row="2" Classes="label" Text="Unit" />
+          <ComboBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch" ItemsSource="{Binding Units}" SelectedItem="{Binding Unit}" />
+          <TextBlock Grid.Row="3" Classes="label" Text="Format" />
+          <TextBlock Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" VerticalAlignment="Center" Text="{Binding FormatVersion, StringFormat='LEdit {0}'}" />
+        </Grid>
+        <TextBlock Classes="hint" Text="{Binding EntryCount, StringFormat='{}{0} entries. Select an entry to edit it; drag fields from the Fields tab onto the label.'}" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:MultiSelectionViewModel">
+      <StackPanel Spacing="6">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <TextBlock Classes="hint" Text="{Binding Hint}" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:TextPropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <TextBlock Classes="section" Text="Content" />
+        <Border BorderBrush="#ccc" BorderThickness="1" Padding="6,4" Background="#fafafa">
+          <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" FontFamily="Consolas,monospace" />
+        </Border>
+        <ListBox ItemsSource="{Binding Elements}" SelectedItem="{Binding SelectedElement}" MaxHeight="150">
+          <ListBox.ItemTemplate>
+            <DataTemplate DataType="props:TextElementViewModel">
+              <TextBlock Text="{Binding Display}" ToolTip.Tip="{Binding FieldCaption}" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Button Content="+ Text" Command="{Binding AddTextCommand}" ToolTip.Tip="Add fixed text. Add fields by double-clicking or dragging them from the Fields tab." />
+          <Button Content="Remove" Command="{Binding RemoveElementCommand}" />
+          <Button Content="▲" Command="{Binding MoveElementUpCommand}" />
+          <Button Content="▼" Command="{Binding MoveElementDownCommand}" />
+        </StackPanel>
+        <ContentControl Content="{Binding SelectedElement}">
+          <ContentControl.ContentTemplate>
+            <DataTemplate DataType="props:TextElementViewModel">
+              <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4" Margin="0,4,0,0">
+                <TextBlock Classes="label" Text="Text" IsVisible="{Binding IsLiteral}" />
+                <TextBox Grid.Column="1" Text="{Binding LiteralText}" IsVisible="{Binding IsLiteral}" />
+                <TextBlock Classes="label" Text="Field" IsVisible="{Binding !IsLiteral}" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" IsVisible="{Binding !IsLiteral}" ToolTip.Tip="{Binding FieldCaption}">
+                  <Run Text="{Binding FieldName}" FontWeight="SemiBold" />
+                  <Run Text="{Binding FieldId, StringFormat=' (ID {0})'}" Foreground="#777" />
+                </TextBlock>
+                <TextBlock Grid.Row="1" Classes="label" Text="Sample value" IsVisible="{Binding !IsLiteral}" />
+                <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PreviewText}" Watermark="shown while designing" IsVisible="{Binding !IsLiteral}" />
+                <TextBlock Grid.Row="2" Classes="label" Text="Skip first / last" />
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                  <NumericUpDown Value="{Binding DeleteFirst}" Minimum="0" Increment="1" FormatString="0" />
+                  <NumericUpDown Value="{Binding DeleteLast}" Minimum="0" Increment="1" FormatString="0" />
+                </StackPanel>
+                <TextBlock Grid.Row="3" Classes="label" Text="Characters" />
+                <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding Count}" Minimum="-1" Increment="1" FormatString="0" ToolTip.Tip="-1 = all" HorizontalAlignment="Left" />
+                <TextBlock Grid.Row="4" Classes="label" Text="Fill" />
+                <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch" />
+              </Grid>
+            </DataTemplate>
+          </ContentControl.ContentTemplate>
+        </ContentControl>
+
+        <TextBlock Classes="section" Text="Font" />
+        <AutoCompleteBox Text="{Binding FontFamily}" ItemsSource="{Binding FontFamilies}" FilterMode="ContainsOrdinal" Watermark="Font" />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+          <TextBlock Classes="label" Text="Size (pt)" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+            <NumericUpDown Value="{Binding FontSize}" Minimum="1" Increment="0.5" FormatString="0.#" IsEnabled="{Binding FontSizeFixed}" />
+            <CheckBox Content="Fixed" IsChecked="{Binding FontSizeFixed}" ToolTip.Tip="Off: the text is scaled to fill its field" />
+          </StackPanel>
+          <TextBlock Grid.Row="1" Classes="label" Text="Direction" />
+          <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Rotations}" SelectedItem="{Binding Rotation}" HorizontalAlignment="Stretch">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="props:RotationOption">
+                <TextBlock Text="{Binding Name}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </Grid>
+        <WrapPanel>
+          <ToggleButton Classes="tool" IsChecked="{Binding Bold}" FontWeight="Bold" Content="B" ToolTip.Tip="Bold" Margin="0,0,4,4" />
+          <ToggleButton Classes="tool" IsChecked="{Binding Italic}" FontStyle="Italic" Content="I" ToolTip.Tip="Italic" Margin="0,0,4,4" />
+          <ToggleButton Classes="tool" IsChecked="{Binding Underline}" Content="U" ToolTip.Tip="Underline" Margin="0,0,4,4" />
+          <ToggleButton Classes="tool" IsChecked="{Binding StrikeOut}" Content="S" ToolTip.Tip="Strike-out" Margin="0,0,12,4" />
+          <CheckBox Content="Upper case" IsChecked="{Binding UpperCase}" Margin="0,0,8,0" />
+          <CheckBox Content="Word wrap" IsChecked="{Binding WordWrap}" />
+        </WrapPanel>
+
+        <TextBlock Classes="section" Text="Bar code" />
+        <CheckBox Content="Print as bar code" IsChecked="{Binding IsBarcode}" />
+        <ComboBox ItemsSource="{Binding BarcodeTypes}" SelectedItem="{Binding BarcodeType}" IsVisible="{Binding IsBarcode}" HorizontalAlignment="Stretch">
+          <ComboBox.ItemTemplate>
+            <DataTemplate DataType="props:BarcodeTypeOption">
+              <TextBlock Text="{Binding Name}" />
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:EllipsePropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4" Margin="0,6,0,0">
+          <TextBlock Classes="label" Text="Pen width" />
+          <NumericUpDown Grid.Column="1" Value="{Binding PenWidth}" Minimum="0" Increment="1" FormatString="0" HorizontalAlignment="Left" />
+          <TextBlock Grid.Row="1" Classes="label" Text="Line colour" />
+          <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding PenColor}" Watermark="r,g,b" />
+          <TextBlock Grid.Row="2" Classes="label" Text="Fill colour" />
+          <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding BrushColor}" Watermark="r,g,b" />
+        </Grid>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:LinePropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <TextBlock Classes="hint" Text="Drag either end point to change the line. Hold Shift while drawing for horizontal/vertical lines." />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:BitmapPropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <TextBlock Classes="label" Text="File" Margin="0,6,0,0" />
+        <DockPanel>
+          <Button DockPanel.Dock="Right" Content="…" Command="{Binding BrowseCommand}" Margin="4,0,0,0" />
+          <TextBox Text="{Binding Path}" />
+        </DockPanel>
+        <TextBlock Classes="hint" Text="File not found on this computer. LEdit stores absolute paths; the printing machine must have the file at this path." IsVisible="{Binding !FileExists}" Foreground="DarkOrange" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:LabelGraphicPropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <TextBlock Classes="label" Text="Part graphic" Margin="0,6,0,0" />
+        <ComboBox ItemsSource="{Binding Slots}" SelectedIndex="{Binding GraphicIndex}" HorizontalAlignment="Stretch" />
+        <TextBlock Classes="hint" Text="Filled at print time with the part's drawing from the optimised parts list." />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:CornerLogoPropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <CheckBox Content="Maintain aspect ratio" IsChecked="{Binding KeepAspectRatio}" Margin="0,6,0,0" />
+        <CheckBox Content="Print edge information" IsChecked="{Binding PrintEdgeMaterial}" />
+        <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+          <TextBlock Classes="label" Text="Edge info" />
+          <ComboBox Grid.Column="1" ItemsSource="{Binding EdgeInfoOptions}" SelectedIndex="{Binding EdgeInfo}" HorizontalAlignment="Stretch" />
+          <TextBlock Grid.Row="1" Classes="label" Text="Edge thickness %" />
+          <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding EdgeThicknessPercent}" Minimum="0" Maximum="50" FormatString="0" HorizontalAlignment="Left" />
+          <TextBlock Grid.Row="2" Classes="label" Text="Top" />
+          <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding TextTop}" />
+          <TextBlock Grid.Row="3" Classes="label" Text="Bottom" />
+          <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextBottom}" />
+          <TextBlock Grid.Row="4" Classes="label" Text="Left" />
+          <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding TextLeft}" />
+          <TextBlock Grid.Row="5" Classes="label" Text="Right" />
+          <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding TextRight}" />
+        </Grid>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="props:UnknownEntryPropertiesViewModel">
+      <StackPanel Spacing="4">
+        <TextBlock Classes="section" Text="{Binding Title}" />
+        <views:GeometryEditor />
+        <TextBlock Classes="hint" Text="{Binding Hint}" />
+      </StackPanel>
+    </DataTemplate>
+  </Window.DataTemplates>
+
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="_New" Command="{Binding NewDocumentCommand}" InputGesture="Ctrl+N" />
+        <MenuItem Header="_Open…" Command="{Binding OpenCommand}" InputGesture="Ctrl+O" />
+        <MenuItem Header="_Save" Command="{Binding SaveCommand}" InputGesture="Ctrl+S" />
+        <MenuItem Header="Save _As…" Command="{Binding SaveAsCommand}" InputGesture="Ctrl+Shift+S" />
+        <MenuItem Header="_Close" Command="{Binding CloseDocumentCommand}" InputGesture="Ctrl+W" />
+        <Separator />
+        <MenuItem Header="Load _preview data…" Command="{Binding LoadPreviewDataCommand}" />
+        <MenuItem Header="Clear preview data" Command="{Binding ClearPreviewDataCommand}" />
+        <Separator />
+        <MenuItem Header="E_xit" Click="OnExitClick" />
+      </MenuItem>
+      <MenuItem Header="_Edit">
+        <MenuItem Header="{Binding UndoHeader}" Command="{Binding UndoCommand}" InputGesture="Ctrl+Z" />
+        <MenuItem Header="{Binding RedoHeader}" Command="{Binding RedoCommand}" InputGesture="Ctrl+Y" />
+        <Separator />
+        <MenuItem Header="Cu_t" Command="{Binding CutCommand}" InputGesture="Ctrl+X" />
+        <MenuItem Header="_Copy" Command="{Binding CopyCommand}" InputGesture="Ctrl+C" />
+        <MenuItem Header="_Paste" Command="{Binding PasteCommand}" InputGesture="Ctrl+V" />
+        <MenuItem Header="_Duplicate" Command="{Binding DuplicateCommand}" InputGesture="Ctrl+D" />
+        <MenuItem Header="De_lete" Command="{Binding DeleteCommand}" InputGesture="Delete" />
+        <Separator />
+        <MenuItem Header="Select _all" Command="{Binding SelectAllCommand}" InputGesture="Ctrl+A" />
+      </MenuItem>
+      <MenuItem Header="_Arrange">
+        <MenuItem Header="Align _left" Command="{Binding ArrangeCommand}" CommandParameter="AlignLeft" />
+        <MenuItem Header="Align _right" Command="{Binding ArrangeCommand}" CommandParameter="AlignRight" />
+        <MenuItem Header="Align _top" Command="{Binding ArrangeCommand}" CommandParameter="AlignTop" />
+        <MenuItem Header="Align _bottom" Command="{Binding ArrangeCommand}" CommandParameter="AlignBottom" />
+        <Separator />
+        <MenuItem Header="Center _horizontally in label" Command="{Binding ArrangeCommand}" CommandParameter="CenterH" />
+        <MenuItem Header="Center _vertically in label" Command="{Binding ArrangeCommand}" CommandParameter="CenterV" />
+        <Separator />
+        <MenuItem Header="Same _width" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth" />
+        <MenuItem Header="Same h_eight" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight" />
+        <MenuItem Header="Same si_ze" Command="{Binding ArrangeCommand}" CommandParameter="SameSize" />
+        <Separator />
+        <MenuItem Header="Space _across" Command="{Binding ArrangeCommand}" CommandParameter="SpaceAcross" />
+        <MenuItem Header="Space _down" Command="{Binding ArrangeCommand}" CommandParameter="SpaceDown" />
+        <Separator />
+        <MenuItem Header="_Snap to grid" Command="{Binding ArrangeCommand}" CommandParameter="SnapToGrid" />
+        <MenuItem Header="Bring to _front" Command="{Binding ArrangeCommand}" CommandParameter="Front" />
+        <MenuItem Header="Send to bac_k" Command="{Binding ArrangeCommand}" CommandParameter="Back" />
+      </MenuItem>
+      <MenuItem Header="_View">
+        <MenuItem Header="Zoom _in" Command="{Binding ZoomInCommand}" InputGesture="Ctrl+OemPlus" />
+        <MenuItem Header="Zoom _out" Command="{Binding ZoomOutCommand}" InputGesture="Ctrl+OemMinus" />
+        <MenuItem Header="_Actual size" Command="{Binding ZoomActualSizeCommand}" InputGesture="Ctrl+D0" />
+        <Separator />
+        <MenuItem Header="Show _grid" ToggleType="CheckBox" IsChecked="{Binding Context.ShowGrid}" />
+        <MenuItem Header="_Snap to grid" ToggleType="CheckBox" IsChecked="{Binding Context.SnapToGrid}" />
+      </MenuItem>
+    </Menu>
+
+    <!-- Toolbar -->
+    <Border DockPanel.Dock="Top" BorderBrush="#ddd" BorderThickness="0,0,0,1" Padding="6,4" Background="#f6f7f9">
+      <DockPanel>
+        <StackPanel Orientation="Horizontal" Spacing="4">
+          <Button Classes="tool" Content="New" Command="{Binding NewDocumentCommand}" />
+          <Button Classes="tool" Content="Open" Command="{Binding OpenCommand}" />
+          <Button Classes="tool" Content="Save" Command="{Binding SaveCommand}" />
+          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <ItemsControl ItemsSource="{Binding Tools}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <StackPanel Orientation="Horizontal" Spacing="2" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:ToolOption">
+                <ToggleButton Classes="tool" IsChecked="{Binding IsSelected}" ToolTip.Tip="{Binding Name}" MinWidth="32">
+                  <TextBlock Text="{Binding Glyph}" FontSize="15" HorizontalAlignment="Center" />
+                </ToggleButton>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <Button Classes="tool" Content="−" Command="{Binding ZoomOutCommand}" ToolTip.Tip="Zoom out (Ctrl+wheel)" />
+          <TextBlock VerticalAlignment="Center" MinWidth="44" TextAlignment="Center" Text="{Binding ActiveDocument.Zoom, StringFormat='{}{0:P0}', FallbackValue=''}" />
+          <Button Classes="tool" Content="+" Command="{Binding ZoomInCommand}" ToolTip.Tip="Zoom in (Ctrl+wheel)" />
+          <CheckBox Content="Grid" IsChecked="{Binding Context.ShowGrid}" Margin="8,0,0,0" />
+          <CheckBox Content="Snap" IsChecked="{Binding Context.SnapToGrid}" ToolTip.Tip="Snap to grid (hold Alt to move freely)" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right">
+          <TextBlock VerticalAlignment="Center" Text="Preview:" />
+          <Button Classes="tool" Content="◀" Command="{Binding PreviousRecordCommand}" ToolTip.Tip="Previous record (PageUp)" />
+          <ComboBox MinWidth="140" ItemsSource="{Binding PreviewRecords}" SelectedItem="{Binding SelectedPreviewRecord}" PlaceholderText="design view">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="preview:PreviewRecord">
+                <TextBlock Text="{Binding Name}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <Button Classes="tool" Content="▶" Command="{Binding NextRecordCommand}" ToolTip.Tip="Next record (PageDown)" />
+          <Button Classes="tool" Content="Load data…" Command="{Binding LoadPreviewDataCommand}" ToolTip.Tip="Fill the label with values from a label sheet (*_lbl.xml)" />
+          <Rectangle Width="1" Fill="#ccc" Margin="4,2" />
+          <TextBlock VerticalAlignment="Center" Text="Language:" />
+          <ComboBox MinWidth="110" ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate DataType="loc:LanguageInfo">
+                <TextBlock Text="{Binding Name}" />
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Status bar -->
+    <Border DockPanel.Dock="Bottom" BorderBrush="#ddd" BorderThickness="0,1,0,0" Padding="8,3" Background="#f6f7f9">
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Right" Text="{Binding ActiveDocument.CursorPosition, FallbackValue=''}" MinWidth="120" TextAlignment="Right" />
+        <ProgressBar DockPanel.Dock="Right" IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="80" Margin="8,0" />
+        <TextBlock Text="{Binding Status}" TextTrimming="CharacterEllipsis" />
+      </DockPanel>
+    </Border>
+
+    <Grid ColumnDefinitions="280,4,*,4,330">
+      <!-- Left: fields, labels, data -->
+      <TabControl Grid.Column="0" Padding="4">
+        <TabItem Header="Fields">
+          <DockPanel>
+            <TextBox DockPanel.Dock="Top" Text="{Binding FieldPicker.Filter}" Watermark="Filter (name, caption or ID)" Margin="0,0,0,4" />
+            <TextBlock DockPanel.Dock="Bottom" Classes="hint" Margin="0,4,0,0" Text="Drag a field onto the label, or double-click to add it to the selected text." />
+            <TreeView x:Name="FieldTree" ItemsSource="{Binding FieldPicker.Nodes}" SelectedItem="{Binding FieldPicker.SelectedNode}" DoubleTapped="OnFieldDoubleTapped">
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate DataType="vm:FieldNodeViewModel" ItemsSource="{Binding Children}">
+                  <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}" Background="Transparent"
+                              PointerPressed="OnFieldPointerPressed" PointerMoved="OnFieldPointerMoved">
+                    <TextBlock Text="{Binding Name}" FontWeight="{Binding IsField, Converter={x:Static views:MainWindow.FieldWeight}}" />
+                    <TextBlock Text="{Binding Caption}" Foreground="#888" IsVisible="{Binding IsField}" />
+                  </StackPanel>
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+            </TreeView>
+          </DockPanel>
+        </TabItem>
+        <TabItem Header="Labels">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,4">
+              <TextBlock Classes="hint" Text="{Binding DataSourceDescription}" />
+              <Button Content="Refresh" Command="{Binding Library.RefreshCommand}" />
+            </StackPanel>
+            <ScrollViewer>
+              <ItemsControl ItemsSource="{Binding Library.Groups}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:LabelLibraryGroup">
+                    <StackPanel Margin="0,0,0,8">
+                      <TextBlock Classes="section" Text="{Binding Title}" ToolTip.Tip="{Binding Folder}" />
+                      <ListBox ItemsSource="{Binding Items}" DoubleTapped="OnLibraryDoubleTapped">
+                        <ListBox.ItemTemplate>
+                          <DataTemplate DataType="ports:LabelLibraryItem">
+                            <TextBlock Text="{Binding Name}" ToolTip.Tip="{Binding Path}" />
+                          </DataTemplate>
+                        </ListBox.ItemTemplate>
+                      </ListBox>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </ScrollViewer>
+          </DockPanel>
+        </TabItem>
+        <TabItem Header="Data">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Top" Spacing="4" Margin="0,0,0,4">
+              <TextBlock Classes="hint" Text="Load a label sheet (*_lbl.xml) to preview labels with real part data. Values bind to fields by name." />
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button Content="Load…" Command="{Binding LoadPreviewDataCommand}" />
+                <Button Content="Clear" Command="{Binding ClearPreviewDataCommand}" />
+              </StackPanel>
+              <TextBlock Text="{Binding PreviewDataDescription}" TextWrapping="Wrap" FontWeight="SemiBold" />
+            </StackPanel>
+            <ListBox ItemsSource="{Binding PreviewRecords}" SelectedItem="{Binding SelectedPreviewRecord}">
+              <ListBox.ItemTemplate>
+                <DataTemplate DataType="preview:PreviewRecord">
+                  <TextBlock Text="{Binding Name}" />
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+        </TabItem>
+      </TabControl>
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="#e5e5e5" />
+
+      <!-- Centre: open documents -->
+      <TabControl Grid.Column="2" ItemsSource="{Binding Documents}" SelectedItem="{Binding ActiveDocument}" Padding="0">
+        <TabControl.ItemTemplate>
+          <DataTemplate DataType="vm:DocumentViewModel">
+            <StackPanel Orientation="Horizontal" Spacing="6" ToolTip.Tip="{Binding ToolTip}">
+              <TextBlock Text="{Binding Title}" VerticalAlignment="Center" />
+              <TextBlock Text="🔒" IsVisible="{Binding IsReadOnly}" VerticalAlignment="Center" />
+              <Button Content="✕" Padding="4,0" FontSize="10" Background="Transparent" Click="OnCloseTabClick" Tag="{Binding}" />
+            </StackPanel>
+          </DataTemplate>
+        </TabControl.ItemTemplate>
+        <TabControl.ContentTemplate>
+          <DataTemplate DataType="vm:DocumentViewModel">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" Background="#e1e4e8">
+              <controls:LabelCanvas Document="{Binding}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            </ScrollViewer>
+          </DataTemplate>
+        </TabControl.ContentTemplate>
+      </TabControl>
+      <GridSplitter Grid.Column="3" ResizeDirection="Columns" Background="#e5e5e5" />
+
+      <!-- Right: properties + outline -->
+      <Grid Grid.Column="4" RowDefinitions="*,4,200" Margin="6,4">
+        <ScrollViewer Grid.Row="0">
+          <ContentControl Content="{Binding ActiveDocument.Properties, FallbackValue={x:Null}}" Margin="0,0,8,0" />
+        </ScrollViewer>
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows" Background="#e5e5e5" />
+        <DockPanel Grid.Row="2">
+          <TextBlock DockPanel.Dock="Top" Classes="section" Text="Entries" />
+          <ListBox ItemsSource="{Binding ActiveDocument.Entries, FallbackValue={x:Null}}" SelectedItem="{Binding ActiveDocument.SelectedListItem, FallbackValue={x:Null}}">
+            <ListBox.ItemTemplate>
+              <DataTemplate DataType="vm:EntryListItem">
+                <DockPanel>
+                  <TextBlock DockPanel.Dock="Right" Text="{Binding Position}" Foreground="#888" Margin="6,0,0,0" />
+                  <TextBlock Text="{Binding Kind}" FontWeight="SemiBold" Margin="0,0,6,0" />
+                  <TextBlock Text="{Binding Description}" TextTrimming="CharacterEllipsis" />
+                </DockPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</Window>

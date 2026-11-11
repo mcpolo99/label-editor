@@ -1,0 +1,28 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LabelEditor.App.App"
+             RequestedThemeVariant="Light">
+  <Application.Styles>
+    <FluentTheme DensityStyle="Compact" />
+    <Style Selector="TextBlock.section">
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,10,0,4" />
+    </Style>
+    <Style Selector="TextBlock.hint">
+      <Setter Property="Foreground" Value="#666" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="FontSize" Value="11" />
+    </Style>
+    <Style Selector="TextBlock.label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,0,8,0" />
+    </Style>
+    <Style Selector="NumericUpDown">
+      <Setter Property="MinWidth" Value="90" />
+    </Style>
+    <Style Selector="Button.tool, ToggleButton.tool, RadioButton.tool">
+      <Setter Property="MinWidth" Value="30" />
+      <Setter Property="Padding" Value="6,3" />
+    </Style>
+  </Application.Styles>
+</Application>
