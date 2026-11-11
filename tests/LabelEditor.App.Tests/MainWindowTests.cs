@@ -1,3 +1,4 @@
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -57,6 +58,43 @@ public class MainWindowTests
         Assert.True(items.Single(i => (i.Header as string) == "_Duplicate").IsEffectivelyEnabled);
         window.CaptureRenderedFrame()?.Save(Path.Combine(AppContext.BaseDirectory, "rendered", "context-menu.png"));
         menu.Close();
+        window.Close();
+    }
+
+    [AvaloniaFact]
+    public async Task Open_recent_lists_the_remembered_labels_and_opens_one()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "LabelEditorUiTests", Guid.NewGuid().ToString("N"));
+        var paths = new AppPaths(AppContext.BaseDirectory, root, IsPortable: true);
+        var storage = new StorageOptions
+        {
+            MachineInstallationRoot = Path.Combine(AppContext.BaseDirectory, "TestLEdit"),
+            WorkingFolder = Path.Combine(root, "Labels"),
+        };
+        var window = new MainWindow { Width = 1400, Height = 860 };
+        using var services = App.ConfigureServices(paths, storage, window);
+        var vm = services.GetRequiredService<MainViewModel>();
+        window.DataContext = vm;
+        window.Show();
+        var label = Path.Combine(AppContext.BaseDirectory, "Fixtures", "Labels", "test-label.xml");
+        await vm.InitializeAsync(new EditorSettings { Language = "English", RecentFiles = [label] }, []);
+
+        var recent = window.GetLogicalDescendants().OfType<Avalonia.Controls.MenuItem>().Single(m => m.Classes.Contains("recent"));
+        var file = (Avalonia.Controls.MenuItem)recent.Parent!;
+        file.Open();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        recent.Open();
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        var item = Assert.IsType<Avalonia.Controls.MenuItem>(recent.ContainerFromIndex(0));
+
+        Assert.Equal("_1  test-label.xml", item.Header);
+        Assert.NotNull(item.Command);
+        item.Command.Execute(item.CommandParameter);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+        await Task.Delay(200);
+        Avalonia.Threading.Dispatcher.UIThread.RunJobs();
+
+        Assert.Contains(vm.Documents, d => string.Equals(d.FilePath, label, StringComparison.OrdinalIgnoreCase));
         window.Close();
     }
 }

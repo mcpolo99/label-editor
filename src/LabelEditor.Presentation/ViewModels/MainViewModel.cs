@@ -38,6 +38,15 @@ public sealed partial class ToolOption(EditorTool tool, string name, string glyp
     }
 }
 
+/// <summary>A file in the File ▸ Open recent menu.</summary>
+public sealed record RecentFileItem(string Path, int Number)
+{
+    /// <summary>"_1  name.xml" (the number is the menu access key for the first nine).</summary>
+    public string Header => (Number <= 9 ? $"_{Number}  " : $"{Number}  ") + System.IO.Path.GetFileName(Path).Replace("_", "__", StringComparison.Ordinal);
+
+    public string? Folder => System.IO.Path.GetDirectoryName(Path);
+}
+
 /// <summary>Main window: open documents, shared panels and all menu commands.</summary>
 public sealed partial class MainViewModel : ObservableObject
 {
@@ -114,7 +123,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     public ObservableCollection<LanguageInfo> Languages { get; } = [];
 
-    public ObservableCollection<string> RecentFiles { get; } = [];
+    /// <summary>Recently opened or saved labels, newest first (File ▸ Open recent).</summary>
+    public ObservableCollection<RecentFileItem> RecentFiles { get; } = [];
+
+    public bool HasRecentFiles => RecentFiles.Count > 0;
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(SaveCommand), nameof(SaveAsCommand), nameof(CloseDocumentCommand), nameof(ShowHistoryCommand))]
@@ -155,10 +167,7 @@ public sealed partial class MainViewModel : ObservableObject
         _loadingTheme = true;
         Theme = settings.Theme;
         _loadingTheme = false;
-        foreach (var file in settings.RecentFiles)
-        {
-            RecentFiles.Add(file);
-        }
+        ShowRecentFiles(settings.RecentFiles);
 
         await RunBusyAsync("Loading fields and languages…", async () =>
         {
@@ -287,7 +296,25 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task OpenRecentAsync(string? path) => path is null ? Task.CompletedTask : OpenPathAsync(path);
+    private async Task OpenRecentAsync(string? path)
+    {
+        if (path is null)
+        {
+            return;
+        }
+
+        if (!File.Exists(path))
+        {
+            await _interaction.ShowErrorAsync("Open recent", $"{path}\n\nThis file no longer exists (moved, renamed or deleted). It is removed from the list.");
+            await SaveRecentFilesAsync(_settings.RecentFiles.Where(p => !string.Equals(p, path, StringComparison.OrdinalIgnoreCase)).ToList());
+            return;
+        }
+
+        await OpenPathAsync(path);
+    }
+
+    [RelayCommand(CanExecute = nameof(HasRecentFiles))]
+    private Task ClearRecentFilesAsync() => SaveRecentFilesAsync([]);
 
     public async Task OpenPathAsync(string path)
     {
@@ -295,6 +322,7 @@ public sealed partial class MainViewModel : ObservableObject
         if (existing is not null)
         {
             ActiveDocument = existing;
+            await RememberRecentAsync(existing.FilePath!);
             return;
         }
 
@@ -695,16 +723,24 @@ public sealed partial class MainViewModel : ObservableObject
         }
     }
 
-    private async Task RememberRecentAsync(string path)
+    private Task RememberRecentAsync(string path) => SaveRecentFilesAsync(_settings.WithRecentFile(path).RecentFiles);
+
+    private async Task SaveRecentFilesAsync(IReadOnlyList<string> files)
     {
-        var settings = _settings.WithRecentFile(path);
+        ShowRecentFiles(files);
+        await SaveSettingsAsync(_settings with { RecentFiles = files });
+    }
+
+    private void ShowRecentFiles(IReadOnlyList<string> files)
+    {
         RecentFiles.Clear();
-        foreach (var file in settings.RecentFiles)
+        foreach (var (file, index) in files.Select((f, i) => (f, i)))
         {
-            RecentFiles.Add(file);
+            RecentFiles.Add(new RecentFileItem(file, index + 1));
         }
 
-        await SaveSettingsAsync(settings);
+        OnPropertyChanged(nameof(HasRecentFiles));
+        ClearRecentFilesCommand.NotifyCanExecuteChanged();
     }
 
     private async Task SaveSettingsAsync(EditorSettings settings)

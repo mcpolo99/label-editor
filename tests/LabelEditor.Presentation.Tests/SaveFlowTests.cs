@@ -75,7 +75,21 @@ public class SaveFlowTests
 
         public Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle) => Task.FromResult(SaveChangesAnswer.Cancel);
 
-        public Task ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
+        /// <summary>When false, any error dialog fails the test.</summary>
+        public bool ErrorsExpected { get; set; }
+
+        public List<string> Errors { get; } = [];
+
+        public Task ShowErrorAsync(string title, string message)
+        {
+            if (!ErrorsExpected)
+            {
+                throw new InvalidOperationException(message);
+            }
+
+            Errors.Add(message);
+            return Task.CompletedTask;
+        }
 
         public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
 
@@ -226,5 +240,49 @@ public class SaveFlowTests
         Assert.Equal(2, vm.Documents.Count);
         Assert.Null(vm.ActiveDocument!.FilePath);
         Assert.Same(history.Version1, vm.ActiveDocument.Session.Layout);
+    }
+
+    [Fact]
+    public async Task Opened_and_saved_labels_are_listed_newest_first_under_open_recent()
+    {
+        var (vm, store, dialogs) = Setup();
+        var first = Path.Combine(Work, "First.xml");
+        var second = Path.Combine(Work, "Second.xml");
+        store.Files[first] = LabelLayout.CreateNew();
+        store.Files[second] = LabelLayout.CreateNew();
+
+        await vm.OpenPathAsync(first);
+        await vm.OpenPathAsync(second);
+        await vm.OpenPathAsync(first);
+
+        Assert.Equal([first, second], vm.RecentFiles.Select(r => r.Path));
+        Assert.Equal(["_1  First.xml", "_2  Second.xml"], vm.RecentFiles.Select(r => r.Header));
+        Assert.True(vm.HasRecentFiles);
+
+        await vm.ClearRecentFilesCommand.ExecuteAsync(null);
+        Assert.Empty(vm.RecentFiles);
+        Assert.False(vm.ClearRecentFilesCommand.CanExecute(null));
+    }
+
+    [Fact]
+    public async Task A_recent_file_that_no_longer_exists_is_explained_and_removed_from_the_list()
+    {
+        var (vm, _, dialogs) = Setup();
+        var gone = Path.Combine(Work, Guid.NewGuid().ToString("N") + ".xml");
+        await vm.InitializeAsync(new EditorSettings { RecentFiles = [gone] }, []);
+        dialogs.ErrorsExpected = true;
+
+        await vm.OpenRecentCommand.ExecuteAsync(gone);
+
+        Assert.Contains("no longer exists", Assert.Single(dialogs.Errors), StringComparison.Ordinal);
+        Assert.Empty(vm.RecentFiles);
+        Assert.DoesNotContain(vm.Documents, d => d.FilePath is not null);
+    }
+
+    [Fact]
+    public void Recent_file_headers_keep_underscores_in_file_names_literal()
+    {
+        Assert.Equal("_3  my__label.xml", new RecentFileItem(@"C:\labels\my_label.xml", 3).Header);
+        Assert.Equal("10  b.xml", new RecentFileItem(@"C:\labels\b.xml", 10).Header);
     }
 }
