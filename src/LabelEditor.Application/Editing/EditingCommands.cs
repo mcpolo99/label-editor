@@ -107,6 +107,13 @@ public static class EditingCommands
         return session.Execute(description, l => l.UpdateEntries(ids, e => e is T typed ? update(typed) : e));
     }
 
+    /// <summary>Locks or unlocks the size of the selected entries.</summary>
+    public static bool SetSizeLocked(this EditorSession session, bool locked)
+    {
+        var ids = session.Selection.AsSet();
+        return session.Execute(locked ? "Lock size" : "Unlock size", l => l.UpdateEntries(ids, e => e with { IsSizeLocked = locked }));
+    }
+
     public static IReadOnlyList<LabelEntry> SelectedEntries(this EditorSession session) =>
         session.Selection.Ids.Select(session.Layout.Find).OfType<LabelEntry>().ToList();
 
@@ -139,7 +146,7 @@ public sealed class EntryResize(InteractiveEdit edit, EntryId id, ResizeHandle h
 
     private LabelLayout Apply(LabelLayout layout, int dx, int dy, int minimumSize)
     {
-        if (layout.Find(id) is not { } entry)
+        if (layout.Find(id) is not { } entry || entry.IsSizeLocked)
         {
             return layout;
         }

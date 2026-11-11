@@ -445,7 +445,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     // ---------------------------------------------------------------- Arrange
 
-    /// <summary>Arrange commands by name: AlignLeft, AlignRight, AlignTop, AlignBottom, CenterH, CenterV, SameWidth, SameHeight, SameSize, SpaceAcross, SpaceDown, SnapToGrid, Front, Back.</summary>
+    /// <summary>Arrange commands by name: LockSize, UnlockSize, AlignLeft, AlignRight, AlignTop, AlignBottom, CenterH, CenterV, SameWidth, SameHeight, SameSize, SpaceAcross, SpaceDown, SnapToGrid, Front, Back.</summary>
     [RelayCommand(CanExecute = nameof(CanArrange))]
     private void Arrange(string? operation)
     {
@@ -470,6 +470,8 @@ public sealed partial class MainViewModel : ObservableObject
             "SnapToGrid" => s.SnapSelectionToGrid(),
             "Front" => s.BringToFront(),
             "Back" => s.SendToBack(),
+            "LockSize" => s.SetSizeLocked(true),
+            "UnlockSize" => s.SetSizeLocked(false),
             _ => false,
         };
     }

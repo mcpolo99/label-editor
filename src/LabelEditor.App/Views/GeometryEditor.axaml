@@ -4,12 +4,14 @@
              x:Class="LabelEditor.App.Views.GeometryEditor"
              x:DataType="props:EntryPropertiesViewModel">
   <!-- Position and size of any entry, in label units (mm or inch). -->
-  <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto" RowSpacing="4" ColumnSpacing="4">
+  <Grid ColumnDefinitions="Auto,*,*" RowDefinitions="Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="4">
     <TextBlock Classes="label" Text="X / Y" />
     <NumericUpDown Grid.Column="1" Value="{Binding X}" Increment="0.5" FormatString="0.###" />
     <NumericUpDown Grid.Column="2" Value="{Binding Y}" Increment="0.5" FormatString="0.###" />
     <TextBlock Grid.Row="1" Classes="label" Text="{Binding SizeLabel}" />
-    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Width}" Increment="0.5" FormatString="0.###" />
-    <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Height}" Increment="0.5" FormatString="0.###" />
+    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding Width}" Increment="0.5" FormatString="0.###" IsEnabled="{Binding CanResize}" />
+    <NumericUpDown Grid.Row="1" Grid.Column="2" Value="{Binding Height}" Increment="0.5" FormatString="0.###" IsEnabled="{Binding CanResize}" />
+    <CheckBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Content="Lock size" IsChecked="{Binding IsSizeLocked}"
+              ToolTip.Tip="Keep width and height; the entry can still be moved. Stored beside the label, not in the LEdit file." />
   </Grid>
 </UserControl>

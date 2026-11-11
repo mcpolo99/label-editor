@@ -34,6 +34,12 @@ public abstract record LabelEntry
     /// <summary>The LEdit "Field" rectangle.</summary>
     public required LabelRect Bounds { get; init; }
 
+    /// <summary>
+    /// Editor-only: the entry can be moved but not resized (handles, size boxes and "make same size" leave it alone).
+    /// Not part of the LEdit format; persisted beside the label by the document store.
+    /// </summary>
+    public bool IsSizeLocked { get; init; }
+
     public abstract EntryKind Kind { get; }
 
     /// <summary>False for entries that exist in the file but are not drawn on the label (the data record).</summary>

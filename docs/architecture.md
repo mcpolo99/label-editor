@@ -41,6 +41,12 @@ and the application layer knows no UI framework).
   attributes (`First` vs `DelFirst/DelLast`, missing `TextColor`). Unknown entries are carried
   verbatim. A custom emitter reproduces LEdit's exact serialization, so saved files diff cleanly
   against LEdit's.
+- **Editor-only settings live in a sidecar file.** Things LEdit has no place for (currently: per-entry *lock size*)
+  are stored in `<label>.xml.labeleditor.json` next to the label; the LEdit XML stays byte-for-byte what LEdit writes.
+  LEdit entries have no ids, so records match by position plus a kind/size fingerprint; if a label was changed
+  elsewhere and an entry no longer matches, the setting is dropped (never applied to the wrong entry).
+  A separate editor project format with an export step was considered and deferred: two copies of every label can
+  drift apart, and the domain model is format-independent, so it remains an easy step if editor-only data grows.
 - **Fields are identified by element name** (`QMin`, `CabCode`), never by translated captions. Label
   sheets bind to fields by the same names.
 - **Scene, then paint.** `LabelSceneBuilder` (no UI types) decides what is drawn; `ScenePainter` (Avalonia)

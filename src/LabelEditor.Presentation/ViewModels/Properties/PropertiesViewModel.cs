@@ -69,6 +69,13 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
     [ObservableProperty]
     private decimal? _height;
 
+    /// <summary>Editor-only lock: the entry moves freely but keeps its size.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanResize))]
+    private bool _isSizeLocked;
+
+    public bool CanResize => !IsSizeLocked;
+
     /// <summary>Pushes the current entry state into the panel.</summary>
     public void Refresh(LabelEntry entry) => RunRefresh(() =>
     {
@@ -76,6 +83,7 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
         Y = ToDisplay(entry.Bounds.Y);
         Width = ToDisplay(entry.Bounds.Width);
         Height = ToDisplay(entry.Bounds.Height);
+        IsSizeLocked = entry.IsSizeLocked;
         OnRefresh(entry);
     });
 
@@ -97,9 +105,11 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
 
     partial void OnYChanged(decimal? value) => Update<LabelEntry>("position", e => e with { Bounds = e.Bounds with { Y = FromDisplay(value) } });
 
-    partial void OnWidthChanged(decimal? value) => Update<LabelEntry>("size", e => e with { Bounds = e.Bounds with { Width = Clamp(FromDisplay(value)) } });
+    partial void OnWidthChanged(decimal? value) => Update<LabelEntry>("size", e => e.IsSizeLocked ? e : e with { Bounds = e.Bounds with { Width = Clamp(FromDisplay(value)) } });
 
-    partial void OnHeightChanged(decimal? value) => Update<LabelEntry>("size", e => e with { Bounds = e.Bounds with { Height = Clamp(FromDisplay(value)) } });
+    partial void OnHeightChanged(decimal? value) => Update<LabelEntry>("size", e => e.IsSizeLocked ? e : e with { Bounds = e.Bounds with { Height = Clamp(FromDisplay(value)) } });
+
+    partial void OnIsSizeLockedChanged(bool value) => Update<LabelEntry>(value ? "lock size" : "unlock size", e => e with { IsSizeLocked = value });
 
     private int Clamp(int size) => IsSegment ? size : Math.Max(0, size);
 }

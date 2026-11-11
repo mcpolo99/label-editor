@@ -172,7 +172,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
                     UnknownEntry u => $"<{u.ElementName}>",
                     _ => string.Empty,
                 };
-                var kind = entry is TextEntry { IsBarcode: true } ? "Bar code" : entry.Kind.ToString();
+                var kind = (entry is TextEntry { IsBarcode: true } ? "Bar code" : entry.Kind.ToString()) + (entry.IsSizeLocked ? " 🔒" : string.Empty);
                 var b2 = entry.Bounds;
                 Entries.Add(new EntryListItem(entry.Id, kind, description, $"{b2.X / 1000.0:0.##}, {b2.Y / 1000.0:0.##}"));
             }

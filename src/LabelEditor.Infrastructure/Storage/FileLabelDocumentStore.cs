@@ -4,15 +4,23 @@ using LabelEditor.Infrastructure.Ledit;
 
 namespace LabelEditor.Infrastructure.Storage;
 
-/// <summary>Label files on disk, read and written asynchronously; saves are atomic.</summary>
+/// <summary>
+/// Label files on disk, read and written asynchronously; saves are atomic. Editor-only settings travel in a
+/// sidecar file (<see cref="EditorMetadataSidecar"/>) so the LEdit file stays untouched by them.
+/// </summary>
 public sealed class FileLabelDocumentStore(ILabelLayoutFormat format) : ILabelDocumentStore
 {
     public async Task<LabelLayout> LoadAsync(string path, CancellationToken cancellationToken = default)
     {
         try
         {
-            await using var stream = LeditFieldCatalogSource.OpenRead(path);
-            return await format.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            LabelLayout layout;
+            await using (var stream = LeditFieldCatalogSource.OpenRead(path))
+            {
+                layout = await format.ReadAsync(stream, cancellationToken).ConfigureAwait(false);
+            }
+
+            return await EditorMetadataSidecar.ApplyAsync(layout, path, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -35,6 +43,7 @@ public sealed class FileLabelDocumentStore(ILabelLayoutFormat format) : ILabelDo
             }
 
             File.Move(temp, path, overwrite: true);
+            await EditorMetadataSidecar.SaveAsync(layout, path, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

@@ -275,6 +275,9 @@
         <MenuItem Header="_Snap to grid" Command="{Binding ArrangeCommand}" CommandParameter="SnapToGrid" />
         <MenuItem Header="Bring to _front" Command="{Binding ArrangeCommand}" CommandParameter="Front" />
         <MenuItem Header="Send to bac_k" Command="{Binding ArrangeCommand}" CommandParameter="Back" />
+        <Separator />
+        <MenuItem Header="_Lock size" Command="{Binding ArrangeCommand}" CommandParameter="LockSize" />
+        <MenuItem Header="_Unlock size" Command="{Binding ArrangeCommand}" CommandParameter="UnlockSize" />
       </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="Zoom _in" Command="{Binding ZoomInCommand}" InputGesture="Ctrl+OemPlus" />

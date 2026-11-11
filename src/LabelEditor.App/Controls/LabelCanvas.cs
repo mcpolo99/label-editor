@@ -280,6 +280,11 @@ public sealed class LabelCanvas : Control
 
     private static IEnumerable<(ResizeHandle Handle, Point Point)> Handles(LabelEntry entry, ViewTransform view)
     {
+        if (entry.IsSizeLocked)
+        {
+            yield break;
+        }
+
         if (entry.IsSegment)
         {
             yield return (ResizeHandle.TopLeft, view.ToView(entry.Bounds.Start));

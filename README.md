@@ -15,6 +15,8 @@ and QR codes. It can fill the label with real part data from generated label she
   grid snapping (hold **Alt** to move freely), arrow-key nudging (**Shift** = 0.1 mm), Shift-constrained
   drawing, z-order, cut/copy/paste/duplicate between labels, and LEdit's align / same size / space
   commands (the first selected entry is the reference).
+- **Lock size** per entry (property panel or Arrange menu): move freely without changing width/height. Stored in a
+  `.labeleditor.json` sidecar beside the label, so the LEdit file is unaffected.
 - **Undo/redo** for every change. Typing in a property box is one step.
 - **Fields by element name**: the field tree comes from `LEditTreeXML.xml` and `ListaOriginaliId.xml`.
   Fields are shown and placeholdered by their element name (`[QMin]`, `[CabCode]`); the translated

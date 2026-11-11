@@ -85,7 +85,7 @@ public static class LayoutArrangement
         }
 
         var dominant = entries[0].Bounds.Normalize();
-        var ids = entries.Skip(1).Select(e => e.Id).ToHashSet();
+        var ids = entries.Skip(1).Where(e => !e.IsSizeLocked).Select(e => e.Id).ToHashSet();
         return layout.UpdateEntries(ids, e =>
         {
             var b = e.Bounds;
