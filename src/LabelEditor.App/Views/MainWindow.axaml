@@ -64,18 +64,32 @@
         <Border BorderBrush="#ccc" BorderThickness="1" Padding="6,4" Background="#fafafa">
           <TextBlock Text="{Binding Preview}" TextWrapping="Wrap" FontFamily="Consolas,monospace" />
         </Border>
-        <ListBox ItemsSource="{Binding Elements}" SelectedItem="{Binding SelectedElement}" MaxHeight="150">
-          <ListBox.ItemTemplate>
+        <!-- Composer: the entry prints its pieces in this order. Click a chip to edit it; new pieces go after it. -->
+        <ItemsControl ItemsSource="{Binding Elements}" Margin="0,4,0,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
             <DataTemplate DataType="props:TextElementViewModel">
-              <TextBlock Text="{Binding Display}" ToolTip.Tip="{Binding FieldCaption}" />
+              <Border Classes="chip" Classes.literal="{Binding IsLiteral}" Classes.selected="{Binding IsSelected}">
+                <StackPanel Orientation="Horizontal">
+                  <Button Classes="chipbody" Command="{Binding SelectCommand}" ToolTip.Tip="{Binding FieldCaption}">
+                    <TextBlock Text="{Binding Display}" />
+                  </Button>
+                  <Button Classes="chipremove" Content="✕" Command="{Binding RemoveCommand}" ToolTip.Tip="Remove this piece" />
+                </StackPanel>
+              </Border>
             </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBlock Classes="hint" Text="Empty: add fields and fixed text below." IsVisible="{Binding !Elements.Count}" />
         <StackPanel Orientation="Horizontal" Spacing="4">
-          <Button Content="+ Text" Command="{Binding AddTextCommand}" ToolTip.Tip="Add fixed text. Add fields by double-clicking or dragging them from the Fields tab." />
-          <Button Content="Remove" Command="{Binding RemoveElementCommand}" />
-          <Button Content="▲" Command="{Binding MoveElementUpCommand}" />
-          <Button Content="▼" Command="{Binding MoveElementDownCommand}" />
+          <Button Content="+ Field…" Command="{Binding AddFieldsCommand}" ToolTip.Tip="Add one or more data fields from the field tree (Ctrl+click for several), after the selected piece" />
+          <Button Content="+ Text" Command="{Binding AddTextCommand}" ToolTip.Tip="Add fixed text (e.g. a separator or &quot;L: &quot;) after the selected piece" />
+          <Button Content="◀" Command="{Binding MoveElementUpCommand}" ToolTip.Tip="Move the selected piece left" />
+          <Button Content="▶" Command="{Binding MoveElementDownCommand}" ToolTip.Tip="Move the selected piece right" />
         </StackPanel>
         <ContentControl Content="{Binding SelectedElement}">
           <ContentControl.ContentTemplate>

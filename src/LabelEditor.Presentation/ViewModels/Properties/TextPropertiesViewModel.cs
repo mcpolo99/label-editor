@@ -61,9 +61,18 @@ public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
 
     public ObservableCollection<TextElementViewModel> Elements { get; } = [];
 
+    /// <summary>The piece being edited; new pieces are inserted after it.</summary>
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RemoveElementCommand), nameof(MoveElementUpCommand), nameof(MoveElementDownCommand))]
     private TextElementViewModel? _selectedElement;
+
+    partial void OnSelectedElementChanged(TextElementViewModel? value)
+    {
+        foreach (var element in Elements)
+        {
+            element.IsSelected = ReferenceEquals(element, value);
+        }
+    }
 
     [ObservableProperty]
     private string _preview = string.Empty;
@@ -153,19 +162,53 @@ public sealed partial class TextPropertiesViewModel : EntryPropertiesViewModel
 
     internal bool Refreshing => IsRefreshing;
 
-    /// <summary>Appends a data field (from the field picker).</summary>
-    public void AddField(int fieldId) => EditElements("Add field", list => list.Add(TextElement.ForField(fieldId)), selectIndex: int.MaxValue);
+    /// <summary>Inserts a data field after the selected piece (field tree double-click / drop on the entry).</summary>
+    public void AddField(int fieldId) => InsertElements("Add field", [ElementFor(fieldId)]);
 
+    /// <summary>Adds one or more fields chosen in the field tree dialog, in the order chosen, after the selected piece.</summary>
     [RelayCommand]
-    private void AddText() => EditElements("Add text", list => list.Add(TextElement.ForLiteral("Text")), selectIndex: int.MaxValue);
+    private async Task AddFieldsAsync()
+    {
+        var ids = await _interaction.PickFieldsAsync(_context.Resolver);
+        if (ids.Count > 0)
+        {
+            InsertElements(ids.Count == 1 ? "Add field" : $"Add {ids.Count} fields", ids.Select(ElementFor).ToList());
+        }
+    }
+
+    /// <summary>Adds a fixed-text piece (e.g. a separator or a caption like "L: ") after the selected piece.</summary>
+    [RelayCommand]
+    private void AddText() => InsertElements("Add text", [TextElement.ForLiteral(" ")]);
 
     [RelayCommand(CanExecute = nameof(HasSelectedElement))]
     private void RemoveElement()
     {
         if (SelectedElement is { } e)
         {
-            EditElements("Remove element", list => list.RemoveAt(e.Index), selectIndex: e.Index - 1);
+            RemoveElementAt(e.Index);
         }
+    }
+
+    internal void RemoveElementAt(int index) =>
+        EditElements("Remove element", list => index < list.Count ? list.RemoveAt(index) : list, selectIndex: index - 1);
+
+    /// <summary>"Raw text" in the field tree stands for fixed text.</summary>
+    private static TextElement ElementFor(int fieldId) =>
+        fieldId == Domain.Fields.FieldCatalog.RawTextId ? TextElement.ForLiteral(" ") : TextElement.ForField(fieldId);
+
+    private void InsertElements(string description, IReadOnlyList<TextElement> items)
+    {
+        var at = SelectedElement is { } selected ? selected.Index + 1 : Elements.Count;
+        EditElements(description, list =>
+        {
+            var position = Math.Min(at, list.Count);
+            foreach (var item in items)
+            {
+                list = list.Insert(position++, item);
+            }
+
+            return list;
+        }, selectIndex: at + items.Count - 1);
     }
 
     [RelayCommand(CanExecute = nameof(HasSelectedElement))]
@@ -275,6 +318,16 @@ public sealed partial class TextElementViewModel(TextPropertiesViewModel owner, 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsField))]
     private bool _isLiteral;
+
+    /// <summary>Highlights the chip being edited.</summary>
+    [ObservableProperty]
+    private bool _isSelected;
+
+    [RelayCommand]
+    private void Select() => owner.SelectedElement = this;
+
+    [RelayCommand]
+    private void Remove() => owner.RemoveElementAt(Index);
 
     /// <summary>Two-way counterpart of <see cref="IsLiteral"/> for the "Data field" option.</summary>
     public bool IsField

@@ -53,6 +53,37 @@
     <Style Selector="Button.icon:disabled PathIcon">
       <Setter Property="Opacity" Value="0.35" />
     </Style>
+    <!-- Composer chips: fields blue, fixed text amber, the selected one outlined. -->
+    <Style Selector="Border.chip">
+      <Setter Property="Background" Value="#E8F0FB" />
+      <Setter Property="BorderBrush" Value="#B9CCE6" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="10" />
+      <Setter Property="Margin" Value="0,0,4,4" />
+    </Style>
+    <Style Selector="Border.chip.literal">
+      <Setter Property="Background" Value="#FFF4DD" />
+      <Setter Property="BorderBrush" Value="#E9CF9A" />
+    </Style>
+    <Style Selector="Border.chip.selected">
+      <Setter Property="BorderBrush" Value="#0078D7" />
+      <Setter Property="BorderThickness" Value="2" />
+    </Style>
+    <Style Selector="Button.chipbody, Button.chipremove">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="Button.chipbody">
+      <Setter Property="Padding" Value="8,2,2,2" />
+      <Setter Property="FontFamily" Value="Consolas,monospace" />
+    </Style>
+    <Style Selector="Button.chipremove">
+      <Setter Property="Padding" Value="4,2,7,2" />
+      <Setter Property="FontSize" Value="10" />
+      <Setter Property="Foreground" Value="#888" />
+    </Style>
     <Style Selector="Button.tool, ToggleButton.tool, RadioButton.tool">
       <Setter Property="MinWidth" Value="30" />
       <Setter Property="Padding" Value="6,3" />

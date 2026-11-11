@@ -76,6 +76,8 @@ public class SaveFlowTests
 
         public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
 
+        public Task<IReadOnlyList<int>> PickFieldsAsync(FieldTextResolver resolver) => Task.FromResult<IReadOnlyList<int>>([]);
+
         public Task<int?> PickFieldAsync(FieldTextResolver resolver, int? currentFieldId) => Task.FromResult<int?>(null);
 
         public HistoryChoice? HistoryChoice { get; set; }

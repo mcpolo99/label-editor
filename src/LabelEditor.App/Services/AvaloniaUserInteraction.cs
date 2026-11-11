@@ -141,7 +141,15 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
             picker.Reveal(id);
         }
 
-        return await new Views.FieldPickerDialog { DataContext = picker }.ShowDialog<int?>(owner);
+        var chosen = await new Views.FieldPickerDialog { DataContext = picker }.ShowDialog<IReadOnlyList<int>?>(owner);
+        return chosen is { Count: > 0 } ? chosen[0] : null;
+    }
+
+    public async Task<IReadOnlyList<int>> PickFieldsAsync(Application.Preview.FieldTextResolver resolver)
+    {
+        var picker = new Presentation.ViewModels.FieldPickerViewModel();
+        picker.Load(resolver);
+        return await new Views.FieldPickerDialog { DataContext = picker, AllowMultiple = true }.ShowDialog<IReadOnlyList<int>?>(owner) ?? [];
     }
 
     private async Task<string?> PickOneAsync(string title, FilePickerFileType type, string? initialFolder)

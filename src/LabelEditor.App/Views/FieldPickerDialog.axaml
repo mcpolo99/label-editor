@@ -11,6 +11,8 @@
         ShowInTaskbar="False">
   <DockPanel Margin="10">
     <TextBox x:Name="FilterBox" DockPanel.Dock="Top" Text="{Binding Filter}" Watermark="Filter (name, caption or ID)" Margin="0,0,0,6" />
+    <TextBlock x:Name="MultiHint" DockPanel.Dock="Top" IsVisible="False" Foreground="#666" TextWrapping="Wrap" Margin="0,0,0,6"
+               Text="Ctrl+click to choose several fields; they are added in the order you choose them." />
 
     <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,8,0,0">
       <TextBlock VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Foreground="#555"

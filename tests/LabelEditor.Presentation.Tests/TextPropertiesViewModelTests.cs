@@ -50,6 +50,10 @@ public class TextPropertiesViewModelTests
 
         public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
 
+        public Queue<IReadOnlyList<int>> MultiAnswers { get; } = new();
+
+        public Task<IReadOnlyList<int>> PickFieldsAsync(FieldTextResolver resolver) => Task.FromResult(MultiAnswers.Dequeue());
+
         public Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions) => throw new NotSupportedException();
     }
 
@@ -153,6 +157,70 @@ public class TextPropertiesViewModelTests
         await panel.Elements[0].ChooseFieldCommand.ExecuteAsync(null);
 
         Assert.IsType<LiteralText>(ElementIn(session, entry.Id).Source);
+    }
+
+    private static TextEntry EntryIn(EditorSession session, EntryId id) => (TextEntry)session.Layout.Find(id)!;
+
+    private static string Describe(EditorSession session, EntryId id) =>
+        string.Join(" ", EntryIn(session, id).Elements.Select(e => e.Source is LiteralText l ? $"\"{l.Text}\"" : $"[{((DataFieldReference)e.Source).FieldId}]"));
+
+    private static void RefreshFromSession(TextPropertiesViewModel panel, EditorSession session, EntryId id) => panel.Refresh(EntryIn(session, id));
+
+    [Fact]
+    public async Task Several_fields_are_added_in_the_chosen_order_after_the_selected_piece()
+    {
+        var (session, entry, panel, dialog) = Setup();
+        panel.SelectedElement = panel.Elements[0];
+        dialog.MultiAnswers.Enqueue([45808, 45804]);
+
+        await panel.AddFieldsCommand.ExecuteAsync(null);
+
+        Assert.Equal("[45804] [45808] [45804]", Describe(session, entry.Id));
+        session.Undo(); // one undo step for the whole batch
+        Assert.Equal("[45804]", Describe(session, entry.Id));
+    }
+
+    [Fact]
+    public void Text_pieces_go_after_the_selected_piece_so_fields_and_text_can_be_mixed()
+    {
+        var (session, entry, panel, _) = Setup();
+
+        panel.AddTextCommand.Execute(null);
+        RefreshFromSession(panel, session, entry.Id);
+        panel.Elements[1].LiteralText = " / ";
+        RefreshFromSession(panel, session, entry.Id);
+        panel.SelectedElement = panel.Elements[0];
+        panel.AddField(45808);
+        RefreshFromSession(panel, session, entry.Id);
+
+        Assert.Equal("[45804] [45808] \" / \"", Describe(session, entry.Id));
+        Assert.Same(panel.Elements[1], panel.SelectedElement); // the new piece is selected for editing
+        Assert.True(panel.Elements[1].IsSelected);
+        Assert.False(panel.Elements[0].IsSelected);
+    }
+
+    [Fact]
+    public void A_chip_can_be_removed_directly()
+    {
+        var (session, entry, panel, _) = Setup();
+        panel.AddField(45808);
+        RefreshFromSession(panel, session, entry.Id);
+
+        panel.Elements[0].RemoveCommand.Execute(null);
+
+        Assert.Equal("[45808]", Describe(session, entry.Id));
+    }
+
+    [Fact]
+    public async Task Cancelling_the_add_fields_dialog_changes_nothing()
+    {
+        var (session, entry, panel, dialog) = Setup();
+        dialog.MultiAnswers.Enqueue([]);
+
+        await panel.AddFieldsCommand.ExecuteAsync(null);
+
+        Assert.Equal("[45804]", Describe(session, entry.Id));
+        Assert.False(session.History.CanUndo);
     }
 
     [Fact]

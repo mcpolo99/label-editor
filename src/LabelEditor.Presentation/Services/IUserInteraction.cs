@@ -54,6 +54,9 @@ public interface IUserInteraction
     /// <param name="currentFieldId">Field to select initially, if any.</param>
     /// <returns>The chosen field id, or null when cancelled.</returns>
     Task<int?> PickFieldAsync(Application.Preview.FieldTextResolver resolver, int? currentFieldId);
+
+    /// <summary>Lets the user choose one or more fields (Ctrl/Shift-click), in the order chosen; empty when cancelled.</summary>
+    Task<IReadOnlyList<int>> PickFieldsAsync(Application.Preview.FieldTextResolver resolver);
 }
 
 /// <summary>Which build is running and where it keeps its data (shown in the title bar and About).</summary>
