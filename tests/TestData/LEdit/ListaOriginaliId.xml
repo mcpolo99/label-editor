@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!-- Test data written for Label Editor's tests: field names and ids as in LEdit, own captions. -->
+<Fields>
+  <Date                 Text='(95, 9001, Date)' ID='45802'></Date>
+  <CabCode              Text='(95, 9048, Customer)' ID='45831'></CabCode>
+  <CabInfo              Text='(95, 9053, Order number)' ID='45836'></CabInfo>
+  <FinalLength          Text='(95, 9010, Final length)' ID='45804'></FinalLength>
+  <FinalWidth           Text='(95, 9011, Final width)' ID='45805'></FinalWidth>
+  <Thickness            Text='(95, 9007, Thickness)' ID='45812'></Thickness>
+  <QMin                 Text='(95, 9014, Quantity)' ID='45808'></QMin>
+  <Material             Text='(95, 9032, Material)' ID='45829'></Material>
+  <DrillInfo            Text='(95, 9030, Drilling)' ID='45849'></DrillInfo>
+  <CustomTexts          Text='(95, 9079, Custom text A)' ID='45866'></CustomTexts>
+  <CustomTexts          Text='(95, 9080, Custom text B)' ID='45867'></CustomTexts>
+  <EdgingInfo           Text='(95, 9035, EdgingInfo)' ID='45851'></EdgingInfo>
+  <TypeEdgeUp           Text='(95, 9036, TypeEdgeUp)' ID='45852'></TypeEdgeUp>
+  <MatEdgeUp            Text='(95, 9037, MatEdgeUp)' ID='45853'></MatEdgeUp>
+  <ColEdgeUp            Text='(95, 9038, ColEdgeUp)' ID='45854'></ColEdgeUp>
+  <TypeEdgeLo           Text='(95, 9039, TypeEdgeLo)' ID='45855'></TypeEdgeLo>
+  <MatEdgeLo            Text='(95, 9040, MatEdgeLo)' ID='45856'></MatEdgeLo>
+  <ColEdgeLo            Text='(95, 9041, ColEdgeLo)' ID='45857'></ColEdgeLo>
+  <TypeEdgeL            Text='(95, 9042, TypeEdgeL)' ID='45858'></TypeEdgeL>
+  <MatEdgeL             Text='(95, 9043, MatEdgeL)' ID='45859'></MatEdgeL>
+  <ColEdgeL             Text='(95, 9044, ColEdgeL)' ID='45860'></ColEdgeL>
+  <TypeEdgeR            Text='(95, 9045, TypeEdgeR)' ID='45861'></TypeEdgeR>
+  <MatEdgeR             Text='(95, 9046, MatEdgeR)' ID='45862'></MatEdgeR>
+  <ColEdgeR             Text='(95, 9047, ColEdgeR)' ID='45863'></ColEdgeR>
+</Fields>

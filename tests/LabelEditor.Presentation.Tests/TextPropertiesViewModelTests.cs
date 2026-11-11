@@ -42,6 +42,9 @@ public class TextPropertiesViewModelTests
 
         public Task<string?> PickPreviewDataAsync(string? initialFolder) => throw new NotSupportedException();
 
+
+        public Task<string?> PickFolderAsync(string title, string? initialFolder) => Task.FromResult<string?>(null);
+
         public Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle) => throw new NotSupportedException();
 
         public Task<ReplaceAnswer> AskReplaceExistingAsync(string path, string? protectedReason) => throw new NotSupportedException();

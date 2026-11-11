@@ -35,7 +35,7 @@ public sealed class VersionHistoryTests : IDisposable
     [Fact]
     public async Task First_save_over_an_existing_label_keeps_the_original_as_version_1()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var original = await File.ReadAllBytesAsync(path);
         var layout = await _store.LoadAsync(path);
 
@@ -71,7 +71,7 @@ public sealed class VersionHistoryTests : IDisposable
     [Fact]
     public async Task The_label_file_keeps_its_clean_name_and_ledit_content()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var layout = await _store.LoadAsync(path);
 
         for (var i = 1; i <= 3; i++)
@@ -79,7 +79,7 @@ public sealed class VersionHistoryTests : IDisposable
             await _store.SaveAsync(layout.WithLabelSize(100_000 - (i * 1000), 60_000), path);
         }
 
-        Assert.Equal(["Plats128C.xml", "Plats128C.xml" + EditorMetadataSidecar.Suffix], Directory.GetFiles(_folder).Select(Path.GetFileName).Order());
+        Assert.Equal(["test-label.xml", "test-label.xml" + EditorMetadataSidecar.Suffix], Directory.GetFiles(_folder).Select(Path.GetFileName).Order());
         Assert.Equal(4, (await _store.GetVersionsAsync(path)).Count);
         var bytes = await File.ReadAllBytesAsync(path);
         Assert.Equal(bytes, new LeditLabelFormat().Serialize(await _store.LoadVersionAsync(path, 4)));
@@ -88,7 +88,7 @@ public sealed class VersionHistoryTests : IDisposable
     [Fact]
     public async Task Versions_are_stored_compressed()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var layout = await _store.LoadAsync(path);
         for (var i = 0; i < 10; i++)
         {
@@ -103,7 +103,7 @@ public sealed class VersionHistoryTests : IDisposable
     [Fact]
     public async Task A_label_without_history_has_no_versions()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
 
         Assert.Empty(await _store.GetVersionsAsync(path));
         await Assert.ThrowsAsync<Application.Abstractions.LabelDocumentException>(() => _store.LoadVersionAsync(path, 1));

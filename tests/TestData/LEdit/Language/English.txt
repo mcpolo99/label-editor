@@ -1,0 +1,7 @@
+00 0010 Edges
+95 8500 Part descriptions\\Test text
+95 9000 Fixed text\\Test text
+95 9010 Length\\Test text
+95 9014 Quantity\\Test text
+95 9069 Worklist data\\Test text
+95 9070 Part data\\Test text

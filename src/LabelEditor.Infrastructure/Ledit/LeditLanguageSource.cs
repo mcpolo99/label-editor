@@ -36,7 +36,12 @@ public sealed class LeditLanguageSource(IStorageLocations locations, ILogger<Led
 
     public async Task<IReadOnlyList<LanguageInfo>> GetLanguagesAsync(CancellationToken cancellationToken = default)
     {
-        var folder = Path.Combine(locations.DataRoot, LanguageFolder);
+        if (locations.DataRoot is not { } root)
+        {
+            return []; // no LEdit installation: no languages
+        }
+
+        var folder = Path.Combine(root, LanguageFolder);
         if (!Directory.Exists(folder))
         {
             logger.LogWarning("Language folder {Folder} not found", folder);
@@ -54,7 +59,12 @@ public sealed class LeditLanguageSource(IStorageLocations locations, ILogger<Led
 
     public async Task<TextCatalog> LoadAsync(string languageName, CancellationToken cancellationToken = default)
     {
-        var path = Path.Combine(locations.DataRoot, LanguageFolder, languageName + ".txt");
+        if (locations.DataRoot is not { } root)
+        {
+            return TextCatalog.Empty;
+        }
+
+        var path = Path.Combine(root, LanguageFolder, languageName + ".txt");
         if (!File.Exists(path))
         {
             logger.LogWarning("Language file {Path} not found", path);
@@ -109,9 +119,8 @@ public sealed class LeditLanguageSource(IStorageLocations locations, ILogger<Led
 
     private async Task<Dictionary<string, IReadOnlyList<string>>> ReadLanguageMapAsync(CancellationToken cancellationToken)
     {
-        var path = Path.Combine(locations.DataRoot, LanguageMapFileName);
         var result = new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase);
-        if (!File.Exists(path))
+        if (locations.DataRoot is not { } root || Path.Combine(root, LanguageMapFileName) is var path && !File.Exists(path))
         {
             return result;
         }

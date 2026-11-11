@@ -23,7 +23,7 @@ public class ThemeTests
         var window = new MainWindow { Width = 1400, Height = 860 };
         using var services = App.ConfigureServices(
             new AppPaths(AppContext.BaseDirectory, root, IsPortable: true),
-            new StorageOptions { PackagedDefaultsRoot = Path.Combine(AppContext.BaseDirectory, "Defaults", "LEdit"), MachineInstallationRoot = null, WorkingFolder = root },
+            new StorageOptions { MachineInstallationRoot = Path.Combine(AppContext.BaseDirectory, "TestLEdit"), WorkingFolder = root },
             window);
         var vm = services.GetRequiredService<MainViewModel>();
         window.DataContext = vm;

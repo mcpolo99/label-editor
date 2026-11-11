@@ -4,6 +4,7 @@ using LabelEditor.Domain.Entries;
 using LabelEditor.Domain.Fields;
 using LabelEditor.Domain.Text;
 using LabelEditor.Infrastructure.Ledit;
+using LabelEditor.Tests.Shared;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace LabelEditor.Infrastructure.Tests;
@@ -11,7 +12,10 @@ namespace LabelEditor.Infrastructure.Tests;
 public class LeditReferenceDataTests
 {
     private static Task<FieldCatalog> LoadCatalogAsync() =>
-        new LeditFieldCatalogSource(TestData.DefaultsOnly(), NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
+        new LeditFieldCatalogSource(TestData.Locations(), NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
+
+    private static Task<FieldCatalog> LoadRealCatalogAsync() =>
+        new LeditFieldCatalogSource(TestData.RealLocations(), NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
 
     [Fact]
     public async Task Fields_are_named_by_their_element_name_not_their_translation()
@@ -21,7 +25,7 @@ public class LeditReferenceDataTests
         var qmin = catalog.Find(45808);
         Assert.NotNull(qmin);
         Assert.Equal("QMin", qmin.Name);
-        Assert.Equal(new TextReference(95, 9014, "Quantità"), qmin.Caption);
+        Assert.Equal(new TextReference(95, 9014, "Quantity"), qmin.Caption);
         Assert.Equal("FinalLength", catalog.Find(45804)?.Name);
     }
 
@@ -30,8 +34,8 @@ public class LeditReferenceDataTests
     {
         var catalog = await LoadCatalogAsync();
 
-        Assert.Equal("CustomTexts (MatCode)", catalog.Find(45867)?.Name);
-        Assert.Equal("CustomTexts (QPiece)", catalog.Find(45866)?.Name);
+        Assert.Equal("CustomTexts (Custom text A)", catalog.Find(45866)?.Name);
+        Assert.Equal("CustomTexts (Custom text B)", catalog.Find(45867)?.Name);
         Assert.Equal(catalog.Fields.Count, catalog.Fields.Select(f => f.Name).Distinct().Count());
     }
 
@@ -62,10 +66,10 @@ public class LeditReferenceDataTests
         Assert.Equal(45862, catalog.Fields.Single(f => f.Name == "MatEdgeR").Id);
     }
 
-    [Fact]
+    [RealLeditFact]
     public async Task Almost_all_field_ids_used_by_real_labels_are_in_the_catalog()
     {
-        var catalog = await LoadCatalogAsync();
+        var catalog = await LoadRealCatalogAsync();
         var format = new LeditLabelFormat();
         var used = new HashSet<int>();
         foreach (var file in TestData.AllLabels())
@@ -81,7 +85,7 @@ public class LeditReferenceDataTests
         Assert.True(missing.Count <= used.Count / 10, $"Missing field ids: {string.Join(", ", missing)}");
     }
 
-    [Theory]
+    [RealLeditTheory]
     [InlineData("English", "Quantity")]
     [InlineData("Svenska", "Mängd")]
     [InlineData("Ruski", "Количество")]
@@ -89,7 +93,7 @@ public class LeditReferenceDataTests
     [InlineData("Polski", "Ilość")]
     public async Task Language_tables_decode_with_the_right_code_page(string language, string expected)
     {
-        var source = new LeditLanguageSource(TestData.DefaultsOnly(), NullLogger<LeditLanguageSource>.Instance);
+        var source = new LeditLanguageSource(TestData.RealLocations(), NullLogger<LeditLanguageSource>.Instance);
 
         var texts = await source.LoadAsync(language);
 
@@ -106,10 +110,10 @@ public class LeditReferenceDataTests
         Assert.Equal("Cut dimension A", text.Description);
     }
 
-    [Fact]
+    [RealLeditFact]
     public async Task Picks_the_language_mapped_to_the_ui_culture()
     {
-        var source = new LeditLanguageSource(TestData.DefaultsOnly(), NullLogger<LeditLanguageSource>.Instance);
+        var source = new LeditLanguageSource(TestData.RealLocations(), NullLogger<LeditLanguageSource>.Instance);
         var languages = await source.GetLanguagesAsync();
 
         Assert.Equal("Svenska", ReferenceDataService.ChooseLanguage(languages, null, CultureInfo.GetCultureInfo("sv-SE")));

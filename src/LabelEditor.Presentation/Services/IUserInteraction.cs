@@ -37,6 +37,9 @@ public interface IUserInteraction
 
     Task<string?> PickPreviewDataAsync(string? initialFolder);
 
+    /// <summary>Asks for a folder (e.g. the LEdit installation). Null = cancelled.</summary>
+    Task<string?> PickFolderAsync(string title, string? initialFolder);
+
     Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle);
 
     /// <summary>First save over an opened file. When <paramref name="protectedReason"/> is set, replacing is not offered.</summary>

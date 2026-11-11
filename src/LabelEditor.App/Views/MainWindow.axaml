@@ -262,6 +262,8 @@
         <MenuItem Header="Load _preview data…" Command="{Binding LoadPreviewDataCommand}" />
         <MenuItem Header="Clear preview data" Command="{Binding ClearPreviewDataCommand}" />
         <Separator />
+        <MenuItem Header="Choose _LEdit folder…" Command="{Binding ChooseLeditFolderCommand}" ToolTip.Tip="Where fields, languages and machine labels are read from (an installed LEdit)" />
+        <Separator />
         <MenuItem Header="E_xit" Click="OnExitClick" />
       </MenuItem>
       <MenuItem Header="_Edit">

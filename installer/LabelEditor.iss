@@ -2,7 +2,7 @@
 ;
 ; Build with build/package.ps1, which publishes the app and passes:
 ;   /DAppVersion=1.2.3      product version (from Directory.Build.props)
-;   /DSourceDir=<publish>   folder with LabelEditor.exe and Defaults\
+;   /DSourceDir=<publish>   folder with LabelEditor.exe
 ;   /DOutputDir=<folder>    where LabelEditor-Setup-<version>.exe is written
 ;
 ; Two modes, chosen on the first page (or /PORTABLE=1 on the command line):
@@ -93,7 +93,7 @@ sv.DesktopIcon=Skapa genväg på skrivbordet
 Name: "desktopicon"; Description: "{cm:DesktopIcon}"; Flags: unchecked; Check: not IsPortable
 
 [InstallDelete]
-; Packaged LEdit defaults are replaced as a whole so files removed in a new version do not linger.
+; Versions before 0.2 shipped copies of LEdit's files in Defaults\; the editor now reads the installed LEdit only.
 Type: filesandordirs; Name: "{app}\Defaults"
 
 [Files]

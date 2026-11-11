@@ -70,6 +70,9 @@ public class SaveFlowTests
 
         public Task<string?> PickPreviewDataAsync(string? initialFolder) => Task.FromResult<string?>(null);
 
+
+        public Task<string?> PickFolderAsync(string title, string? initialFolder) => Task.FromResult<string?>(null);
+
         public Task<SaveChangesAnswer> AskSaveChangesAsync(string documentTitle) => Task.FromResult(SaveChangesAnswer.Cancel);
 
         public Task ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);

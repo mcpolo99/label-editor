@@ -21,4 +21,9 @@
   <ItemGroup>
     <None Include="../LabelEditor.Infrastructure.Tests/Fixtures/**/*" LinkBase="Fixtures" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- The editor's own small LEdit-format data set; real LEdit files are found by RealLeditData when available. -->
+    <None Include="../TestData/LEdit/**/*" LinkBase="TestLEdit" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Shared/RealLeditData.cs" Link="Shared/RealLeditData.cs" />
+  </ItemGroup>
 </Project>

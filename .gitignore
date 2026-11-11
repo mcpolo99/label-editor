@@ -15,3 +15,7 @@ TestResults/
 
 # Portable-mode user data written next to the executable
 UserData/
+
+# Biesse's LEdit files are never committed: the editor reads them from the LEdit installation
+/defaults/
+

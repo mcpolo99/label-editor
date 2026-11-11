@@ -11,10 +11,10 @@ public sealed record StorageOptions
     /// <summary>Relative label folder inside an LEdit data root.</summary>
     public const string LabelSubfolder = @"MixedData\Label";
 
-    /// <summary>LEdit data packaged with the editor (Defaults/LEdit next to the executable).</summary>
-    public required string PackagedDefaultsRoot { get; init; }
-
-    /// <summary>Installed LEdit to read from, if present. Null disables machine lookup.</summary>
+    /// <summary>
+    /// Installed LEdit to read field, language and label data from. The editor ships none of LEdit's files; without
+    /// an installation it starts with an empty field tree. Null disables the lookup.
+    /// </summary>
     public string? MachineInstallationRoot { get; init; } = DefaultMachineInstallation;
 
     /// <summary>Writable folder for the user's labels.</summary>
@@ -28,8 +28,9 @@ public sealed record StorageOptions
 }
 
 /// <summary>
-/// Resolves data and label folders: the installed LEdit (if found) is the source of truth for field
-/// and language data; packaged defaults are the fallback, so the editor also works on machines without LEdit.
+/// Resolves data and label folders. The installed LEdit is the only source of field, language and template data:
+/// the editor does not ship copies of LEdit's files. Without an installation it still edits labels, with an empty
+/// field tree, until the user points it at an LEdit folder.
 /// </summary>
 public sealed class StorageLocations : IStorageLocations
 {
@@ -39,23 +40,24 @@ public sealed class StorageLocations : IStorageLocations
     {
         _options = options;
         var machine = options.MachineInstallationRoot;
-        IsMachineInstallation = machine is not null && LooksLikeLeditData(machine);
-        DataRoot = IsMachineInstallation ? Path.GetFullPath(machine!) : Path.GetFullPath(options.PackagedDefaultsRoot);
+        DataRoot = machine is not null && LooksLikeLeditData(machine) ? Path.GetFullPath(machine) : null;
         WorkingFolder = Path.GetFullPath(options.WorkingFolder);
 
         var folders = new List<LabelFolder> { new(WorkingFolder, LabelSourceKind.Working, IsReadOnly: false) };
-        if (IsMachineInstallation)
+        if (DataRoot is not null)
         {
             folders.Add(new LabelFolder(Path.Combine(DataRoot, LabelSubfolderPath), LabelSourceKind.Machine, !options.AllowWritingMachineLabels));
         }
 
-        folders.Add(new LabelFolder(Path.Combine(Path.GetFullPath(options.PackagedDefaultsRoot), LabelSubfolderPath), LabelSourceKind.Template, IsReadOnly: true));
         LabelFolders = folders;
     }
 
-    public string DataRoot { get; }
+    public string? DataRoot { get; }
 
-    public bool IsMachineInstallation { get; }
+    public bool IsMachineInstallation => DataRoot is not null;
+
+    /// <summary>The LEdit folder that was looked for (shown when it was not found).</summary>
+    public string? ExpectedInstallation => _options.MachineInstallationRoot;
 
     public IReadOnlyList<LabelFolder> LabelFolders { get; }
 
@@ -66,12 +68,7 @@ public sealed class StorageLocations : IStorageLocations
     public bool IsWriteProtected(string path)
     {
         var full = Path.GetFullPath(path);
-        if (IsUnder(full, Path.GetFullPath(_options.PackagedDefaultsRoot)))
-        {
-            return true;
-        }
-
-        if (!IsMachineInstallation)
+        if (DataRoot is null)
         {
             return false;
         }

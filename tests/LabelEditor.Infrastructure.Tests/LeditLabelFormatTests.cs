@@ -5,6 +5,7 @@ using LabelEditor.Domain.Geometry;
 using LabelEditor.Domain.Layout;
 using LabelEditor.Domain.Text;
 using LabelEditor.Infrastructure.Ledit;
+using LabelEditor.Tests.Shared;
 
 namespace LabelEditor.Infrastructure.Tests;
 
@@ -39,11 +40,14 @@ public class LeditLabelFormatTests
     [Fact]
     public async Task Older_edge_indicators_without_orient_are_written_without_it()
     {
-        var layout = await ReadAsync("LayoutDef.xml");
-        var edges = layout.Entries.OfType<CornerLogoEntry>().Single();
+        // As older LEdit versions write it: all four texts, no Orient.
+        var old = LabelLayout.CreateNew().AddEntry(new CornerLogoEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 30_000, 20_000), TextRight = "right_Edge" });
+        var reread = await ReadBytesAsync(_format.Serialize(old));
+        var edges = reread.Entries.OfType<CornerLogoEntry>().Single();
         Assert.Null(edges.Orientation);
+        Assert.Contains("EdgeInfo=\"0\" TextT=\"Top_Edge\" TextB=\"Bottom_Edge\" TextL=\"Left_Edge\" TextR=\"right_Edge\"/>", Encoding.Latin1.GetString(_format.Serialize(old)), StringComparison.Ordinal);
 
-        var xml = Encoding.Latin1.GetString(_format.Serialize(layout.ReplaceEntry(edges with { TextLeft = string.Empty })));
+        var xml = Encoding.Latin1.GetString(_format.Serialize(reread.ReplaceEntry(edges with { TextLeft = string.Empty })));
         Assert.Contains("EdgeInfo=\"0\" TextT=\"Top_Edge\" TextB=\"Bottom_Edge\" TextR=\"right_Edge\"/>", xml, StringComparison.Ordinal);
     }
 
@@ -78,7 +82,7 @@ public class LeditLabelFormatTests
     [Fact]
     public async Task Reads_coordinates_with_y_pointing_down()
     {
-        var layout = await ReadAsync("Plats128C_V3.xml");
+        var layout = await ReadAsync("test-label.xml");
 
         Assert.Equal(100_000, layout.Header.Shape.Width);
         Assert.Equal(60_000, layout.Header.Shape.Height);
@@ -90,7 +94,7 @@ public class LeditLabelFormatTests
     [Fact]
     public async Task Reads_text_entries_with_fields_rotation_and_barcode()
     {
-        var layout = await ReadAsync("Plats128C_V3.xml");
+        var layout = await ReadAsync("test-label.xml");
         var barcode = layout.Entries.OfType<TextEntry>().First();
 
         Assert.True(barcode.IsBarcode);
@@ -102,7 +106,7 @@ public class LeditLabelFormatTests
         Assert.Equal("123", element.PreviewText);
     }
 
-    [Fact]
+    [RealLeditFact]
     public async Task Reads_literal_text_and_legacy_v132_elements()
     {
         var layout = await ReadAsync("LayoutNest.xml");
@@ -117,9 +121,9 @@ public class LeditLabelFormatTests
     }
 
     [Fact]
-    public async Task Reads_every_entry_kind_of_the_stock_layout()
+    public async Task Reads_every_entry_kind()
     {
-        var layout = await ReadAsync("LayoutDef.xml");
+        var layout = await ReadAsync("test-label.xml");
 
         var kinds = layout.Entries.Select(e => e.Kind).ToHashSet();
         Assert.Contains(EntryKind.Bitmap, kinds);
@@ -129,8 +133,8 @@ public class LeditLabelFormatTests
         Assert.Contains(EntryKind.DataRecord, kinds);
         Assert.DoesNotContain(EntryKind.Unknown, kinds);
         var logo = layout.Entries.OfType<CornerLogoEntry>().Single();
-        Assert.Equal("Top_Edge", logo.TextTop);
-        Assert.Equal(8, logo.EdgeThicknessPercent);
+        Assert.Equal("Top edge", logo.TextTop);
+        Assert.Equal(10, logo.EdgeThicknessPercent);
     }
 
     [Fact]

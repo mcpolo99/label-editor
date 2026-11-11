@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='ISO-8859-1'?>
+<!-- Test data written for Label Editor's tests: field names and ids as in LEdit, own captions. -->
+<Fields>
+  <RawText Text='(95, 9000, Fixed text)' ID='40000'></RawText>
+  <WorlistData Text='(95, 9069, Worklist data)'>
+    <Date                 Text='(95, 9001, Date)' ID='45802'></Date>
+    <CabCode              Text='(95, 9048, Customer)' ID='45831'></CabCode>
+    <CabInfo              Text='(95, 9053, Order number)' ID='45836'></CabInfo>
+  </WorlistData>
+  <PartData Text='(95, 9070, Part data)'>
+    <FinalLength          Text='(95, 9010, Final length)' ID='45804'></FinalLength>
+    <FinalWidth           Text='(95, 9011, Final width)' ID='45805'></FinalWidth>
+    <Thickness            Text='(95, 9007, Thickness)' ID='45812'></Thickness>
+    <QMin                 Text='(95, 9014, Quantity)' ID='45808'></QMin>
+    <Material             Text='(95, 9032, Material)' ID='45829'></Material>
+    <DrillInfo            Text='(95, 9030, Drilling)' ID='45849'></DrillInfo>
+  </PartData>
+  <PartDescriptions Text='(95, 8500, Part descriptions)'>
+    <CustomTexts          Text='(95, 9079, Custom text A)' ID='45866'></CustomTexts>
+    <CustomTexts          Text='(95, 9080, Custom text B)' ID='45867'></CustomTexts>
+  </PartDescriptions>
+</Fields>

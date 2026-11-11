@@ -8,14 +8,14 @@ namespace LabelEditor.Presentation.ViewModels;
 /// <summary>A group of labels from one source folder.</summary>
 public sealed record LabelLibraryGroup(string Title, string Folder, IReadOnlyList<LabelLibraryItem> Items);
 
-/// <summary>Browses labels in the working folder, the installed LEdit and the packaged templates.</summary>
+/// <summary>Browses labels in the working folder and the installed LEdit.</summary>
 public sealed partial class LabelLibraryViewModel(ILabelLibrary library, IStorageLocations locations) : ObservableObject
 {
     public ObservableCollection<LabelLibraryGroup> Groups { get; } = [];
 
     public string DataSource => locations.IsMachineInstallation
         ? $"LEdit installation: {locations.DataRoot}"
-        : $"Packaged defaults (no LEdit installation found)";
+        : "No LEdit installation found: the field tree is empty. Use File ▸ Choose LEdit folder… to point the editor at one.";
 
     [ObservableProperty]
     private bool _isLoading;

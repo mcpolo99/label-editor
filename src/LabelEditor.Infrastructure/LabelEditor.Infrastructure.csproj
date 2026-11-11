@@ -11,10 +11,6 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Packaged LEdit defaults, copied next to the executable so the editor works without an LEdit installation. -->
-    <None Include="..\..\defaults\**\*" LinkBase="Defaults" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
-  </ItemGroup>
-  <ItemGroup>
     <InternalsVisibleTo Include="LabelEditor.Infrastructure.Tests" />
   </ItemGroup>
 </Project>

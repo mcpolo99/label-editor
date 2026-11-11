@@ -25,10 +25,13 @@ public interface ILabelDocumentStore
 /// <summary>Where the editor's reference data and labels live, and which locations must not be written.</summary>
 public interface IStorageLocations
 {
-    /// <summary>Root of the LEdit data actually used (machine installation if found, otherwise packaged defaults).</summary>
-    string DataRoot { get; }
+    /// <summary>
+    /// Root of the installed LEdit whose field, language and label data the editor uses; null when none was found
+    /// (the editor ships no LEdit files of its own).
+    /// </summary>
+    string? DataRoot { get; }
 
-    /// <summary>True when <see cref="DataRoot"/> is an installed LEdit, false when using packaged defaults.</summary>
+    /// <summary>True when an LEdit installation was found (<see cref="DataRoot"/> is set).</summary>
     bool IsMachineInstallation { get; }
 
     /// <summary>Folders to list labels from, in priority order.</summary>

@@ -22,11 +22,10 @@ public sealed class StorageTests : IDisposable
     {
         var machine = Path.Combine(_root, "machine", "LEdit");
         Directory.CreateDirectory(Path.Combine(machine, "MixedData", "Label"));
-        File.Copy(Path.Combine(TestData.DefaultsRoot, "LEditTreeXML.xml"), Path.Combine(machine, "LEditTreeXML.xml"));
-        File.Copy(TestData.Label("Plats128C.xml"), Path.Combine(machine, "MixedData", "Label", "Plats128C.xml"));
+        File.Copy(Path.Combine(TestData.LeditRoot, "LEditTreeXML.xml"), Path.Combine(machine, "LEditTreeXML.xml"));
+        File.Copy(TestData.Label("test-label.xml"), Path.Combine(machine, "MixedData", "Label", "test-label.xml"));
         return new StorageLocations(new StorageOptions
         {
-            PackagedDefaultsRoot = TestData.DefaultsRoot,
             MachineInstallationRoot = machine,
             WorkingFolder = Path.Combine(_root, "work"),
             AllowWritingMachineLabels = allowWritingLabels,
@@ -39,9 +38,8 @@ public sealed class StorageTests : IDisposable
         var locations = FakeMachine();
 
         Assert.True(locations.IsMachineInstallation);
-        Assert.EndsWith(Path.Combine("machine", "LEdit"), locations.DataRoot, StringComparison.Ordinal);
-        Assert.True(locations.IsWriteProtected(Path.Combine(locations.DataRoot, "MixedData", "Label", "Plats128C.xml")));
-        Assert.True(locations.IsWriteProtected(Path.Combine(TestData.DefaultsRoot, "MixedData", "Label", "LayoutDef.xml")));
+        Assert.EndsWith(Path.Combine("machine", "LEdit"), locations.DataRoot!, StringComparison.Ordinal);
+        Assert.True(locations.IsWriteProtected(Path.Combine(locations.DataRoot!, "MixedData", "Label", "test-label.xml")));
         Assert.False(locations.IsWriteProtected(Path.Combine(locations.WorkingFolder, "Mine.xml")));
     }
 
@@ -50,22 +48,27 @@ public sealed class StorageTests : IDisposable
     {
         var locations = FakeMachine(allowWritingLabels: true);
 
-        Assert.False(locations.IsWriteProtected(Path.Combine(locations.DataRoot, "MixedData", "Label", "Plats128C.xml")));
-        Assert.True(locations.IsWriteProtected(Path.Combine(locations.DataRoot, "LEditTreeXML.xml")));
+        Assert.False(locations.IsWriteProtected(Path.Combine(locations.DataRoot!, "MixedData", "Label", "test-label.xml")));
+        Assert.True(locations.IsWriteProtected(Path.Combine(locations.DataRoot!, "LEditTreeXML.xml")));
     }
 
     [Fact]
-    public void Falls_back_to_packaged_defaults_without_an_installation()
+    public async Task Without_an_installation_there_is_no_ledit_data_and_only_the_working_folder()
     {
+        // The editor ships none of LEdit's files: no installation means an empty field tree, not bundled copies.
         var locations = new StorageLocations(new StorageOptions
         {
-            PackagedDefaultsRoot = TestData.DefaultsRoot,
             MachineInstallationRoot = Path.Combine(_root, "does-not-exist"),
             WorkingFolder = Path.Combine(_root, "work"),
         });
 
         Assert.False(locations.IsMachineInstallation);
-        Assert.Equal(Path.GetFullPath(TestData.DefaultsRoot), locations.DataRoot);
+        Assert.Null(locations.DataRoot);
+        Assert.Equal([LabelSourceKind.Working], locations.LabelFolders.Select(f => f.Kind));
+        Assert.False(locations.IsWriteProtected(Path.Combine(_root, "anywhere", "a.xml")));
+        var catalog = await new LeditFieldCatalogSource(locations, NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
+        Assert.Empty(catalog.Fields);
+        Assert.Empty(await new LeditLanguageSource(locations, NullLogger<LeditLanguageSource>.Instance).GetLanguagesAsync());
     }
 
     [Fact]
@@ -76,8 +79,7 @@ public sealed class StorageTests : IDisposable
 
         var items = await library.GetItemsAsync();
 
-        Assert.Contains(items, i => i is { Name: "Plats128C", Source: LabelSourceKind.Machine, IsReadOnly: true });
-        Assert.Contains(items, i => i is { Name: "LayoutDef", Source: LabelSourceKind.Template, IsReadOnly: true });
+        Assert.Contains(items, i => i is { Name: "test-label", Source: LabelSourceKind.Machine, IsReadOnly: true });
     }
 
     [Fact]
@@ -85,7 +87,7 @@ public sealed class StorageTests : IDisposable
     {
         var locations = FakeMachine();
         var service = new DocumentService(new FileLabelDocumentStore(new LeditLabelFormat()), locations);
-        var session = await service.OpenAsync(Path.Combine(locations.DataRoot, "MixedData", "Label", "Plats128C.xml"));
+        var session = await service.OpenAsync(Path.Combine(locations.DataRoot!, "MixedData", "Label", "test-label.xml"));
         var before = await File.ReadAllBytesAsync(session.Location!.Path);
 
         Assert.True(session.Location.IsReadOnly);

@@ -1,0 +1,7 @@
+00 0010 kanter
+95 8500 Detaljbeskrivningar\\Test text
+95 9000 Fast text\\Test text
+95 9010 Längd\\Test text
+95 9014 Mängd\\Test text
+95 9069 Listdata\\Test text
+95 9070 Detaljdata\\Test text

@@ -152,6 +152,17 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
         return await new Views.FieldPickerDialog { DataContext = picker, AllowMultiple = true }.ShowDialog<IReadOnlyList<int>?>(owner) ?? [];
     }
 
+    public async Task<string?> PickFolderAsync(string title, string? initialFolder)
+    {
+        var folders = await owner.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = title,
+            AllowMultiple = false,
+            SuggestedStartLocation = await FolderAsync(initialFolder),
+        });
+        return folders.Count > 0 ? folders[0].TryGetLocalPath() : null;
+    }
+
     private async Task<string?> PickOneAsync(string title, FilePickerFileType type, string? initialFolder)
     {
         var files = await owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions

@@ -24,8 +24,14 @@ public sealed partial class LeditFieldCatalogSource(IStorageLocations locations,
 
     public async Task<FieldCatalog> LoadAsync(CancellationToken cancellationToken = default)
     {
-        var tree = await TryLoadAsync(Path.Combine(locations.DataRoot, TreeFileName), cancellationToken).ConfigureAwait(false);
-        var flat = await TryLoadAsync(Path.Combine(locations.DataRoot, FlatListFileName), cancellationToken).ConfigureAwait(false);
+        if (locations.DataRoot is not { } root)
+        {
+            logger.LogWarning("No LEdit installation found; the field tree is empty");
+            return Build(null, null);
+        }
+
+        var tree = await TryLoadAsync(Path.Combine(root, TreeFileName), cancellationToken).ConfigureAwait(false);
+        var flat = await TryLoadAsync(Path.Combine(root, FlatListFileName), cancellationToken).ConfigureAwait(false);
         return Build(tree, flat);
     }
 

@@ -15,7 +15,7 @@ public class CutListPreviewDataSourceTests
         var source = new CutListPreviewDataSource();
 
         Assert.True(source.CanRead(SamplePath));
-        Assert.False(source.CanRead(TestData.Label("Plats128C.xml")));
+        Assert.False(source.CanRead(TestData.Label("test-label.xml")));
         var data = await source.LoadAsync(SamplePath);
 
         Assert.Equal(3, data.Records.Count);
@@ -27,18 +27,18 @@ public class CutListPreviewDataSourceTests
     }
 
     [Fact]
-    public async Task Fills_a_real_label_with_sheet_values()
+    public async Task Fills_a_label_with_sheet_values()
     {
-        var catalog = await new LeditFieldCatalogSource(TestData.DefaultsOnly(), NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
+        var catalog = await new LeditFieldCatalogSource(TestData.Locations(), NullLogger<LeditFieldCatalogSource>.Instance).LoadAsync();
         var resolver = new FieldTextResolver(catalog, Application.Localization.TextCatalog.Empty);
         var data = await new CutListPreviewDataSource().LoadAsync(SamplePath);
-        await using var stream = File.OpenRead(TestData.Label("Plats128C_V3.xml"));
+        await using var stream = File.OpenRead(TestData.Label("test-label.xml"));
         var layout = await new LeditLabelFormat().ReadAsync(stream);
 
         var texts = layout.Entries.OfType<Domain.Entries.TextEntry>().Select(t => resolver.PreviewText(t, data.Records[0])).ToList();
 
         Assert.Contains("100000001", texts); // CabInfo (45836) bar code value
-        Assert.Contains("260", texts);       // FinalLength
+        Assert.Contains(texts, t => t.Contains("260", StringComparison.Ordinal)); // FinalLength
         Assert.DoesNotContain(texts, t => t.Contains("[CabInfo]", StringComparison.Ordinal));
     }
 }

@@ -371,9 +371,7 @@ public sealed partial class MainViewModel : ObservableObject
     }
 
     private string ProtectedReason(string path) =>
-        _locations.IsMachineInstallation && path.StartsWith(_locations.DataRoot, StringComparison.OrdinalIgnoreCase)
-            ? "This label is in the machine's LEdit folder, which is protected (enable AllowWritingMachineLabels in settings to change that)."
-            : "This label is a template packaged with the editor and cannot be replaced.";
+        "This label is in the machine's LEdit folder, which is protected (enable AllowWritingMachineLabels in settings to change that).";
 
     private async Task<bool> SaveDocumentAsAsync(DocumentViewModel document)
     {
@@ -432,6 +430,28 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsLightTheme => Theme == AppTheme.Light;
 
     public bool IsDarkTheme => Theme == AppTheme.Dark;
+
+    /// <summary>
+    /// File ▸ Choose LEdit folder: the editor reads fields, languages and labels from an installed LEdit only
+    /// (it ships none of LEdit's files). The choice is saved and used from the next start.
+    /// </summary>
+    [RelayCommand]
+    private async Task ChooseLeditFolderAsync()
+    {
+        if (await _interaction.PickFolderAsync("Choose the LEdit folder (with LEditTreeXML.xml)", _locations.DataRoot ?? _settings.LeditInstallationPath) is not { } folder)
+        {
+            return;
+        }
+
+        if (!File.Exists(Path.Combine(folder, "LEditTreeXML.xml")))
+        {
+            await _interaction.ShowMessageAsync("Not an LEdit folder", $"{folder}\n\ndoes not contain LEditTreeXML.xml. Choose the LEdit folder itself, e.g. C:\\BIESSE\\BiesseWorks\\Utils\\LEdit.");
+            return;
+        }
+
+        await SaveSettingsAsync(_settings with { LeditInstallationPath = folder });
+        await _interaction.ShowMessageAsync("LEdit folder", $"Label Editor will read fields, languages and labels from\n{folder}\n\nRestart Label Editor to use it.");
+    }
 
     /// <summary>View ▸ Theme: "System", "Light" or "Dark".</summary>
     [RelayCommand]

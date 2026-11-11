@@ -33,7 +33,7 @@ and QR codes. It can fill the label with real part data from generated label she
   chosen part (PageUp/PageDown to step through the parts).
 - **19 LEdit languages**, decoded with their original code pages; picked from the OS language.
 - **Safe saving**: every label opens editable. The first Save over an opened file asks *Replace existing?*
-  (Replace / Save As / Cancel). Packaged templates and the installed LEdit folder are protected and only offer
+  (Replace / Save As / Cancel). The installed LEdit folder is protected and only offers
   Save As; set `AllowWritingMachineLabels` in settings to allow replacing labels in the LEdit folder.
 - **Installer with two modes**: install on this PC (Windows entry, uninstaller) or portable extraction to any folder
   or USB stick (no Windows entry). Running a newer setup updates either in place and keeps settings and labels.
@@ -42,10 +42,12 @@ and QR codes. It can fill the label with real part data from generated label she
 
 | What | Where |
 | --- | --- |
-| Installed LEdit (preferred, read-only) | `C:\BIESSE\BiesseWorks\Utils\LEdit` (override: `LeditInstallationPath` in settings) |
-| Packaged defaults (fallback) | `Defaults\LEdit` next to the executable (copied from `defaults/` in this repo) |
+| Installed LEdit (read-only): fields, languages, machine labels | `C:\BIESSE\BiesseWorks\Utils\LEdit` (change with **File ▸ Choose LEdit folder…**, stored as `LeditInstallationPath`) |
 | Your labels | `Documents\LabelEditor\Labels`, or `UserData\Labels` in portable mode |
 | Settings | `%APPDATA%\LabelEditor\settings.json`, or `UserData\settings.json` in portable mode |
+
+The editor ships **none of Biesse's LEdit files**; it reads them from the installed LEdit. Without one it still opens
+and edits labels, with an empty field tree, until you choose an LEdit folder.
 
 **Portable mode:** put an empty file named `portable` next to `LabelEditor.exe`.
 
@@ -53,7 +55,7 @@ and QR codes. It can fill the label with real part data from generated label she
 
 ```powershell
 dotnet build
-dotnet test
+dotnet test   # tests that need Biesse's own LEdit files run when LEdit is found, else they are skipped
 dotnet run --project src/LabelEditor.App -- "path\to\label.xml"
 ```
 

@@ -35,7 +35,7 @@ public sealed class SizeLockTests : IDisposable
     [Fact]
     public async Task Size_locks_survive_save_and_load_without_touching_the_ledit_file()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var original = await File.ReadAllBytesAsync(path);
         var locked = LockText(await _store.LoadAsync(path), out _);
 
@@ -51,7 +51,7 @@ public sealed class SizeLockTests : IDisposable
     [Fact]
     public async Task Unlocking_removes_the_lock_but_keeps_the_history()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         await _store.SaveAsync(LockText(await _store.LoadAsync(path), out _), path);
 
         await _store.SaveAsync(await new FileLabelDocumentStore(new LeditLabelFormat()).LoadAsync(path) is var l
@@ -65,7 +65,7 @@ public sealed class SizeLockTests : IDisposable
     [Fact]
     public async Task A_lock_is_dropped_rather_than_moved_to_the_wrong_entry_when_the_label_changed_elsewhere()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var layout = LockText(await _store.LoadAsync(path), out var id);
         await _store.SaveAsync(layout, path);
 
@@ -82,7 +82,7 @@ public sealed class SizeLockTests : IDisposable
     [Fact]
     public async Task A_corrupt_sidecar_never_prevents_opening_the_label()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         await File.WriteAllTextAsync(EditorMetadataSidecar.PathFor(path), "{ broken");
 
         var layout = await _store.LoadAsync(path);
@@ -114,7 +114,7 @@ public sealed class SizeLockTests : IDisposable
     [Fact]
     public async Task Position_locks_survive_save_and_load_and_old_sidecars_still_read()
     {
-        var path = await CopyFixtureAsync("Plats128C.xml");
+        var path = await CopyFixtureAsync("test-label.xml");
         var layout = await _store.LoadAsync(path);
         var text = layout.Entries.OfType<TextEntry>().First();
         await _store.SaveAsync(layout.ReplaceEntry(text with { IsPositionLocked = true }), path);

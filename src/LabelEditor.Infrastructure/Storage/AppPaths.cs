@@ -16,8 +16,6 @@ public sealed record AppPaths(string ApplicationFolder, string UserDataFolder, b
         ? Path.Combine(UserDataFolder, "Labels")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), ProductFolderName, "Labels");
 
-    public string PackagedDefaultsRoot => Path.Combine(ApplicationFolder, "Defaults", "LEdit");
-
     public static AppPaths Detect(string? applicationFolder = null)
     {
         var appFolder = applicationFolder ?? AppContext.BaseDirectory;

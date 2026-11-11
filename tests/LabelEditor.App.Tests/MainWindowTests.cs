@@ -21,8 +21,7 @@ public class MainWindowTests
         var paths = new AppPaths(AppContext.BaseDirectory, root, IsPortable: true);
         var storage = new StorageOptions
         {
-            PackagedDefaultsRoot = Path.Combine(AppContext.BaseDirectory, "Defaults", "LEdit"),
-            MachineInstallationRoot = null,
+            MachineInstallationRoot = Path.Combine(AppContext.BaseDirectory, "TestLEdit"),
             WorkingFolder = Path.Combine(root, "Labels"),
         };
         var window = new MainWindow { Width = 1400, Height = 860 };
@@ -31,7 +30,7 @@ public class MainWindowTests
         window.DataContext = vm;
         window.Show();
 
-        await vm.InitializeAsync(new EditorSettings { Language = "English" }, [Path.Combine(AppContext.BaseDirectory, "Fixtures", "Labels", "Plats128C_V3.xml")]);
+        await vm.InitializeAsync(new EditorSettings { Language = "English" }, [Path.Combine(AppContext.BaseDirectory, "Fixtures", "Labels", "test-label.xml")]);
         var document = Assert.Single(vm.Documents);
         var bold = document.Layout.Entries.OfType<TextEntry>().First(t => t.Font.IsBold);
         document.Session.Selection.Select(bold.Id);

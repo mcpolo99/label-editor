@@ -48,7 +48,6 @@ public sealed class App : Avalonia.Application
             var settings = await new JsonSettingsStore(paths.SettingsFile, NullLogger<JsonSettingsStore>.Instance).LoadAsync();
             var storage = new StorageOptions
             {
-                PackagedDefaultsRoot = paths.PackagedDefaultsRoot,
                 MachineInstallationRoot = settings.LeditInstallationPath ?? StorageOptions.DefaultMachineInstallation,
                 WorkingFolder = settings.WorkingFolder ?? paths.DefaultWorkingFolder,
                 AllowWritingMachineLabels = settings.AllowWritingMachineLabels,
@@ -95,7 +94,7 @@ public sealed class App : Avalonia.Application
         var edition = paths.IsPortable
             ? "Portable"
             : File.Exists(Path.Combine(paths.ApplicationFolder, "unins000.exe")) ? "Installed" : "Development build";
-        var dataSource = locations.IsMachineInstallation ? $"LEdit installation {locations.DataRoot}" : $"packaged defaults {locations.DataRoot}";
+        var dataSource = locations.DataRoot is { } root ? $"LEdit installation {root}" : $"none (no LEdit found at {storage.MachineInstallationRoot})";
         return new ApplicationInfo(version, revision, edition, paths.ApplicationFolder, paths.UserDataFolder, storage.WorkingFolder, dataSource);
     }
 

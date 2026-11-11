@@ -4,7 +4,7 @@
 .DESCRIPTION
   The product version lives in Directory.Build.props (<Version>). Pass -Version to bump it first.
   Outputs (artifacts/):
-    publish/win-x64/                         the app (LabelEditor.exe + Defaults\)
+    publish/win-x64/                         the app (LabelEditor.exe)
     LabelEditor-<version>-portable-win-x64.zip  unzip anywhere; already in portable mode
     installer/LabelEditor-Setup-<version>.exe   PC install or portable extraction, with in-place updates
 .EXAMPLE
