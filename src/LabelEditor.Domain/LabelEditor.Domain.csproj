@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- The domain has no package or project references by design: it is the innermost layer. -->
+  <PropertyGroup>
+    <RootNamespace>LabelEditor.Domain</RootNamespace>
+  </PropertyGroup>
+</Project>
