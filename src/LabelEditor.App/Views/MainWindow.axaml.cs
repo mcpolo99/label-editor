@@ -26,6 +26,16 @@ public sealed partial class MainWindow : Window
     /// <summary>Fields in bold, categories normal.</summary>
     public static FuncValueConverter<bool, FontWeight> FieldWeight { get; } = new(isField => isField ? FontWeight.SemiBold : FontWeight.Normal);
 
+    /// <summary>Captions of LEdit's filler character options.</summary>
+    public static FuncValueConverter<Domain.Text.FillCharacterMode, string> FillModeCaption { get; } = new(mode => mode switch
+    {
+        Domain.Text.FillCharacterMode.None => "None",
+        Domain.Text.FillCharacterMode.LeadingZeros => "Leading zeros",
+        Domain.Text.FillCharacterMode.LeadingBlanks => "Leading blanks",
+        Domain.Text.FillCharacterMode.TrailingBlanks => "Trailing blanks",
+        _ => "(not set)",
+    });
+
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
     private async void OnClosing(object? sender, WindowClosingEventArgs e)

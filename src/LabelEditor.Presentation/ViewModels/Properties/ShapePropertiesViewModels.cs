@@ -160,9 +160,12 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
     private (string Top, string Bottom, string Left, string Right) Fields =>
         new CornerLogoEntry { Id = Id, Bounds = default, EdgeInfo = EdgeInfo }.EdgeFieldNames;
 
-    /// <summary>LEdit's Orient value; empty when the file has none (older LEdit).</summary>
+    /// <summary>Choices for <see cref="OrientationIndex"/>: not set (older LEdit files), then LEdit's radio buttons.</summary>
+    public IReadOnlyList<string> OrientationOptions { get; } = ["(not set)", "0°", "+90°", "−90°", "180°"];
+
+    /// <summary>Index into <see cref="OrientationOptions"/>: LEdit's Orient value + 1, 0 when the file has none.</summary>
     [ObservableProperty]
-    private decimal? _orientation;
+    private int _orientationIndex;
 
     [ObservableProperty]
     private bool _keepAspectRatio;
@@ -196,7 +199,7 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
         PrintEdgeMaterial = c.PrintEdgeMaterial;
         EdgeInfo = c.EdgeInfo;
         EdgeThicknessPercent = c.EdgeThicknessPercent;
-        Orientation = c.Orientation;
+        OrientationIndex = c.Orientation is { } o ? o + 1 : 0;
         TextTop = c.TextTop;
         TextBottom = c.TextBottom;
         TextLeft = c.TextLeft;
@@ -211,7 +214,13 @@ public sealed partial class CornerLogoPropertiesViewModel : EntryPropertiesViewM
 
     partial void OnEdgeThicknessPercentChanged(decimal? value) => Update<CornerLogoEntry>("edge thickness", e => e with { EdgeThicknessPercent = (int)Math.Clamp(value ?? 0, 0, 50) });
 
-    partial void OnOrientationChanged(decimal? value) => Update<CornerLogoEntry>("orientation", e => e with { Orientation = value is null ? null : (int)value });
+    partial void OnOrientationIndexChanged(int value)
+    {
+        if (value >= 0)
+        {
+            Update<CornerLogoEntry>("orientation", e => e with { Orientation = value == 0 ? null : value - 1 });
+        }
+    }
 
     partial void OnTextTopChanged(string value) => Update<CornerLogoEntry>("edge texts", e => e with { TextTop = value });
 

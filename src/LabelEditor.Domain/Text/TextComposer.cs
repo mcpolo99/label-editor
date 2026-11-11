@@ -32,8 +32,30 @@ public static class TextComposer
         return entry.Options.UpperCase ? text.ToUpper(CultureInfo.CurrentCulture) : text;
     }
 
-    /// <summary>Applies First/DeleteFirst, DeleteLast and Count to one element value.</summary>
-    public static string ApplyTrimming(string value, TextElement element)
+    /// <summary>Applies First/DeleteFirst, DeleteLast and Count to one element value, then the filler characters.</summary>
+    public static string ApplyTrimming(string value, TextElement element) => ApplyFill(Trim(value, element), element);
+
+    /// <summary>
+    /// Pads a value that is shorter than the element's character count: with zeros or blanks in front, or blanks
+    /// after it. Nothing happens without a count (-1 = all characters).
+    /// </summary>
+    public static string ApplyFill(string value, TextElement element)
+    {
+        if (element.Count <= 0 || value.Length >= element.Count)
+        {
+            return value;
+        }
+
+        return (FillCharacterMode?)element.FillCharacter switch
+        {
+            FillCharacterMode.LeadingZeros => value.PadLeft(element.Count, '0'),
+            FillCharacterMode.LeadingBlanks => value.PadLeft(element.Count, ' '),
+            FillCharacterMode.TrailingBlanks => value.PadRight(element.Count, ' '),
+            _ => value,
+        };
+    }
+
+    private static string Trim(string value, TextElement element)
     {
         var start = Math.Max(0, (element.DeleteFirst ?? 0) + (element.First ?? 0));
         var end = value.Length - Math.Max(0, element.DeleteLast ?? 0);

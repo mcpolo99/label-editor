@@ -70,9 +70,11 @@ public sealed record TextOptions
 }
 
 /// <summary>
-/// Filler character mode of a text element (<c>FillChar</c>). Values other than these are kept verbatim
-/// in <see cref="TextElement.FillCharacter"/>; the mapping of 1..3 follows the LEdit dialog order and is
-/// not yet verified against a file written with those options.
+/// Filler character mode of a text element (<c>FillChar</c>): the "Insert filler characters" radio group of
+/// LEdit's element dialog. LEdit stores the index of the checked radio button (MFC <c>DDX_Radio</c>), in the
+/// dialog's order None, Leading zeros, Leading blanks, Trailing blanks; -1 means no button is checked, which
+/// is what LEdit writes for fixed text. Other values are kept verbatim in <see cref="TextElement.FillCharacter"/>.
+/// The fill pads the value up to the element's character count (<see cref="TextElement.Count"/>).
 /// </summary>
 public enum FillCharacterMode
 {

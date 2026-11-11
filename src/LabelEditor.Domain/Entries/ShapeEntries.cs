@@ -80,8 +80,10 @@ public sealed record CornerLogoEntry : LabelEntry
     public int EdgeInfo { get; init; }
 
     /// <summary>
-    /// CornerLogoData/@Orient, written by newer LEdit versions (null when the file has none). Its meaning is not
-    /// documented; the value is kept and can be edited.
+    /// CornerLogoData/@Orient, written by newer LEdit versions (null when the file has none): the index of the
+    /// orientation radio button in LEdit's corner-logo dialog, in its order 0 = 0°, 1 = +90°, 2 = -90°, 3 = 180°.
+    /// The value is kept and can be edited; the editor does not rotate the drawing by it (what LEdit rotates is
+    /// not verified).
     /// </summary>
     public int? Orientation { get; init; }
 

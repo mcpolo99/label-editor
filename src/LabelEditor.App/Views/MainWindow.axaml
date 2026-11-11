@@ -122,7 +122,14 @@
                 <TextBlock Grid.Row="5" Classes="label" Text="Characters" />
                 <NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding Count}" Minimum="-1" Increment="1" FormatString="0" ToolTip.Tip="-1 = all" HorizontalAlignment="Left" />
                 <TextBlock Grid.Row="6" Classes="label" Text="Fill" />
-                <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch" />
+                <ComboBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding FillModes}" SelectedItem="{Binding FillMode}" HorizontalAlignment="Stretch"
+                          ToolTip.Tip="Filler characters: pad the value up to 'Characters' with zeros or blanks">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock Text="{Binding Converter={x:Static views:MainWindow.FillModeCaption}}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
               </Grid>
             </controls:FreshDataTemplate>
           </ContentControl.ContentTemplate>
@@ -225,8 +232,8 @@
           <TextBlock Grid.Row="1" Classes="label" Text="Edge thickness %" />
           <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding EdgeThicknessPercent}" Minimum="0" Maximum="50" FormatString="0" HorizontalAlignment="Left" />
           <TextBlock Grid.Row="2" Classes="label" Text="Orientation" />
-          <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding Orientation}" Minimum="0" Increment="1" FormatString="0" HorizontalAlignment="Left"
-                         ToolTip.Tip="LEdit's 'Orient' value, kept as it is. Empty for labels from older LEdit versions." />
+          <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding OrientationOptions}" SelectedIndex="{Binding OrientationIndex}" HorizontalAlignment="Stretch"
+                    ToolTip.Tip="LEdit's orientation of the part (Orient). Saved as it is; the editor does not rotate the drawing by it. Not set for labels from older LEdit versions." />
           <TextBlock Grid.Row="3" Classes="label" Text="Top" />
           <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding TextTop}" Watermark="{Binding TopField, StringFormat='no edge · prints {0}'}" ToolTip.Tip="{Binding TopField, StringFormat='Length edge 1 (Len1). Printed from the part data {0}'}" />
           <TextBlock Grid.Row="4" Classes="label" Text="Bottom" />
