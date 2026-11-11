@@ -24,4 +24,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="LabelEditor.App.Tests" />
+  </ItemGroup>
 </Project>

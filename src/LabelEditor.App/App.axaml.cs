@@ -62,7 +62,7 @@ public sealed class App : Avalonia.Application
         }
     }
 
-    private static ServiceProvider ConfigureServices(AppPaths paths, StorageOptions storage, Window window)
+    internal static ServiceProvider ConfigureServices(AppPaths paths, StorageOptions storage, Window window)
     {
         var services = new ServiceCollection();
         services.AddLogging(b => b.AddDebug().SetMinimumLevel(LogLevel.Information));
