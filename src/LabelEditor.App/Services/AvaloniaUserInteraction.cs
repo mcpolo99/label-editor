@@ -63,6 +63,8 @@ public sealed class AvaloniaUserInteraction(Window owner) : IUserInteraction
 
     public async Task ShowErrorAsync(string title, string message) => await ShowDialogAsync(title, message, ["OK"]);
 
+    public async Task ShowMessageAsync(string title, string message) => await ShowDialogAsync(title, message, ["OK"]);
+
     public async Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions)
     {
         HistoryChoice? result = null;

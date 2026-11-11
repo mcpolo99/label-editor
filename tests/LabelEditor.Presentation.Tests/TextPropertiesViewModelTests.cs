@@ -48,6 +48,8 @@ public class TextPropertiesViewModelTests
 
         public Task ShowErrorAsync(string title, string message) => throw new NotSupportedException();
 
+        public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
+
         public Task<HistoryChoice?> ShowHistoryAsync(string labelTitle, IReadOnlyList<Application.Abstractions.LabelVersionInfo> versions) => throw new NotSupportedException();
     }
 

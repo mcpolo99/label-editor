@@ -281,6 +281,9 @@
         <MenuItem Header="_Lock size" Command="{Binding ArrangeCommand}" CommandParameter="LockSize" />
         <MenuItem Header="_Unlock size" Command="{Binding ArrangeCommand}" CommandParameter="UnlockSize" />
       </MenuItem>
+      <MenuItem Header="_Help" Classes="help">
+        <MenuItem Header="_About Label Editor" Command="{Binding AboutCommand}" />
+      </MenuItem>
       <MenuItem Header="_View">
         <MenuItem Header="Zoom _in" Command="{Binding ZoomInCommand}" InputGesture="Ctrl+OemPlus" />
         <MenuItem Header="Zoom _out" Command="{Binding ZoomOutCommand}" InputGesture="Ctrl+OemMinus" />

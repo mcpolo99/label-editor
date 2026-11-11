@@ -74,6 +74,8 @@ public class SaveFlowTests
 
         public Task ShowErrorAsync(string title, string message) => throw new InvalidOperationException(message);
 
+        public Task ShowMessageAsync(string title, string message) => Task.CompletedTask;
+
         public Task<int?> PickFieldAsync(FieldTextResolver resolver, int? currentFieldId) => Task.FromResult<int?>(null);
 
         public HistoryChoice? HistoryChoice { get; set; }
@@ -128,6 +130,7 @@ public class SaveFlowTests
             dialogs,
             Array.Empty<IPreviewDataSource>(),
             history ?? nothing,
+            new ApplicationInfo("1.0.0", null, "Development build", "", "", Work, ""),
             NullLogger<MainViewModel>.Instance);
         return (vm, store, dialogs);
     }

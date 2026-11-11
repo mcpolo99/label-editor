@@ -53,6 +53,7 @@ public sealed class App : Avalonia.Application
             };
 
             _services = ConfigureServices(paths, storage, window);
+            window.Title = _services.GetRequiredService<MainViewModel>().WindowTitle;
             var viewModel = _services.GetRequiredService<MainViewModel>();
             window.DataContext = viewModel;
             await viewModel.InitializeAsync(settings, args.Where(File.Exists).ToList());
@@ -63,6 +64,23 @@ public sealed class App : Avalonia.Application
         }
     }
 
+    /// <summary>Version (from the assembly, stamped by build/package.ps1) and where this copy keeps its data.</summary>
+    private static ApplicationInfo DescribeApplication(AppPaths paths, StorageOptions storage, Application.Abstractions.IStorageLocations locations)
+    {
+        var informational = typeof(App).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyInformationalVersionAttribute), false)
+            .OfType<System.Reflection.AssemblyInformationalVersionAttribute>()
+            .FirstOrDefault()?.InformationalVersion ?? "0.0.0";
+        var plus = informational.IndexOf('+', StringComparison.Ordinal);
+        var version = plus < 0 ? informational : informational[..plus];
+        var revision = plus < 0 ? null : informational[(plus + 1)..];
+        var edition = paths.IsPortable
+            ? "Portable"
+            : File.Exists(Path.Combine(paths.ApplicationFolder, "unins000.exe")) ? "Installed" : "Development build";
+        var dataSource = locations.IsMachineInstallation ? $"LEdit installation {locations.DataRoot}" : $"packaged defaults {locations.DataRoot}";
+        return new ApplicationInfo(version, revision, edition, paths.ApplicationFolder, paths.UserDataFolder, storage.WorkingFolder, dataSource);
+    }
+
     internal static ServiceProvider ConfigureServices(AppPaths paths, StorageOptions storage, Window window)
     {
         var services = new ServiceCollection();
@@ -71,6 +89,7 @@ public sealed class App : Avalonia.Application
         services.AddLabelEditorInfrastructure(paths, storage);
         services.AddSingleton<IUserInteraction>(new AvaloniaUserInteraction(window));
         services.AddSingleton<IFontCatalog, AvaloniaFontCatalog>();
+        services.AddSingleton(sp => DescribeApplication(paths, storage, sp.GetRequiredService<Application.Abstractions.IStorageLocations>()));
         services.AddSingleton<EditorContext>();
         services.AddSingleton<MainViewModel>();
         return services.BuildServiceProvider(new ServiceProviderOptions { ValidateOnBuild = true, ValidateScopes = true });

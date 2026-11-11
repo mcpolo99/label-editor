@@ -49,6 +49,7 @@ public sealed partial class MainViewModel : ObservableObject
     private readonly ILogger<MainViewModel> _logger;
     private readonly IReadOnlyList<IPreviewDataSource> _previewSources;
     private readonly ILabelVersionHistory _history;
+    private readonly ApplicationInfo _app;
     private EditorSettings _settings = new();
 
     public MainViewModel(
@@ -61,6 +62,7 @@ public sealed partial class MainViewModel : ObservableObject
         IUserInteraction interaction,
         IEnumerable<IPreviewDataSource> previewSources,
         ILabelVersionHistory history,
+        ApplicationInfo app,
         ILogger<MainViewModel> logger)
     {
         _documents = documents;
@@ -71,6 +73,7 @@ public sealed partial class MainViewModel : ObservableObject
         _logger = logger;
         _previewSources = previewSources.ToList();
         _history = history;
+        _app = app;
         Context = context;
         Library = new LabelLibraryViewModel(library, locations);
         Tools =
@@ -127,6 +130,20 @@ public sealed partial class MainViewModel : ObservableObject
     private bool _isBusy;
 
     public string DataSourceDescription => Library.DataSource;
+
+    /// <summary>"Label Editor 0.2.0" (+ "portable"), so it is always visible which version is running.</summary>
+    public string WindowTitle => $"Label Editor {_app.Version}" + (_app.Edition == "Portable" ? " (portable)" : string.Empty);
+
+    [RelayCommand]
+    private Task AboutAsync() => _interaction.ShowMessageAsync(
+        "About Label Editor",
+        $"Label Editor {_app.Version}{(_app.Revision is null ? string.Empty : $" (build {_app.Revision})")}\n" +
+        $"{_app.Edition}\n\n" +
+        $"Program:  {_app.ProgramFolder}\n" +
+        $"Settings:  {_app.UserDataFolder}\n" +
+        $"Labels:  {_app.WorkingFolder}\n" +
+        $"LEdit data:  {_app.DataSource}\n\n" +
+        "To update, run a newer LabelEditor-Setup and choose the same location; settings and labels are kept.");
 
     /// <summary>Loads settings-dependent state and reference data, then opens files given on the command line.</summary>
     public async Task InitializeAsync(EditorSettings settings, IReadOnlyList<string> filesToOpen)

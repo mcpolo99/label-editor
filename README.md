@@ -30,7 +30,8 @@ and QR codes. It can fill the label with real part data from generated label she
 - **Safe saving**: every label opens editable. The first Save over an opened file asks *Replace existing?*
   (Replace / Save As / Cancel). Packaged templates and the installed LEdit folder are protected and only offer
   Save As; set `AllowWritingMachineLabels` in settings to allow replacing labels in the LEdit folder.
-- **Portable**: self-contained single executable, no installer.
+- **Installer with two modes**: install on this PC (Windows entry, uninstaller) or portable extraction to any folder
+  or USB stick (no Windows entry). Running a newer setup updates either in place and keeps settings and labels.
 
 ## Data sources
 
@@ -51,14 +52,15 @@ dotnet test
 dotnet run --project src/LabelEditor.App -- "path\to\label.xml"
 ```
 
-Portable release (single file plus `Defaults\`):
+Release (installer + portable zip, see [Releasing](docs/releasing.md)):
 
 ```powershell
-./build/publish.ps1            # -> artifacts/publish/win-x64
+./build/package.ps1            # -> artifacts/installer/LabelEditor-Setup-<version>.exe
 ```
 
 ## Documentation
 
 - [Architecture](docs/architecture.md): layers, dependency rules, async policy, where things go.
 - [LEdit file format](docs/ledit-format.md): the format as reverse-engineered, with evidence.
+- [Releasing and installing](docs/releasing.md): installer, portable mode, updates.
 - [Roadmap](docs/roadmap.md): known gaps and next steps.
