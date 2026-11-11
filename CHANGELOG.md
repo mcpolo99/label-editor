@@ -2,6 +2,23 @@
 
 All notable changes to Label Editor. Generated from the commit history by [git-cliff](https://git-cliff.org).
 
+## [0.3.0] - 2026-11-11
+
+### Features
+
+- Add open recent menu with clear and missing-file handling
+- Pad text with ledit filler characters and show edge orientation choices
+- Outline text that does not fit its field and optionally warn before saving
+- Add rulers and snap-to-entries guides on the canvas
+
+### Changes
+
+- Move field drag and drop to the datatransfer api
+
+### Maintenance
+
+- Remove github workflows and publish releases manually
+
 ## [0.2.0] - 2026-11-11
 
 ### Features
