@@ -14,9 +14,12 @@ and QR codes. It can fill the label with real part data from generated label she
 - **Layout editing**: select, marquee, multi-select, move, resize (box handles and line end points),
   grid snapping (hold **Alt** to move freely), arrow-key nudging (**Shift** = 0.1 mm), Shift-constrained
   drawing, z-order, cut/copy/paste/duplicate between labels, and LEdit's align / same size / space
-  commands (the first selected entry is the reference).
-- **Lock size** per entry (property panel or Arrange menu): move freely without changing width/height. Stored in a
-  `.labeleditor.json` sidecar beside the label, so the LEdit file is unaffected.
+  commands (the first selected entry is the reference). Dragging a handle with several entries selected resizes them
+  all. Widths and heights follow each entry's text direction, so a 90° text gets longer along its own reading direction.
+- **Lock size** and **lock position** per entry (property panel, Arrange menu, toolbar, right-click): a size-locked
+  entry moves without changing width/height; a position-locked one keeps its X / Y (no dragging, nudging or
+  aligning) and only resizes from its right and bottom. Stored in a `.labeleditor.json` sidecar beside the label,
+  so the LEdit file is unaffected.
 - **Version history** instead of `_v1`/`_v2` copies: every Save that changes a label records a version (time, user, full
   LEdit XML, compressed) in the sidecar. The first save over an existing label keeps the original as version 1.
   *File → History…* restores a version (undoable) or opens it as a copy.

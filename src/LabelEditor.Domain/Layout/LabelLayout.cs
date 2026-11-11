@@ -80,7 +80,7 @@ public sealed record LabelLayout
     }
 
     public LabelLayout MoveEntries(IReadOnlySet<EntryId> ids, int dx, int dy) =>
-        dx == 0 && dy == 0 ? this : UpdateEntries(ids, e => e with { Bounds = e.Bounds.Offset(dx, dy) });
+        dx == 0 && dy == 0 ? this : UpdateEntries(ids, e => e.IsPositionLocked ? e : e with { Bounds = e.Bounds.Offset(dx, dy) });
 
     public LabelLayout WithHeader(Func<LabelHeader, LabelHeader> update) => this with { Header = update(Header) };
 

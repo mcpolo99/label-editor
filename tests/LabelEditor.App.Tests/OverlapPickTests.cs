@@ -175,6 +175,29 @@ public class OverlapPickTests
     }
 
     [AvaloniaFact]
+    public async Task Dragging_a_handle_with_two_entries_selected_resizes_both()
+    {
+        var (window, services, document, canvas, back, front) = await SetupAsync();
+        document.Session.Selection.Select([front.Id, back.Id]); // front is the reference; grab the other one's handle
+        var start = OnScreen(window, canvas, document, 40_000, 40_000); // back's bottom-right handle
+        var end = start + new Vector(40, 20);
+
+        window.MouseDown(start, MouseButton.Left);
+        window.MouseMove(start + new Vector(10, 5), RawInputModifiers.LeftMouseButton);
+        window.MouseMove(end, RawInputModifiers.LeftMouseButton);
+        window.MouseUp(end, MouseButton.Left);
+        Dispatcher.UIThread.RunJobs();
+
+        var grownBack = document.Layout.Find(back.Id)!.Bounds;
+        var grownFront = document.Layout.Find(front.Id)!.Bounds;
+        Assert.True(grownBack.Width > 30_000 && grownBack.Height > 30_000, $"grabbed entry should grow: {grownBack}");
+        Assert.Equal(grownBack.Width - 30_000, grownFront.Width - 10_000); // same change on the other entry
+        Assert.Equal(grownBack.Height - 30_000, grownFront.Height - 10_000);
+        window.Close();
+        await services.DisposeAsync();
+    }
+
+    [AvaloniaFact]
     public async Task Shift_clicking_a_single_entry_still_adds_it_directly()
     {
         var (window, services, document, canvas, back, front) = await SetupAsync();

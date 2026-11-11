@@ -294,6 +294,8 @@
         <Separator />
         <MenuItem Header="_Lock size" Command="{Binding ArrangeCommand}" CommandParameter="LockSize" />
         <MenuItem Header="_Unlock size" Command="{Binding ArrangeCommand}" CommandParameter="UnlockSize" />
+        <MenuItem Header="Lock _position" Command="{Binding ArrangeCommand}" CommandParameter="LockPosition" />
+        <MenuItem Header="Unlock p_osition" Command="{Binding ArrangeCommand}" CommandParameter="UnlockPosition" />
       </MenuItem>
       <MenuItem Header="_Help" Classes="help">
         <MenuItem Header="_About Label Editor" Command="{Binding AboutCommand}" />
@@ -380,8 +382,8 @@
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterH" ToolTip.Tip="Center horizontally in the label"><PathIcon Data="{StaticResource IconCenterH}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="CenterV" ToolTip.Tip="Center vertically in the label"><PathIcon Data="{StaticResource IconCenterV}" /></Button>
           <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
-          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth" ToolTip.Tip="Make same width as the first selected entry"><PathIcon Data="{StaticResource IconSameWidth}" /></Button>
-          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight" ToolTip.Tip="Make same height as the first selected entry"><PathIcon Data="{StaticResource IconSameHeight}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameWidth" ToolTip.Tip="Make same width as the first selected entry (along each entry's text direction)"><PathIcon Data="{StaticResource IconSameWidth}" /></Button>
+          <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameHeight" ToolTip.Tip="Make same height as the first selected entry (across each entry's text direction)"><PathIcon Data="{StaticResource IconSameHeight}" /></Button>
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SameSize" ToolTip.Tip="Make same size as the first selected entry"><PathIcon Data="{StaticResource IconSameSize}" /></Button>
           <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="SpaceAcross" ToolTip.Tip="Space evenly across (3 or more entries)"><PathIcon Data="{StaticResource IconSpaceAcross}" /></Button>
@@ -392,6 +394,7 @@
           <Button Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="Back" ToolTip.Tip="Send to back"><PathIcon Data="{StaticResource IconBack}" /></Button>
           <Rectangle Width="1" Fill="#d0d0d0" Margin="4,3" />
           <ToggleButton Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="ToggleLock" IsChecked="{Binding IsSelectionSizeLocked, Mode=OneWay}" ToolTip.Tip="Lock size: move freely without changing width and height"><PathIcon Data="{StaticResource IconLock}" /></ToggleButton>
+          <ToggleButton Classes="icon" Command="{Binding ArrangeCommand}" CommandParameter="TogglePositionLock" IsChecked="{Binding IsSelectionPositionLocked, Mode=OneWay}" ToolTip.Tip="Lock position: keep X / Y; still resizable from the right and bottom"><PathIcon Data="{StaticResource IconPin}" /></ToggleButton>
         </StackPanel>
       </ScrollViewer>
     </Border>
@@ -528,6 +531,8 @@
                   <Separator />
                   <MenuItem Header="L_ock size" Command="{Binding ArrangeCommand}" CommandParameter="LockSize"><MenuItem.Icon><PathIcon Data="{StaticResource IconLock}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
                   <MenuItem Header="_Unlock size" Command="{Binding ArrangeCommand}" CommandParameter="UnlockSize" />
+                  <MenuItem Header="Lock _position" Command="{Binding ArrangeCommand}" CommandParameter="LockPosition"><MenuItem.Icon><PathIcon Data="{StaticResource IconPin}" Width="14" Height="14" /></MenuItem.Icon></MenuItem>
+                  <MenuItem Header="Unlock p_osition" Command="{Binding ArrangeCommand}" CommandParameter="UnlockPosition" />
                   <Separator />
                   <MenuItem Header="Select _all" Command="{Binding SelectAllCommand}" InputGesture="Ctrl+A" />
                   </ContextMenu>

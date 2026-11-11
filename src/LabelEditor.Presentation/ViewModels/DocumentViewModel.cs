@@ -141,7 +141,8 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
 
     /// <summary>
     /// Arrange commands by name: AlignLeft, AlignRight, AlignTop, AlignBottom, CenterH, CenterV, SameWidth, SameHeight,
-    /// SameSize, SpaceAcross, SpaceDown, SnapToGrid, Front, Back, LockSize, UnlockSize, ToggleLock.
+    /// SameSize, SpaceAcross, SpaceDown, SnapToGrid, Front, Back, LockSize, UnlockSize, ToggleLock, LockPosition,
+    /// UnlockPosition, TogglePositionLock.
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanArrange))]
     private void Arrange(string? operation)
@@ -166,6 +167,9 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
             "LockSize" => s.SetSizeLocked(true),
             "UnlockSize" => s.SetSizeLocked(false),
             "ToggleLock" => s.SetSizeLocked(!s.SelectedEntries().All(e => e.IsSizeLocked)),
+            "LockPosition" => s.SetPositionLocked(true),
+            "UnlockPosition" => s.SetPositionLocked(false),
+            "TogglePositionLock" => s.SetPositionLocked(!s.SelectedEntries().All(e => e.IsPositionLocked)),
             _ => false,
         };
     }
@@ -189,6 +193,9 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
 
     /// <summary>True when every selected entry is size-locked (drives the lock toggle button).</summary>
     public bool IsSelectionSizeLocked => Session.SelectedEntries() is { Count: > 0 } selected && selected.All(e => e.IsSizeLocked);
+
+    /// <summary>True when every selected entry is position-locked (drives the position lock toggle button).</summary>
+    public bool IsSelectionPositionLocked => Session.SelectedEntries() is { Count: > 0 } selected && selected.All(e => e.IsPositionLocked);
 
     /// <summary>Entry outlined while the user hovers it in the "Select overlapping" list.</summary>
     [ObservableProperty]
@@ -238,6 +245,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
         DuplicateCommand.NotifyCanExecuteChanged();
         ArrangeCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsSelectionSizeLocked));
+        OnPropertyChanged(nameof(IsSelectionPositionLocked));
     }
 
     /// <summary>Raised when the canvas must repaint (layout, selection or context changed).</summary>
@@ -315,7 +323,7 @@ public sealed partial class DocumentViewModel : ObservableObject, IDisposable
                     UnknownEntry u => $"<{u.ElementName}>",
                     _ => string.Empty,
                 };
-                var kind = (entry is TextEntry { IsBarcode: true } ? "Bar code" : entry.Kind.ToString()) + (entry.IsSizeLocked ? " 🔒" : string.Empty);
+                var kind = (entry is TextEntry { IsBarcode: true } ? "Bar code" : entry.Kind.ToString()) + (entry.IsSizeLocked ? " 🔒" : string.Empty) + (entry.IsPositionLocked ? " 📌" : string.Empty);
                 var b2 = entry.Bounds;
                 Entries.Add(new EntryListItem(entry.Id, kind, description, $"{b2.X / 1000.0:0.##}, {b2.Y / 1000.0:0.##}"));
             }

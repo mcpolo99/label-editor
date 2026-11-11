@@ -331,22 +331,35 @@ public sealed class LabelCanvas : Control
             yield break;
         }
 
+        // A position-locked entry keeps its top-left corner (a line its start point): only the far edges have handles.
+        var locked = entry.IsPositionLocked;
         if (entry.IsSegment)
         {
-            yield return (ResizeHandle.TopLeft, view.ToView(entry.Bounds.Start));
+            if (!locked)
+            {
+                yield return (ResizeHandle.TopLeft, view.ToView(entry.Bounds.Start));
+            }
+
             yield return (ResizeHandle.BottomRight, view.ToView(entry.Bounds.End));
             yield break;
         }
 
         var r = view.ToView(entry.Bounds);
-        yield return (ResizeHandle.TopLeft, r.TopLeft);
-        yield return (ResizeHandle.Top, new Point(r.Center.X, r.Top));
-        yield return (ResizeHandle.TopRight, r.TopRight);
+        if (!locked)
+        {
+            yield return (ResizeHandle.TopLeft, r.TopLeft);
+            yield return (ResizeHandle.Top, new Point(r.Center.X, r.Top));
+            yield return (ResizeHandle.TopRight, r.TopRight);
+        }
+
         yield return (ResizeHandle.Right, new Point(r.Right, r.Center.Y));
         yield return (ResizeHandle.BottomRight, r.BottomRight);
         yield return (ResizeHandle.Bottom, new Point(r.Center.X, r.Bottom));
-        yield return (ResizeHandle.BottomLeft, r.BottomLeft);
-        yield return (ResizeHandle.Left, new Point(r.Left, r.Center.Y));
+        if (!locked)
+        {
+            yield return (ResizeHandle.BottomLeft, r.BottomLeft);
+            yield return (ResizeHandle.Left, new Point(r.Left, r.Center.Y));
+        }
     }
 
     // ------------------------------------------------------------------ pointer input
@@ -626,19 +639,26 @@ public sealed class LabelCanvas : Control
             : new Cursor(StandardCursorType.SizeAll);
     }
 
-    /// <summary>Resize handles only exist when exactly one entry is selected.</summary>
+    /// <summary>
+    /// The resize handle under the pointer, on any selected entry (the dominant one first). With several entries
+    /// selected, dragging it resizes all of them (see <see cref="EditingCommands.BeginResize"/>).
+    /// </summary>
     private (LabelEntry Entry, ResizeHandle Handle)? HandleAt(Point position)
     {
-        if (Session is not { Selection.Count: 1 } session || session.Layout.Find(session.Selection.Ids[0]) is not { } entry)
+        if (Session is not { } session || session.Selection.IsEmpty)
         {
             return null;
         }
 
-        foreach (var (handle, point) in Handles(entry, View))
+        var ids = session.Selection.Ids.OrderBy(id => id == session.Selection.Dominant ? 0 : 1);
+        foreach (var entry in ids.Select(session.Layout.Find).OfType<LabelEntry>())
         {
-            if (Math.Abs(point.X - position.X) <= HandleSize && Math.Abs(point.Y - position.Y) <= HandleSize)
+            foreach (var (handle, point) in Handles(entry, View))
             {
-                return (entry, handle);
+                if (Math.Abs(point.X - position.X) <= HandleSize && Math.Abs(point.Y - position.Y) <= HandleSize)
+                {
+                    return (entry, handle);
+                }
             }
         }
 

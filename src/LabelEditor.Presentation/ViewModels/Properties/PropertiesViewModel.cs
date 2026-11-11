@@ -76,6 +76,13 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
 
     public bool CanResize => !IsSizeLocked;
 
+    /// <summary>Editor-only lock: the entry's X / Y stay put; it can still be resized from the right and bottom.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanMove))]
+    private bool _isPositionLocked;
+
+    public bool CanMove => !IsPositionLocked;
+
     /// <summary>Pushes the current entry state into the panel.</summary>
     public void Refresh(LabelEntry entry) => RunRefresh(() =>
     {
@@ -84,6 +91,7 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
         Width = ToDisplay(entry.Bounds.Width);
         Height = ToDisplay(entry.Bounds.Height);
         IsSizeLocked = entry.IsSizeLocked;
+        IsPositionLocked = entry.IsPositionLocked;
         OnRefresh(entry);
     });
 
@@ -101,9 +109,11 @@ public abstract partial class EntryPropertiesViewModel : PropertiesViewModel
         Session.Execute($"Change {property}", l => l.Find(Id) is T entry ? l.ReplaceEntry(change(entry)) : l, mergeKey: $"{Id}:{property}");
     }
 
-    partial void OnXChanged(decimal? value) => Update<LabelEntry>("position", e => e with { Bounds = e.Bounds with { X = FromDisplay(value) } });
+    partial void OnXChanged(decimal? value) => Update<LabelEntry>("position", e => e.IsPositionLocked ? e : e with { Bounds = e.Bounds with { X = FromDisplay(value) } });
 
-    partial void OnYChanged(decimal? value) => Update<LabelEntry>("position", e => e with { Bounds = e.Bounds with { Y = FromDisplay(value) } });
+    partial void OnYChanged(decimal? value) => Update<LabelEntry>("position", e => e.IsPositionLocked ? e : e with { Bounds = e.Bounds with { Y = FromDisplay(value) } });
+
+    partial void OnIsPositionLockedChanged(bool value) => Update<LabelEntry>(value ? "lock position" : "unlock position", e => e with { IsPositionLocked = value });
 
     partial void OnWidthChanged(decimal? value) => Update<LabelEntry>("size", e => e.IsSizeLocked ? e : e with { Bounds = e.Bounds with { Width = Clamp(FromDisplay(value)) } });
 
@@ -119,5 +129,6 @@ public sealed class MultiSelectionViewModel(EditorSession session, int count) : 
 {
     public override string Title => $"{count} entries selected";
 
-    public string Hint => "Use Arrange to align, size or space them. The first selected entry is the reference.";
+    public string Hint => "Use Arrange to align, size or space them; the first selected entry is the reference. "
+        + "Dragging a handle resizes them all. Sizes follow each entry's text direction, so rotated text grows along its own reading direction.";
 }

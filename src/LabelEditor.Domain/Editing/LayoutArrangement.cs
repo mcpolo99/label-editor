@@ -84,14 +84,31 @@ public static class LayoutArrangement
             return layout;
         }
 
-        var dominant = entries[0].Bounds.Normalize();
+        // Width and height are taken along / across each entry's text, so rotated entries get the length of the
+        // reference text along their own reading direction instead of being stretched the wrong way.
+        var (along, across) = EntryFrame.LocalSize(entries[0]);
         var ids = entries.Skip(1).Where(e => !e.IsSizeLocked).Select(e => e.Id).ToHashSet();
+        var matchWidth = match is SizeMatch.Width or SizeMatch.Both;
+        var matchHeight = match is SizeMatch.Height or SizeMatch.Both;
         return layout.UpdateEntries(ids, e =>
         {
-            var b = e.Bounds;
-            var width = match is SizeMatch.Width or SizeMatch.Both ? WithSign(dominant.Width, b.Width) : b.Width;
-            var height = match is SizeMatch.Height or SizeMatch.Both ? WithSign(dominant.Height, b.Height) : b.Height;
-            return e with { Bounds = b with { Width = width, Height = height } };
+            if (e.IsSegment)
+            {
+                // Lines keep their direction (signed sizes) and have no text frame.
+                var dominant = entries[0].Bounds.Normalize();
+                var b = e.Bounds;
+                return e with
+                {
+                    Bounds = b with
+                    {
+                        Width = matchWidth ? WithSign(dominant.Width, b.Width) : b.Width,
+                        Height = matchHeight ? WithSign(dominant.Height, b.Height) : b.Height,
+                    },
+                };
+            }
+
+            var (ownAlong, ownAcross) = EntryFrame.LocalSize(e);
+            return e with { Bounds = EntryFrame.WithLocalSize(e, matchWidth ? along : ownAlong, matchHeight ? across : ownAcross) };
         });
     }
 
@@ -144,7 +161,7 @@ public static class LayoutArrangement
     private static LabelLayout Move(LabelLayout layout, IEnumerable<LabelEntry> entries, Func<LabelEntry, (int Dx, int Dy)> delta)
     {
         var result = layout;
-        foreach (var entry in entries)
+        foreach (var entry in entries.Where(e => !e.IsPositionLocked))
         {
             var (dx, dy) = delta(entry);
             if (dx != 0 || dy != 0)

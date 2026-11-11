@@ -41,7 +41,7 @@ and the application layer knows no UI framework).
   attributes (`First` vs `DelFirst/DelLast`, missing `TextColor`). Unknown entries are carried
   verbatim. A custom emitter reproduces LEdit's exact serialization, so saved files diff cleanly
   against LEdit's.
-- **Editor-only settings and version history live in a sidecar file.** Things LEdit has no place for (per-entry *lock size*,
+- **Editor-only settings and version history live in a sidecar file.** Things LEdit has no place for (per-entry *lock size* and *lock position*,
   and the gzip-compressed LEdit XML of every saved version)
   are stored in `<label>.xml.labeleditor.json` next to the label; the LEdit XML stays byte-for-byte what LEdit writes.
   LEdit entries have no ids, so records match by position plus a kind/size fingerprint; if a label was changed

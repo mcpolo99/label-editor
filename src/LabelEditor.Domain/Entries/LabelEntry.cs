@@ -40,6 +40,13 @@ public abstract record LabelEntry
     /// </summary>
     public bool IsSizeLocked { get; init; }
 
+    /// <summary>
+    /// Editor-only: the entry's top-left corner (X / Y) stays put. Dragging, arrow keys and arrange commands leave it
+    /// where it is; it can still be resized from its right and bottom edges. Persisted beside the label like
+    /// <see cref="IsSizeLocked"/>.
+    /// </summary>
+    public bool IsPositionLocked { get; init; }
+
     public abstract EntryKind Kind { get; }
 
     /// <summary>False for entries that exist in the file but are not drawn on the label (the data record).</summary>

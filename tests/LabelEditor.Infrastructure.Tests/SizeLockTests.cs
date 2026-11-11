@@ -112,6 +112,66 @@ public sealed class SizeLockTests : IDisposable
     }
 
     [Fact]
+    public async Task Position_locks_survive_save_and_load_and_old_sidecars_still_read()
+    {
+        var path = await CopyFixtureAsync("Plats128C.xml");
+        var layout = await _store.LoadAsync(path);
+        var text = layout.Entries.OfType<TextEntry>().First();
+        await _store.SaveAsync(layout.ReplaceEntry(text with { IsPositionLocked = true }), path);
+
+        var reloaded = (await _store.LoadAsync(path)).Entries.OfType<TextEntry>().First();
+        Assert.True(reloaded.IsPositionLocked);
+        Assert.False(reloaded.IsSizeLocked);
+
+        // A sidecar written before position locks existed has no PositionLocked value.
+        var sidecar = EditorMetadataSidecar.PathFor(path);
+        var json = (await File.ReadAllTextAsync(sidecar)).Replace("\"PositionLocked\": true", "\"PositionLocked\": false").Replace("\"SizeLocked\": false", "\"SizeLocked\": true");
+        json = System.Text.RegularExpressions.Regex.Replace(json, @",\s*""PositionLocked"":\s*false", string.Empty);
+        await File.WriteAllTextAsync(sidecar, json);
+        var old = (await _store.LoadAsync(path)).Entries.OfType<TextEntry>().First();
+        Assert.True(old.IsSizeLocked);
+        Assert.False(old.IsPositionLocked);
+    }
+
+    [Fact]
+    public void Dragging_a_handle_with_several_entries_selected_resizes_them_all_along_their_own_text()
+    {
+        var plain = new TextEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 40_000, 8_000) };
+        var turned = new TextEntry { Id = EntryId.New(), Bounds = new LabelRect(50_000, 20_000, 10_000, 30_000) };
+        turned = turned with { Font = turned.Font.WithRotation(Domain.Text.TextRotation.Ccw90) };
+        var locked = new EllipseEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 30_000, 5_000, 5_000), IsSizeLocked = true };
+        var session = new EditorSession(LabelLayout.CreateNew().AddEntries([plain, turned, locked]));
+        session.Selection.Select([plain.Id, turned.Id, locked.Id]);
+
+        using (var resize = session.BeginResize(plain.Id, ResizeHandle.Right))
+        {
+            resize.Update(5_000, 0);
+            resize.Commit();
+        }
+
+        Assert.Equal(new LabelRect(0, 0, 45_000, 8_000), session.Layout.Find(plain.Id)!.Bounds);
+        Assert.Equal(new LabelRect(50_000, 15_000, 10_000, 35_000), session.Layout.Find(turned.Id)!.Bounds); // longer, not wider
+        Assert.Equal(locked.Bounds, session.Layout.Find(locked.Id)!.Bounds);
+        Assert.Equal("Resize 3 entries", session.History.UndoDescription);
+        session.Undo();
+        Assert.Equal(turned.Bounds, session.Layout.Find(turned.Id)!.Bounds);
+    }
+
+    [Fact]
+    public void Lock_position_is_one_undoable_command_for_the_selection()
+    {
+        var a = new EllipseEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 10_000, 10_000) };
+        var session = new EditorSession(LabelLayout.CreateNew().AddEntry(a));
+        session.Selection.Select(a.Id);
+
+        Assert.True(session.SetPositionLocked(true));
+        session.MoveSelection(1_000, 0);
+        Assert.Equal(a.Bounds, session.Layout.Find(a.Id)!.Bounds);
+        session.Undo();
+        Assert.False(session.Layout.Find(a.Id)!.IsPositionLocked);
+    }
+
+    [Fact]
     public void Lock_size_is_one_undoable_command_for_the_selection()
     {
         var a = new EllipseEntry { Id = EntryId.New(), Bounds = new LabelRect(0, 0, 10_000, 10_000) };

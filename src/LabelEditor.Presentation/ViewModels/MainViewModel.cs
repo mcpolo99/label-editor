@@ -238,11 +238,14 @@ public sealed partial class MainViewModel : ObservableObject
         PasteCommand.NotifyCanExecuteChanged();
         ArrangeCommand.NotifyCanExecuteChanged();
         OnPropertyChanged(nameof(IsSelectionSizeLocked));
+        OnPropertyChanged(nameof(IsSelectionPositionLocked));
         OnPropertyChanged(nameof(UndoHeader));
         OnPropertyChanged(nameof(RedoHeader));
     }
 
     public bool IsSelectionSizeLocked => ActiveDocument?.IsSelectionSizeLocked ?? false;
+
+    public bool IsSelectionPositionLocked => ActiveDocument?.IsSelectionPositionLocked ?? false;
 
     public string UndoHeader => ActiveDocument?.Session.History.UndoDescription is { } d ? $"_Undo {d}" : "_Undo";
 

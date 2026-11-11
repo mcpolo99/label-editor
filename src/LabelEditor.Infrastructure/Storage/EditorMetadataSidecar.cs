@@ -78,8 +78,8 @@ public static class EditorMetadataSidecar
     public static IReadOnlyList<SidecarEntry> EntrySettingsOf(LabelLayout layout) =>
         layout.Entries
             .Select((entry, index) => (entry, index))
-            .Where(x => x.entry.IsSizeLocked)
-            .Select(x => new SidecarEntry(x.index, x.entry.Kind, x.entry.Bounds.Width, x.entry.Bounds.Height, SizeLocked: true))
+            .Where(x => x.entry.IsSizeLocked || x.entry.IsPositionLocked)
+            .Select(x => new SidecarEntry(x.index, x.entry.Kind, x.entry.Bounds.Width, x.entry.Bounds.Height, x.entry.IsSizeLocked, x.entry.IsPositionLocked))
             .ToList();
 
     /// <summary>Applies stored entry settings to a freshly read layout.</summary>
@@ -89,9 +89,9 @@ public static class EditorMetadataSidecar
         foreach (var record in sidecar.Entries ?? [])
         {
             var index = Matches(layout, record.Index, record) ? record.Index : FindUnique(layout, record);
-            if (index >= 0 && record.SizeLocked)
+            if (index >= 0 && (record.SizeLocked || record.PositionLocked))
             {
-                result = result.ReplaceEntry(result.Entries[index] with { IsSizeLocked = true });
+                result = result.ReplaceEntry(result.Entries[index] with { IsSizeLocked = record.SizeLocked, IsPositionLocked = record.PositionLocked });
             }
         }
 
@@ -151,7 +151,8 @@ public static class EditorMetadataSidecar
         public static SidecarFile Empty { get; } = new(CurrentFormat, null, null);
     }
 
-    public sealed record SidecarEntry(int Index, EntryKind Kind, int Width, int Height, bool SizeLocked);
+    /// <summary>Locks of one entry; <see cref="PositionLocked"/> is absent (false) in older sidecars.</summary>
+    public sealed record SidecarEntry(int Index, EntryKind Kind, int Width, int Height, bool SizeLocked, bool PositionLocked = false);
 
     /// <summary>A saved version: <see cref="Content"/> is the LEdit XML, gzip-compressed and base64-encoded.</summary>
     public sealed record SidecarVersion(int Number, DateTimeOffset SavedAt, string SavedBy, string? Note, int Size, string Sha256, string Content);

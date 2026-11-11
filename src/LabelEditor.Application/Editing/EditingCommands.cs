@@ -114,15 +114,28 @@ public static class EditingCommands
         return session.Execute(locked ? "Lock size" : "Unlock size", l => l.UpdateEntries(ids, e => e with { IsSizeLocked = locked }));
     }
 
+    /// <summary>Locks or unlocks the position (top-left corner) of the selected entries.</summary>
+    public static bool SetPositionLocked(this EditorSession session, bool locked)
+    {
+        var ids = session.Selection.AsSet();
+        return session.Execute(locked ? "Lock position" : "Unlock position", l => l.UpdateEntries(ids, e => e with { IsPositionLocked = locked }));
+    }
+
     public static IReadOnlyList<LabelEntry> SelectedEntries(this EditorSession session) =>
         session.Selection.Ids.Select(session.Layout.Find).OfType<LabelEntry>().ToList();
 
     /// <summary>Starts a drag that moves the selection; call <c>Update</c> with the total offset so far.</summary>
     public static SelectionDrag BeginMove(this EditorSession session) => new(session.BeginInteractive("Move"), session.Selection.AsSet());
 
-    /// <summary>Starts a resize of one entry by one of its handles.</summary>
-    public static EntryResize BeginResize(this EditorSession session, EntryId id, ResizeHandle handle) =>
-        new(session.BeginInteractive("Resize"), id, handle);
+    /// <summary>
+    /// Starts a resize by one of <paramref name="id"/>'s handles. When that entry is part of a multiple selection,
+    /// the other selected boxes are resized by the same amount, each along its own text direction.
+    /// </summary>
+    public static EntryResize BeginResize(this EditorSession session, EntryId id, ResizeHandle handle)
+    {
+        var others = session.Selection.Contains(id) ? session.Selection.Ids.Where(x => x != id).ToList() : [];
+        return new(session.BeginInteractive(others.Count > 0 ? $"Resize {others.Count + 1} entries" : "Resize"), id, handle, others);
+    }
 }
 
 /// <summary>Interactive move of a set of entries.</summary>
@@ -135,8 +148,11 @@ public sealed class SelectionDrag(InteractiveEdit edit, IReadOnlySet<EntryId> id
     public void Dispose() => edit.Dispose();
 }
 
-/// <summary>Interactive resize of one entry. Lines move their nearest end instead of a box edge.</summary>
-public sealed class EntryResize(InteractiveEdit edit, EntryId id, ResizeHandle handle) : IDisposable
+/// <summary>
+/// Interactive resize by one entry's handle. Lines move their nearest end instead of a box edge. Other selected
+/// boxes follow in their own text frame; size-locked entries and other lines are left alone.
+/// </summary>
+public sealed class EntryResize(InteractiveEdit edit, EntryId id, ResizeHandle handle, IReadOnlyList<EntryId>? others = null) : IDisposable
 {
     public void Update(int dx, int dy, int minimumSize = 0) => edit.Update(l => Apply(l, dx, dy, minimumSize));
 
@@ -146,17 +162,39 @@ public sealed class EntryResize(InteractiveEdit edit, EntryId id, ResizeHandle h
 
     private LabelLayout Apply(LabelLayout layout, int dx, int dy, int minimumSize)
     {
-        if (layout.Find(id) is not { } entry || entry.IsSizeLocked)
+        if (layout.Find(id) is not { } entry)
         {
             return layout;
         }
 
-        var bounds = entry.IsSegment ? MoveSegmentEnd(entry.Bounds, dx, dy) : entry.Bounds.Resize(handle, dx, dy, minimumSize);
-        return layout.ReplaceEntry(entry with { Bounds = bounds });
+        var result = layout;
+        if (!entry.IsSizeLocked)
+        {
+            var bounds = entry.IsSegment ? MoveSegmentEnd(entry, dx, dy) : EntryFrame.Resize(entry, handle, dx, dy, minimumSize);
+            result = result.ReplaceEntry(entry with { Bounds = bounds });
+        }
+
+        if (entry.IsSegment)
+        {
+            return result; // a line's end point has no meaning for boxes
+        }
+
+        var rotation = EntryFrame.RotationOf(entry);
+        foreach (var other in (others ?? []).Select(layout.Find).OfType<LabelEntry>().Where(e => e.IsVisual && !e.IsSegment && !e.IsSizeLocked))
+        {
+            result = result.ReplaceEntry(other with { Bounds = EntryFrame.ResizeLike(other, rotation, handle, dx, dy, minimumSize) });
+        }
+
+        return result;
     }
 
     // For segments only two handles are meaningful: TopLeft = start point, BottomRight = end point.
-    private LabelRect MoveSegmentEnd(LabelRect b, int dx, int dy) => handle == ResizeHandle.TopLeft
-        ? new LabelRect(b.X + dx, b.Y + dy, b.Width - dx, b.Height - dy)
-        : b with { Width = b.Width + dx, Height = b.Height + dy };
+    // A position-locked line keeps its start point.
+    private LabelRect MoveSegmentEnd(LabelEntry line, int dx, int dy)
+    {
+        var b = line.Bounds;
+        return handle == ResizeHandle.TopLeft
+            ? (line.IsPositionLocked ? b : new LabelRect(b.X + dx, b.Y + dy, b.Width - dx, b.Height - dy))
+            : b with { Width = b.Width + dx, Height = b.Height + dy };
+    }
 }
